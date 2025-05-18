@@ -1,0 +1,64 @@
+name: JSGrades CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - test
+      - main
+  pull_request:
+    branches:
+      - dev
+      - test
+      - main
+
+jobs:
+  client:
+    name: Client Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies (Client)
+        run: npm ci
+
+      - name: Lint (Client)
+        run: npm run lint
+
+      - name: Test (Client)
+        run: npm test -- --ci --watchAll=false
+
+  server:
+    name: Server Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies (Server)
+        run: npm ci
+
+      - name: Lint (Server)
+        run: npm run lint
+
+      - name: Test (Server)
+        run: npm test
