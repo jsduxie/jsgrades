@@ -19,6 +19,12 @@ const Register = () => {
     e.preventDefault();
     if (!isRegistering) {
       setIsRegistering(true);
+      if (password !== confirmPassword) {
+        setErrorMessage('Passwords must match.');
+        setIsRegistering(false);
+        return;
+      }
+
       try {
         await doCreateUserWithEmailAndPassword(email, password);
       } catch (err: unknown) {
@@ -37,11 +43,16 @@ const Register = () => {
       {userLoggedIn && <Navigate to={'/home'} replace={true} />}
 
       <main className="w-full h-screen flex self-center place-content-center place-items-center">
-        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl">
+        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl bg-white">
+          <img
+            src="/img/logo.svg"
+            alt="JSGradesLogo"
+            className="absolute top-4 left-8 h-30 w-auto bg-[#efefef]"
+          />
           <div className="text-center mb-6">
             <div className="mt-2">
               <h3 className="text-gray-800 text-xl font-semibold sm:text-2xl">
-                Create a New Account
+                Create an Account
               </h3>
             </div>
           </div>
@@ -95,7 +106,9 @@ const Register = () => {
             </div>
 
             {errorMessage && (
-              <span className="text-red-600 font-bold">{errorMessage}</span>
+              <p className="text-red-600 text-center w-100 font-bold mb-4">
+                {errorMessage}
+              </p>
             )}
 
             <button
@@ -111,7 +124,7 @@ const Register = () => {
                 to={'/login'}
                 className="text-center text-sm hover:underline font-bold"
               >
-                Continue
+                Sign In
               </Link>
             </div>
           </form>

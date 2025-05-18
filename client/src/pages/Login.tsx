@@ -1,5 +1,6 @@
 // Login page
 
+import { FirebaseError } from 'firebase/app';
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -28,12 +29,32 @@ const Login = () => {
       setIsSigningIn(true);
       try {
         await doSignInWithEmailAndPassword(email, password);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setErrorMessage(err.message || 'Failed to sign in.');
-        } else {
-          setErrorMessage('Failed to sign in.');
+      } catch (err) {
+        let msg = 'Failed to sign in.';
+
+        if (err instanceof FirebaseError) {
+          switch (err.code) {
+            case 'auth/user-not-found':
+              msg = 'No account found with this username.';
+              break;
+            case 'auth/wrong-password':
+              msg = 'Incorrect password.';
+              break;
+            case 'auth/invalid-email':
+              msg = 'Invalid email address';
+              break;
+            case 'auth/too-many-requests':
+              msg = 'Too many attempts. Please try again later.';
+              break;
+            case 'auth/invalid-credential':
+              msg = 'Incorrect email or password.';
+              break;
+            default:
+              msg = err.message;
+          }
         }
+
+        setErrorMessage(msg);
         setIsSigningIn(false);
       }
     }
@@ -48,7 +69,28 @@ const Login = () => {
     if (!isSigningIn) {
       setIsSigningIn(true);
       doSignInWithGoogle().catch((err) => {
-        setErrorMessage(err.message || 'Failed to sign in.');
+        let msg = 'Failed to sign in.';
+
+        if (err instanceof FirebaseError) {
+          switch (err.code) {
+            case 'auth/user-not-found':
+              msg = 'No account found with this username.';
+              break;
+            case 'auth/wrong-password':
+              msg = 'Incorrect password.';
+              break;
+            case 'auth/invalid-email':
+              msg = 'Invalid email address';
+              break;
+            case 'auth/too-many-requests':
+              msg = 'Too many attempts. Please try again later.';
+              break;
+            default:
+              msg = err.message;
+          }
+        }
+
+        setErrorMessage(msg);
         setIsSigningIn(false);
       });
     }
@@ -58,7 +100,7 @@ const Login = () => {
     <div>
       {userLoggedIn && <Navigate to={'/home'} replace={true} />}
       <main className="w-full h-screen flex self-center place-content-center place-items-center">
-        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl bg-[#fff]">
+        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl bg-white">
           <img
             src="/img/logo.svg"
             alt="JSGradesLogo"
@@ -103,13 +145,15 @@ const Login = () => {
             </div>
 
             {errorMessage && (
-              <span className="text-red-600 font-bold">{errorMessage}</span>
+              <p className="h-5 text-red-600 text-center w-100 font-bold mb-4">
+                {errorMessage}
+              </p>
             )}
 
             <button
               type="submit"
               disabled={isSigningIn}
-              className={`w-full px-4 py-2 text-white font-medium rounded-lg ${isSigningIn ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'}`}
+              className={`w-full px-4 py-2 mt-[-1] text-white font-medium rounded-lg ${isSigningIn ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'}`}
             >
               {isSigningIn ? 'Signing in...' : 'Sign In'}
             </button>
@@ -122,9 +166,9 @@ const Login = () => {
             </Link>
           </p>
 
-          <p className="text-center text-sm my-1">
+          <p className="text-center text-sm">
             <Link to={'/register'} className="hover:underline font-bold">
-              Forgot Password
+              Forgot Password?
             </Link>
           </p>
           <div className="flex flex-row text-center w-full">
