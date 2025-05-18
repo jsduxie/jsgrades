@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useRoutes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Home from './pages/Home';
@@ -12,6 +13,10 @@ function App() {
     { path: '/home', element: <Home /> },
   ];
   const routesElement = useRoutes(routesArray);
+
+  useEffect(() => {
+    document.title = 'JSGrades';
+  }, []);
 
   return (
     <AuthProvider>

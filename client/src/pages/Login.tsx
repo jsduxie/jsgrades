@@ -1,6 +1,6 @@
 // Login page
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -16,6 +16,10 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    document.title = 'Sign In | JSGrades';
+  }, []);
 
   // When signing in using email/password details
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -54,11 +58,16 @@ const Login = () => {
     <div>
       {userLoggedIn && <Navigate to={'/home'} replace={true} />}
       <main className="w-full h-screen flex self-center place-content-center place-items-center">
-        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl">
+        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl bg-[#fff]">
+          <img
+            src="/img/logo.svg"
+            alt="JSGradesLogo"
+            className="absolute top-4 left-8 h-30 w-auto bg-[#efefef]"
+          />
           <div className="text-center">
             <div className="mt-2">
               <h3 className="text-gray-800 text-xl font-semibold sm:text-2xl">
-                Welcome Back
+                Sign In
               </h3>
             </div>
           </div>
@@ -110,6 +119,12 @@ const Login = () => {
             Don't have an account?{' '}
             <Link to={'/register'} className="hover:underline font-bold">
               Sign up
+            </Link>
+          </p>
+
+          <p className="text-center text-sm my-1">
+            <Link to={'/register'} className="hover:underline font-bold">
+              Forgot Password
             </Link>
           </p>
           <div className="flex flex-row text-center w-full">
