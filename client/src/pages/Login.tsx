@@ -167,7 +167,7 @@ const Login = () => {
           </p>
 
           <p className="text-center text-sm">
-            <Link to={'/register'} className="hover:underline font-bold">
+            <Link to={'/forgot-password'} className="hover:underline font-bold">
               Forgot Password?
             </Link>
           </p>
