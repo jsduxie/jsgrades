@@ -9,5 +9,6 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_sign_in TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     verified BOOLEAN DEFAULT false,
+    onBoarded BOOLEAN DEFAULT false,
     count_sign_in INT DEFAULT 0
 );

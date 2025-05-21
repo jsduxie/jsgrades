@@ -1,6 +1,7 @@
 // Home / Main Dashboard Page
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { doSignOut } from '../firebase/Auth';
 
@@ -14,25 +15,27 @@ const Home = () => {
 
   const currentUser = auth?.currentUser;
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    if (!currentUser) return; // Guard clause
+    if (!currentUser) return;
 
     const fetchUserDetails = async () => {
       try {
-        console.log(REACT_APP_API_URL);
         const res = await fetch(`${REACT_APP_API_URL}/user/${currentUser.uid}`);
 
         if (res.status === 404) {
-          console.log('User not found');
-          throw new Error(`User not found: ${res.json()}`);
-          // TODO: route to /onboarding
+          navigate('/onboarding');
+          return;
         }
-
-        if (!res.ok)
-          throw new Error(`Failed to fetch user details: ${res.json()}`);
 
         const data = await res.json();
         setUserDetails(data);
+
+        if (!data.onboarded && !loading) {
+          navigate('/onboarding');
+          return;
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -41,7 +44,7 @@ const Home = () => {
     };
 
     fetchUserDetails();
-  }, [currentUser]);
+  }, [currentUser, navigate, loading]);
 
   if (!auth || !auth.currentUser) {
     return <div className="text-2xl font-bold pt-14">Not logged in.</div>;

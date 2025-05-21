@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Onboarding from './pages/Onboarding';
 import Register from './pages/Register';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
     { path: '/register', element: <Register /> },
     { path: '/home', element: <Home /> },
     { path: '/forgot-password', element: <ForgotPassword /> },
+    { path: '/onboarding', element: <Onboarding /> },
   ];
   const routesElement = useRoutes(routesArray);
 
