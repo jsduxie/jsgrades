@@ -59,13 +59,16 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/react": "^19.1.4",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.4.0",
     "postcss": "^8.5.3",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "typescript-eslint": "^8.32.1"
   }
 }
