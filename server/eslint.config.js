@@ -9,8 +9,7 @@ const compat = new FlatCompat({
 });
 
 export default [
-  // Extend from the root config
-  ...compat.extends([path.resolve(__dirname, "../eslint.config.js")]),
+  ...compat.extends(path.resolve(__dirname, "../eslint.config.js")),
 
   {
     files: ["**/*.ts", "**/*.js"],
