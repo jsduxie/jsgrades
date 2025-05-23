@@ -1,4 +1,4 @@
-// Register page - allows user to create an account
+// Onboarding page - allows user to enter further information if required
 
 import { Datepicker } from 'flowbite-react';
 import React, { useState, useEffect } from 'react';
@@ -7,15 +7,76 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/shadcn/DropdownMenu';
-import { Logo, datePickerTheme, customDropdownTheme } from '../components/UI';
+import { Logo, datePickerTheme } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
-import { doCreateUserWithEmailAndPassword } from '../firebase/Auth';
 
 const REACT_APP_API_URL = process.env.REACT_APP_API_URL;
+
+type QualificationLevel = {
+  value: number;
+  label: string;
+};
+
+const educationLevels: QualificationLevel[] = [
+  { value: 2, label: 'GCSE' },
+  { value: 3, label: 'A-Level' },
+  { value: 6, label: 'Undergraduate' },
+  { value: 7, label: 'Postgraduate' },
+  { value: 0, label: 'Not Applicable' },
+];
+
+interface QualificationDropdownProps {
+  value: number;
+  onChange: (value: number) => void;
+}
+
+// Reusable component to display dropdown to select qualification level and store as int based on level
+// numbers are based on standard qualification levels in UK
+export function QualificationDropdown({
+  value,
+  onChange,
+}: QualificationDropdownProps) {
+  const selected = educationLevels.find((lvl) => lvl.value === value);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="w-full mt-2 px-3 py-2 text-gray-700 bg-white border rounded-lg shadow-sm flex justify-between items-center transition duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          {selected ? selected.label : 'Select level...'}
+          <svg
+            className="w-4 h-4 ml-2 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-[var(--radix-dropdown-menu-trigger-width)] bg-white border border-gray-200 rounded-lg shadow-lg mt-2">
+        {educationLevels.map((level) => (
+          <DropdownMenuItem
+            key={level.value}
+            onSelect={() => onChange(level.value)}
+            className={value === level.value ? 'bg-indigo-100 font-bold' : ''}
+          >
+            {level.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const Onboarding = () => {
   const [step, setStep] = useState(0);
@@ -24,19 +85,20 @@ const Onboarding = () => {
     lastName: '',
     email: '',
     dateOfBirth: '',
-    qualificationlevel: '',
+    qualificationlevel: 0,
   });
 
+  // Controls progression through form, needs further implementation later
   const [isValidating, setIsValidating] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isOnboarded, setIsOnboarded] = useState('');
 
   const auth = useAuth();
-  const userLoggedIn = auth?.userLoggedIn;
   const currentUser = auth?.currentUser;
 
   const navigate = useNavigate();
 
+  // Pulls available data from the currentUser obtained from Firebased for improved UX
   useEffect(() => {
     if (currentUser) {
       setForm((prev) => ({
@@ -63,6 +125,7 @@ const Onboarding = () => {
     setStep(step + 1);
   };
 
+  // Not currently used
   const handleBack = () => {
     setStep(step - 1);
   };
@@ -119,6 +182,7 @@ const Onboarding = () => {
                     First Name
                   </label>
                   <input
+                    name="firstName"
                     type="text"
                     autoComplete="First Name"
                     required
@@ -183,20 +247,15 @@ const Onboarding = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600 font-bold">
+                  <label className="text-sm text-gray-600 font-bold mb-2 block">
                     Highest Education Level
                   </label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>Open</DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>Profile</DropdownMenuItem>
-                      <DropdownMenuItem>Billing</DropdownMenuItem>
-                      <DropdownMenuItem>Team</DropdownMenuItem>
-                      <DropdownMenuItem>Subscription</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <QualificationDropdown
+                    value={form.qualificationlevel}
+                    onChange={(val) =>
+                      setForm((prev) => ({ ...prev, qualificationlevel: val }))
+                    }
+                  />
                 </div>
               </>
             )}
