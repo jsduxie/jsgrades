@@ -132,6 +132,7 @@ const Onboarding = () => {
                     Last Name
                   </label>
                   <input
+                    name="lastName"
                     type="text"
                     autoComplete="Last Name"
                     required
@@ -145,13 +146,16 @@ const Onboarding = () => {
                     Email
                   </label>
                   <input
+                    name="email"
                     type="text"
                     autoComplete="Email"
                     required
                     value={form.email}
                     onChange={handleChange}
-                    className="w-full mt-2 px-3 py-2 text-gray-500 bg-gray-100 outline-none border focus:indigo-600 shadow-sm rounded-lg transition duration-300"
-                    readOnly
+                    className={`w-full mt-2 px-3 py-2 text-gray-500 outline-none border focus:indigo-600 shadow-sm rounded-lg transition duration-300 ${
+                      currentUser?.email ? 'bg-gray-100' : 'bg-white'
+                    }`}
+                    readOnly={!!currentUser?.email}
                   />
                 </div>
               </>
@@ -197,14 +201,14 @@ const Onboarding = () => {
               </>
             )}
             <button
-              type={step == 5 ? 'submit' : 'button'}
-              onClick={step == 5 ? undefined : handleNext}
+              type={step == 2 ? 'submit' : 'button'}
+              onClick={step == 2 ? undefined : handleNext}
               disabled={isValidating}
               className={`w-full px-4 py-2 text-white font-medium rounded-lg ${isValidating ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'}`}
             >
               {isValidating
                 ? 'Loading...'
-                : step == 5
+                : step == 2
                   ? 'Submit'
                   : step == 0
                     ? 'Begin'
