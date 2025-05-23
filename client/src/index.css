@@ -10,7 +10,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #efefef;
-  background-image: url('img/bg-accent.svg');
+  background-image: url('/img/bg-accent.svg');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover; /* or contain, depending on your needs */
