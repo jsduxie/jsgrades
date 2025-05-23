@@ -1,0 +1,28 @@
+name: Linting
+
+on:
+    push:
+        branches: [dev, test, main]
+    pull_request:
+        branches: [master, main]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v4
+              with:
+                node-version: 20
+
+            - name: Install dependencies
+              run: npm ci
+            
+            - name: Run linting
+              run: npx eslint .
+
+            - uses: actions/upload-artifact@v3
+              with:
+                name: lint-report
+                path: lint-reports/
+                retention-days: 28

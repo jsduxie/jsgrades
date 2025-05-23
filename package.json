@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "node": "^20.17.0"
   },
