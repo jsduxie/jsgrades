@@ -1,0 +1,48 @@
+name: Bug Report
+description: Report a problem or unexpected behavior
+title: "[Bug] <short description>"
+labels: ["bug", "awaiting-triage"]
+assignees: ["jsduxie"]
+
+body:
+  - type: markdown
+    attributes:
+      value: "## Please use the below form to describe the bug."
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, device, etc.
+      placeholder: "e.g., Windows 11, Chrome 125.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the issue clearly.
+      placeholder: "The dashboard freezes when clicking the Grades tab..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide a clear list to reproduce the bug.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Error Logs
+      description: Add any logs, screenshots, or error messages.
+    validations:
+      required: false

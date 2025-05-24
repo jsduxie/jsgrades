@@ -1,0 +1,49 @@
+name: Feature (Development) Request
+description: Features or enhancements
+title: "[Feat] <description>"
+labels: ["feature", "awaiting-triage"]
+assignees: ["jsduxie"]
+
+body:
+  - type: markdown
+    attributes:
+      value: "##This template is for outlining features or enhancements, or general development tasks."
+  
+  - type: input
+    id: related-component
+    attributes:
+      label: Related Components
+      description: Please describe the component(s) this feature would affect.
+      placeholder: "Frontend / Home"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: Please describe what the feature should do
+      placeholder: "A page to provide an overview of all qualifications the user has recorded."
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Feature Utility
+      description: Describe the benefit of this feature
+      placeholder: "This improves UX and provides a centralised point to access "
+    validations:
+      required: false
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Implementation Requirements
+      description: Provide a checklist of tasks for this feature to be implemented
+      placeholder: |
+        - [ ] Design UI wireframe
+        - [ ] Create API endpoint
+        - [ ] Implement frontend logic
+    validations:
+      required: false
