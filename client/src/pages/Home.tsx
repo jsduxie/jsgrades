@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { doSignOut } from '../firebase/Auth';
+import { Sidebar } from '../components/Sidebar';
 
 const REACT_APP_API_URL = process.env.REACT_APP_API_URL;
 
@@ -53,7 +54,11 @@ const Home = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!userDetails) return <div>No user details found.</div>;
-  if (userDetails) return <div>{userDetails.uid}</div>;
+  if (userDetails) return (
+    <>
+    <Sidebar />
+    </>
+  )
 
   return null;
 };

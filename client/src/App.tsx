@@ -6,6 +6,9 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import Register from './pages/Register';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const theme = createTheme();
 
 function App() {
   const routesArray = [
@@ -23,9 +26,11 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <div className="w-full h-screen flex flex-col">{routesElement}</div>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
+        <div className="w-full h-screen flex flex-col">{routesElement}</div>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
