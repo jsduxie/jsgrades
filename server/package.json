@@ -5,7 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No tests specified yet - please add tests!\" && exit 0",
+    "test:watch": "echo \"No test watcher configured yet\"",
     "build": "tsc",
     "start": "npm run build && node ./dist/index.js",
     "lint": "cd .. && eslint './server/src/**/*.{ts,js}' --max-warnings=0",
