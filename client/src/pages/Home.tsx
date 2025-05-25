@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
-import { Navbar } from '../components/Navbar';
 import { doSignOut } from '../firebase/Auth';
 
 const REACT_APP_API_URL = process.env.REACT_APP_API_URL;
@@ -42,7 +42,6 @@ const Home = () => {
         }
 
         const data = await res.json();
-        console.log(data);
         setUserDetails(data);
 
         if (!data.onboarded && !loading) {
@@ -60,7 +59,9 @@ const Home = () => {
   }, [currentUser, navigate, loading]);
 
   if (!auth || !auth.currentUser) {
-    return <div className="text-2xl font-bold pt-14">Not logged in.</div>;
+    return (
+      <div className="text-2xl font-bold pt-14">Not logged in: {error}</div>
+    );
   }
 
   if (userDetails)

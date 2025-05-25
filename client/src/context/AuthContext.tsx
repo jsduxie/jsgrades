@@ -2,9 +2,8 @@
 
 import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
-import { auth } from '../firebase/Firebase';
 import { LoadingIcon } from '../components/UI';
-
+import { auth } from '../firebase/Firebase';
 
 type AuthContextType = {
   currentUser: User | null;

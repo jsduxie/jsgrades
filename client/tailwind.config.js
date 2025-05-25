@@ -14,8 +14,8 @@ module.exports = {
           DEFAULT: '#5121d9',
         },
         'black-text': {
-          DEFAULT: '#363636'
-        }
+          DEFAULT: '#363636',
+        },
       },
       boxShadow: {
         'light-1': '2px 2px 4px rgba(86, 114, 198, 0.25)',

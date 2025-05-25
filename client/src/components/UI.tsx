@@ -1,5 +1,5 @@
+import { Loader2 } from 'lucide-react';
 import React from 'react';
-import { Loader2 } from "lucide-react";
 
 type LogoProps = {
   height?: number;
@@ -8,7 +8,11 @@ type LogoProps = {
   style?: string;
 };
 
-export const Logo = ({ height = 30, fill = '#030121', style = '' }: LogoProps) => {
+export const Logo = ({
+  height = 30,
+  fill = '#030121',
+  style = '',
+}: LogoProps) => {
   return (
     <svg
       width="110"
@@ -93,9 +97,11 @@ export const customDropdownTheme = {
 
 type LoadingIconProps = {
   colour?: string;
-}
+};
 
-export const LoadingIcon : React.FC<LoadingIconProps> = ({ colour='text-primary' }) => {
+export const LoadingIcon: React.FC<LoadingIconProps> = ({
+  colour = 'text-primary',
+}) => {
   return (
     <div className="flex items-center justify-center h-screen">
       <Loader2 className={`animate-spin w-12 h-12 ${colour}`} />
