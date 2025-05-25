@@ -125,7 +125,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: lint  # Only run tests if linting passes
+    needs: lint
 
     steps:
       - name: Checkout code
@@ -144,6 +144,7 @@ jobs:
         run: |
           cd client
           npm ci
+          npm run config-flowbite
 
       - name: Install server dependencies
         run: |

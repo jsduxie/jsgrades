@@ -44,7 +44,8 @@
     "lint:fix": "cd .. && eslint './client/src/**/*.{ts,tsx,js,jsx}' --fix --max-warnings=0",
     "format": "prettier --write .",
     "config-flowbite": "npx flowbite-react@latest patch",
-    "install-all": "npm install && config-flowbite"
+    "install-all": "npm install && config-flowbite",
+    "postinstall": "flowbite-react patch && flowbite-react register"
   },
   "browserslist": {
     "production": [

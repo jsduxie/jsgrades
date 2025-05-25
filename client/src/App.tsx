@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRoutes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import Login from './pages/Login';

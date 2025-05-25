@@ -20,7 +20,7 @@ export const verifyToken = async (
       email: decoded.email,
       name: decoded.name || decoded.displayName,
     };
-    next(); // Pass control to the next middleware
+    next();
   } catch (err) {
     res.status(401).send(`Invalid Token: ${err}`);
   }
