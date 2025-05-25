@@ -2,15 +2,15 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import importPlugin from "eslint-plugin-import";
 import prettierPlugin from "eslint-plugin-prettier";
+import reactPlugin from 'eslint-plugin-react';
+import jestPlugin from 'eslint-plugin-jest';
 
 export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  importPlugin.configs.errors,
-  importPlugin.configs.warnings,
-  importPlugin.configs.typescript,
   {
     plugins: {
+      import: importPlugin,
       prettier: prettierPlugin,
     },
     languageOptions: {
@@ -20,6 +20,7 @@ export default [
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
+        project: ["./client/tsconfig.json", "./server/tsconfig.json"],
       },
     },
     rules: {
@@ -37,4 +38,48 @@ export default [
       "prettier/prettier": "error",
     },
   },
+  {
+    files: ["client/**/*.{js,jsx,ts,tsx}"],
+    plugins: {
+      react: reactPlugin,
+      jest: jestPlugin,
+      import: importPlugin,
+      prettier: prettierPlugin,
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+        project: "./client/tsconfig.json",
+      }
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      }
+    },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      'prettier/prettier': 'error',
+    },
+  },
+  {
+    files: ["server/**/*.{ts,js}"],
+    plugins: {
+      import: importPlugin,
+      prettier: prettierPlugin,
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: './server/tsconfig.json',
+      }
+    },
+    rules: {
+      "@typescript-eslint/no-var-requires": "error",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      'prettier/prettier': 'error',
+    },
+  }
 ];

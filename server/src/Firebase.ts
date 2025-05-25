@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import admin from 'firebase-admin';
 
 const raw = process.env.FIREBASE_SDK_KEY!;
 const serviceAccount = JSON.parse(raw);

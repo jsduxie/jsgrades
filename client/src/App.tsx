@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import Register from './pages/Register';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const theme = createTheme();
 

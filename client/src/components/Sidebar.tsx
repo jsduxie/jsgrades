@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import clsx from 'clsx';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { Assignment, ShowChart } from '@mui/icons-material';
 import HomeIcon from '@mui/icons-material/Home';
 import SchoolIcon from '@mui/icons-material/School';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Assignment } from '@mui/icons-material';
-import { ShowChart } from '@mui/icons-material';
+import clsx from 'clsx';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './UI';
 
 type SidebarLinkProps = {
@@ -69,10 +66,9 @@ export const Sidebar: React.FC = () => {
       <div
         className={clsx(
           'w-[215px] flex justify-center items-center absolute top-[30px] z-10 transition-opacity duration-100',
-          open
-            ? 'opacity-1'
-            : 'opacity-0'
-        )}>
+          open ? 'opacity-1' : 'opacity-0'
+        )}
+      >
         <Logo height={50} fill="#fff" />
       </div>
 

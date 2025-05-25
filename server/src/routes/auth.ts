@@ -1,22 +1,24 @@
-import express from "express";
-import pool from "../db/conn.js";
-import { verifyToken } from "../middleware/verifyToken.js";
-import { asyncHandler } from "../util/asyncHandler.js";
+import express from 'express';
+import pool from '../db/conn.js';
+import { verifyToken } from '../middleware/verifyToken.js';
+import { asyncHandler } from '../util/asyncHandler.js';
 
 const router = express.Router();
 
 router.post(
-  "/auth",
+  '/auth',
   asyncHandler(verifyToken),
   asyncHandler(async (req, res) => {
     if (!req.user) {
-      res.status(400).send("User information is missing");
+      res.status(400).send('User information is missing');
       return;
     }
     const { uid, email, name } = req.user;
 
     try {
-      const userQuery = await pool.query("SELECT * FROM users WHERE uid = $1", [uid]);
+      const userQuery = await pool.query('SELECT * FROM users WHERE uid = $1', [
+        uid,
+      ]);
 
       if (userQuery.rows.length === 0) {
         const insertQuery = `
@@ -32,8 +34,7 @@ router.post(
 
       res.status(200).json({ user: userQuery.rows[0] });
     } catch (err) {
-      console.error(`Error handling user authentication: ${err}`);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send(`Internal Server Error: ${err}`);
     }
   })
 );

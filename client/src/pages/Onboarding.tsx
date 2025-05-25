@@ -2,7 +2,7 @@
 
 import { Datepicker } from 'flowbite-react';
 import React, { useState, useEffect } from 'react';
-import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,9 +89,9 @@ const Onboarding = () => {
   });
 
   // Controls progression through form, needs further implementation later
-  const [isValidating, setIsValidating] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isOnboarded, setIsOnboarded] = useState('');
+  //const [isValidating, setIsValidating] = useState(false);
+  //const [errorMessage, setErrorMessage] = useState('');
+  //const [isOnboarded, setIsOnboarded] = useState('');
 
   const auth = useAuth();
   const currentUser = auth?.currentUser;
@@ -126,9 +126,9 @@ const Onboarding = () => {
   };
 
   // Not currently used
-  const handleBack = () => {
+  /*const handleBack = () => {
     setStep(step - 1);
-  };
+  };*/
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +153,7 @@ const Onboarding = () => {
       if (!res.ok) throw new Error('Failed to create user');
       navigate('/home');
     } catch (err) {
-      setErrorMessage('Failed to complete onboarding');
+      setErrorMessage(`Failed to complete onboarding: ${err}`);
     }
   };
 

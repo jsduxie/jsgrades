@@ -2,14 +2,22 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { doSignOut } from '../firebase/Auth';
 import { Sidebar } from '../components/Sidebar';
+import { useAuth } from '../context/AuthContext';
+//import { doSignOut } from '../firebase/Auth';
 
 const REACT_APP_API_URL = process.env.REACT_APP_API_URL;
 
+interface UserDetails {
+  uid: string;
+  email: string;
+  onboarded: boolean;
+  name?: string;
+  createdAt?: string;
+}
+
 const Home = () => {
-  const [userDetails, setUserDetails] = useState<any>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const auth = useAuth();
