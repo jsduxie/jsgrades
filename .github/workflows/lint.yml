@@ -1,5 +1,8 @@
 name: CI - Lint & Test
 
+permissions:
+  issues: write
+
 on:
   push:
     branches: [dev, test, main]
@@ -86,6 +89,7 @@ jobs:
         if: github.event_name == 'pull_request' && steps.lint-changes.outputs.changes == 'true' && !env.ACT
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GH_PAT }}
           script: |
             const fs = require('fs');
             const diff = fs.readFileSync('lint-reports/lint-fixes.diff', 'utf8');
@@ -204,7 +208,7 @@ jobs:
           if grep -q "No tests found" test-reports/client-test.txt 2>/dev/null; then
             echo "No client tests found - consider adding tests"
           elif grep -q "PASS\|FAIL" test-reports/client-test.txt 2>/dev/null; then
-            echo "lient tests executed"
+            echo "Client tests executed"
           else
             echo "Client tests may not be properly configured"
           fi
