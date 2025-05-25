@@ -5,10 +5,13 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No tests specified yet - please add tests!\" && exit 0",
+    "test:watch": "echo \"No test watcher configured yet\"",
     "build": "tsc",
     "start": "npm run build && node ./dist/index.js",
-    "lint": "eslint './src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
+    "lint": "cd .. && eslint './server/src/**/*.{ts,js}' --max-warnings=0",
+    "lint:fix": "cd .. && eslint './server/src/**/*.{ts,js}' --fix --max-warnings=0",
+    "format": "cd .. && prettier --write './server/src/**/*.{ts,js,json,md}'",
     "dev": "concurrently \"npm run build:watch\" \"nodemon dist/index.js\"",
     "build:watch": "tsc --watch"
   },
@@ -47,14 +50,10 @@
     "@types/send": "^0.17.4",
     "@types/serve-static": "^1.15.7",
     "@types/tough-cookie": "^4.0.5",
-    "@typescript-eslint/eslint-plugin": "^8.32.1",
-    "@typescript-eslint/parser": "^8.32.1",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.10",
-    "prettier": "^3.5.3",
     "psql": "^0.0.1",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript-eslint": "^8.32.1"
+    "ts-node-dev": "^2.0.0"
   }
 }

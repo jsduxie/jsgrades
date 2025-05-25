@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.1.0",
+    "@mui/material": "^7.1.0",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.3.0",
@@ -31,20 +35,17 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --watchAll=false --coverage",
+    "test:watch": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "tailwind": "tailwindcss",
-    "lint": "eslint './src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
+    "lint": "cd .. && eslint './client/src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
+    "lint:fix": "cd .. && eslint './client/src/**/*.{ts,tsx,js,jsx}' --fix --max-warnings=0",
     "format": "prettier --write .",
     "config-flowbite": "npx flowbite-react@latest patch",
-    "install-all": "npm install && config-flowbite"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest",
-      "prettier"
-    ]
+    "install-all": "npm install && config-flowbite",
+    "postinstall": "flowbite-react patch && flowbite-react register"
   },
   "browserslist": {
     "production": [
@@ -61,9 +62,8 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@types/react": "^19.1.4",
+    "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
-    "prettier": "^3.5.3",
-    "typescript-eslint": "^8.32.1"
+    "postcss": "^8.5.3"
   }
 }

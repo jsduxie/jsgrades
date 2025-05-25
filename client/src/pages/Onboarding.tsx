@@ -2,7 +2,7 @@
 
 import { Datepicker } from 'flowbite-react';
 import React, { useState, useEffect } from 'react';
-import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,7 +91,7 @@ const Onboarding = () => {
   // Controls progression through form, needs further implementation later
   const [isValidating, setIsValidating] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isOnboarded, setIsOnboarded] = useState('');
+  const [isOnboarded, setIsOnboarded] = useState(false);
 
   const auth = useAuth();
   const currentUser = auth?.currentUser;
@@ -114,6 +114,12 @@ const Onboarding = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (isOnboarded) {
+      navigate('/home');
+    }
+  }, [isOnboarded]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -126,14 +132,18 @@ const Onboarding = () => {
   };
 
   // Not currently used
-  const handleBack = () => {
+  /*const handleBack = () => {
     setStep(step - 1);
-  };
+  };*/
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsValidating(true);
+    setErrorMessage('');
     if (!currentUser) {
       setErrorMessage('No user is logged in.');
+      setIsValidating(false);
+      navigate('/login');
       return;
     }
     try {
@@ -141,7 +151,7 @@ const Onboarding = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uid: currentUser.uid,
+          uid: currentUser?.uid,
           email: form.email,
           first_name: form.firstName,
           last_name: form.lastName,
@@ -150,18 +160,29 @@ const Onboarding = () => {
           onBoarded: true,
         }),
       });
-      if (!res.ok) throw new Error('Failed to create user');
-      navigate('/home');
+
+      if (!res.ok) {
+        setErrorMessage(
+          'Failed to save additional profile information. Please try again.'
+        );
+      } else {
+        setIsOnboarded(true);
+      }
     } catch (err) {
-      setErrorMessage('Failed to complete onboarding');
+      setErrorMessage(`Failed to complete onboarding: ${err}`);
+    } finally {
+      setIsValidating(false);
     }
   };
 
   return (
     <>
       <main className="w-full h-screen flex self-center place-content-center place-items-center">
+        <div className="absolute left-[50px] top-[50px] flex justify-center align-center">
+          <Logo height={75} />
+        </div>
+
         <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl bg-white">
-          <Logo />
           <div className="text-center mb-6">
             <div className="mt-2">
               <h3 className="text-gray-800 text-xl font-semibold sm:text-2xl">
@@ -259,17 +280,22 @@ const Onboarding = () => {
                 </div>
               </>
             )}
+            {errorMessage && (
+              <p className="text-red-600 text-center w-100 font-bold mb-4">
+                {errorMessage}
+              </p>
+            )}
             <button
-              type={step == 2 ? 'submit' : 'button'}
-              onClick={step == 2 ? undefined : handleNext}
+              type={step === 3 ? 'submit' : 'button'}
+              onClick={step === 3 ? undefined : handleNext}
               disabled={isValidating}
               className={`w-full px-4 py-2 text-white font-medium rounded-lg ${isValidating ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'}`}
             >
               {isValidating
                 ? 'Loading...'
-                : step == 2
+                : step === 2
                   ? 'Submit'
-                  : step == 0
+                  : step === 0
                     ? 'Begin'
                     : 'Next'}
             </button>

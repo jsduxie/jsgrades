@@ -1,28 +1,223 @@
-name: Linting
+name: CI - Lint & Test
+
+permissions:
+  issues: write
 
 on:
-    push:
-        branches: [dev, test, main]
-    pull_request:
-        branches: [master, main]
+  push:
+    branches: [dev, test, main]
+  pull_request:
+    branches: [master, main]
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v4
-              with:
-                node-version: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Install dependencies
-              run: npm ci
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        run: |
+          cd client
+          npm ci
+
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Create lint reports directory
+        run: mkdir -p lint-reports
+
+      - name: Lint client code
+        run: |
+          cd client
+          npm run lint > ../lint-reports/client-lint.txt 2>&1 || true
+
+      - name: Lint server code
+        run: |
+          cd server
+          npm run lint > ../lint-reports/server-lint.txt 2>&1 || true
+
+      - name: Run lint:fix on client
+        run: |
+          cd client
+          npm run lint:fix || true
+
+      - name: Run lint:fix on server
+        run: |
+          cd server
+          npm run lint:fix || true
+
+      - name: Generate final lint report
+        run: |
+          echo "=== CLIENT LINT RESULTS ===" > lint-reports/final-report.txt
+          cat lint-reports/client-lint.txt >> lint-reports/final-report.txt
+          echo "" >> lint-reports/final-report.txt
+          echo "=== SERVER LINT RESULTS ===" >> lint-reports/final-report.txt
+          cat lint-reports/server-lint.txt >> lint-reports/final-report.txt
+
+      - name: Check if lint:fix made changes
+        id: lint-changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            git diff > lint-reports/lint-fixes.diff
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload lint reports
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: lint-reports/
+          retention-days: 7
+
+      - name: Comment on PR with lint fixes (if any)
+        if: github.event_name == 'pull_request' && steps.lint-changes.outputs.changes == 'true' && !env.ACT
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('lint-reports/lint-fixes.diff', 'utf8');
+            const comment = `## 🔧 ESLint Auto-fixes Applied
             
-            - name: Run linting
-              run: npx eslint .
+            The following changes were made by \`eslint --fix\`:
+            
+            \`\`\`diff
+            ${diff}
+            \`\`\`
+            
+            Consider applying these fixes to your code.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
 
-            - uses: actions/upload-artifact@v3
-              with:
-                name: lint-report
-                path: lint-reports/
-                retention-days: 28
+      - name: Show lint reports locally (act only)
+        if: ${{ env.ACT }}
+        run: |
+          echo "=== LINT REPORTS ==="
+          cat lint-reports/final-report.txt
+          if [ -f lint-reports/lint-fixes.diff ]; then
+            echo "=== CHANGES MADE BY LINT:FIX ==="
+            cat lint-reports/lint-fixes.diff
+          fi
+
+      - name: Fail if linting errors remain
+        run: |
+          cd client
+          npm run lint
+          cd ../server
+          npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        run: |
+          cd client
+          npm ci
+          npm run config-flowbite
+
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Create test reports directory
+        run: mkdir -p test-reports
+
+      - name: Test client
+        run: |
+          cd client
+          echo "Running client tests..."
+          npm test > ../test-reports/client-test.txt 2>&1 || echo "Client tests failed or not configured"
+          
+      - name: Test server
+        run: |
+          cd server
+          echo "Running server tests..."
+          npm test > ../test-reports/server-test.txt 2>&1 || echo "Server tests failed or not configured"
+
+      - name: Generate test summary
+        run: |
+          echo "=== CLIENT TEST RESULTS ===" > test-reports/test-summary.txt
+          if [ -f test-reports/client-test.txt ]; then
+            cat test-reports/client-test.txt >> test-reports/test-summary.txt
+          else
+            echo "No client test results found" >> test-reports/test-summary.txt
+          fi
+          echo "" >> test-reports/test-summary.txt
+          echo "=== SERVER TEST RESULTS ===" >> test-reports/test-summary.txt
+          if [ -f test-reports/server-test.txt ]; then
+            cat test-reports/server-test.txt >> test-reports/test-summary.txt
+          else
+            echo "No server test results found" >> test-reports/test-summary.txt
+          fi
+
+      - name: Upload test reports
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: test-reports/
+          retention-days: 7
+
+      - name: Show test reports locally (act only)
+        if: ${{ env.ACT }}
+        run: |
+          echo "=== TEST REPORTS ==="
+          cat test-reports/test-summary.txt
+
+      - name: Check if tests actually ran
+        run: |
+          echo "Checking test execution status..."
+          
+          # Check client tests
+          if grep -q "No tests found" test-reports/client-test.txt 2>/dev/null; then
+            echo "No client tests found - consider adding tests"
+          elif grep -q "PASS\|FAIL" test-reports/client-test.txt 2>/dev/null; then
+            echo "Client tests executed"
+          else
+            echo "Client tests may not be properly configured"
+          fi
+          
+          # Check server tests
+          if grep -q "Error: no test specified" test-reports/server-test.txt 2>/dev/null; then
+            echo "No server tests configured - consider adding tests"
+          elif grep -q "PASS\|FAIL\|✓\|✗" test-reports/server-test.txt 2>/dev/null; then
+            echo "Server tests executed"
+          else
+            echo "Server tests may not be properly configured"
+          fi

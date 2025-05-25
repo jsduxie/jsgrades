@@ -2,6 +2,7 @@
 
 import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
+import { LoadingIcon } from '../components/UI';
 import { auth } from '../firebase/Firebase';
 
 type AuthContextType = {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? <div>Loading...</div> : children}
+      {loading ? <LoadingIcon /> : children}
     </AuthContext.Provider>
   );
 }

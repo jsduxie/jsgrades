@@ -1,0 +1,104 @@
+Table users {
+    id UUID pk
+    uid varchar(255) UNIQUE
+    email varchar(255) UNIQUE
+    first_name varchar(255)
+    last_name varchar(255)
+    date_of_birth date
+    highest_qual_level int
+    profile_picture varchar(255)
+    created_at timestamp [default: 'current_timestamp']
+    last_sign_in timestamp [default: 'current_timestamp']
+    verified bool [default: false]
+    onBoarded bool [default: false]
+    count_sign_in int [default: 0]
+}
+
+Table qualification_levels {
+  id UUID pk
+  name varchar(255) unique
+  level int
+}
+
+Table qualifications {
+  id UUID pk
+  user_id UUID
+  name varchar(255)
+  level UUID [ref: > qualification_levels.id]
+  institution varchar(255)
+  start_date timestamp [default: 'current_timestamp']
+  end_date timestamp [default: 'current_timestamp']
+  current_grade float
+  target_grade float
+  predicted_grade float
+  in_progress bool [default: true]
+  created_at timestamp [default: 'current_timestamp']
+  updated_at timestamp [default: 'current_timestamp']
+
+  Indexes {
+    (user_id)
+  }
+}
+
+Ref: users.id < qualifications.user_id
+
+Table node_type {
+  id UUID pk
+  name enum
+  allow_children bool [default: false]
+}
+
+// Represents each level of the hierarchy
+Table qualification_node {
+  id UUID pk
+  qualification_id UUID [ref: > qualifications.id]
+  user_id UUID
+  parent_id UUID [default: null]
+  name varchar(255)
+  type int
+  weight float [Note: 'All rows with the same qual_id must be such that the total weight is 1.']
+  credits int
+  start_date timestamp [default: 'current_timestamp']
+  end_date timestamp [default: 'current_timestamp']
+  current_grade float
+  target_grade float
+  predicted_grade float
+  in_progress bool [default: true]
+  created_at timestamp [default: 'current_timestamp']
+  updated_at timestamp [default: 'current_timestamp']
+
+  Indexes {
+    qualification_id
+    parent_id
+    user_id
+  }
+  
+}
+
+Ref: qualification_node.id < qualification_node.parent_id
+Ref: users.id < qualification_node.user_id
+Ref: node_type.id < qualification_node.type
+
+
+Table tasks {
+  id UUID pk
+  user_id UUID [ref: > users.id]
+  node_id UUID [ref: > qualification_node.id, note: 'nullable']
+  title TEXT
+  description TEXT
+  priority enum [default: 2]
+  progress float
+  parent UUID [ref: > tasks.id, note: 'subtasks', default: null]
+  due_date TIMESTAMP [default: 'current_timestamp']
+  is_completed BOOLEAN [default: false]
+  in_progress BOOLEAN [default: true]
+  created_at TIMESTAMP [default: 'current_timestamp']
+  updated_at TIMESTAMP [default: 'current_timestamp']
+
+  Indexes {
+    user_id
+    node_id
+    due_date
+    is_completed
+  }
+}

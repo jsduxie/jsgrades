@@ -1,3 +1,4 @@
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useEffect } from 'react';
 import { useRoutes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
@@ -6,6 +7,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import Register from './pages/Register';
+
+const theme = createTheme();
 
 function App() {
   const routesArray = [
@@ -23,9 +26,11 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <div className="w-full h-screen flex flex-col">{routesElement}</div>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
+        <div className="w-full h-screen flex flex-col">{routesElement}</div>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

@@ -2,13 +2,25 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Navbar } from '../components/Navbar';
+import { Sidebar } from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { doSignOut } from '../firebase/Auth';
 
 const REACT_APP_API_URL = process.env.REACT_APP_API_URL;
 
+interface UserDetails {
+  uid: string;
+  email: string;
+  onboarded: boolean;
+  name?: string;
+  createdAt?: string;
+  photoURL?: string;
+  displayName?: string;
+}
+
 const Home = () => {
-  const [userDetails, setUserDetails] = useState<any>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const auth = useAuth();
@@ -47,13 +59,24 @@ const Home = () => {
   }, [currentUser, navigate, loading]);
 
   if (!auth || !auth.currentUser) {
-    return <div className="text-2xl font-bold pt-14">Not logged in.</div>;
+    return (
+      <div className="text-2xl font-bold pt-14">Not logged in: {error}</div>
+    );
   }
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!userDetails) return <div>No user details found.</div>;
-  if (userDetails) return <div>{userDetails.uid}</div>;
+  if (userDetails)
+    return (
+      <>
+        <Navbar
+          user={userDetails}
+          onSignOut={doSignOut}
+          onProfileSettings={() => navigate('/profile-settings')}
+          logoSrc=""
+          logoAlt=""
+        />
+        <Sidebar />
+      </>
+    );
 
   return null;
 };
