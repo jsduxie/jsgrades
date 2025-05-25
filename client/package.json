@@ -38,17 +38,11 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "tailwind": "tailwindcss",
-    "lint": "eslint './src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
+    "lint": "cd .. && eslint './client/src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
+    "lint:fix": "cd .. && eslint './client/src/**/*.{ts,tsx,js,jsx}' --fix --max-warnings=0",
     "format": "prettier --write .",
     "config-flowbite": "npx flowbite-react@latest patch",
     "install-all": "npm install && config-flowbite"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest",
-      "prettier"
-    ]
   },
   "browserslist": {
     "production": [
@@ -65,9 +59,8 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@types/react": "^19.1.4",
+    "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
-    "prettier": "^3.5.3",
-    "typescript-eslint": "^8.32.1"
+    "postcss": "^8.5.3"
   }
 }
