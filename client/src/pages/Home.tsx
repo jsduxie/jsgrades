@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
+import { Navbar } from '../components/Navbar';
+import { doSignOut } from '../firebase/Auth';
 
 const REACT_APP_API_URL = process.env.REACT_APP_API_URL;
 
@@ -13,6 +15,8 @@ interface UserDetails {
   onboarded: boolean;
   name?: string;
   createdAt?: string;
+  photoURL?: string;
+  displayName?: string;
 }
 
 const Home = () => {
@@ -38,6 +42,7 @@ const Home = () => {
         }
 
         const data = await res.json();
+        console.log(data);
         setUserDetails(data);
 
         if (!data.onboarded && !loading) {
@@ -58,12 +63,16 @@ const Home = () => {
     return <div className="text-2xl font-bold pt-14">Not logged in.</div>;
   }
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!userDetails) return <div>No user details found.</div>;
   if (userDetails)
     return (
       <>
+        <Navbar
+          user={userDetails}
+          onSignOut={doSignOut}
+          onProfileSettings={() => navigate('/profile-settings')}
+          logoSrc=""
+          logoAlt=""
+        />
         <Sidebar />
       </>
     );

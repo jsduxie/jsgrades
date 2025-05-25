@@ -57,7 +57,7 @@ export const Sidebar: React.FC = () => {
   return (
     <aside
       className={clsx(
-        'h-screen bg-primary border-r transition-all duration-300 flex flex-col relative',
+        'h-screen bg-primary border-r transition-all duration-300 flex flex-col fixed z-10 shadow-light-1 shadow-light-2',
         open ? 'w-[215px]' : 'w-[75px]'
       )}
       onMouseEnter={() => setOpen(true)}

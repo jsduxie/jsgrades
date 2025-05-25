@@ -14,6 +14,7 @@ body {
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover; /* or contain, depending on your needs */
+  @apply text-black-text;
 }
 
 body::before {
