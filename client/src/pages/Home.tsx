@@ -54,11 +54,12 @@ const Home = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!userDetails) return <div>No user details found.</div>;
-  if (userDetails) return (
-    <>
-    <Sidebar />
-    </>
-  )
+  if (userDetails)
+    return (
+      <>
+        <Sidebar />
+      </>
+    );
 
   return null;
 };

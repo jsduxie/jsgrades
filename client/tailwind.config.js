@@ -8,12 +8,12 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#602bf8'
+          DEFAULT: '#602bf8',
         },
         secondary: {
-          DEFAULT: '#5121d9'
-        }
-      }
+          DEFAULT: '#5121d9',
+        },
+      },
     },
   },
   plugins: [],
