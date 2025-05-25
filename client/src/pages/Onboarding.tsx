@@ -144,6 +144,7 @@ const Onboarding = () => {
       setErrorMessage('No user is logged in.');
       setIsValidating(false);
       navigate('/login');
+      return;
     }
     try {
       const res = await fetch(`${REACT_APP_API_URL}/user`, {

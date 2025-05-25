@@ -81,7 +81,7 @@ Ref: node_type.id < qualification_node.type
 
 
 Table tasks {
-  id UUID [pk]
+  id UUID pk
   user_id UUID [ref: > users.id]
   node_id UUID [ref: > qualification_node.id, note: 'nullable']
   title TEXT

@@ -71,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="w-full h-[75px] bg-[#efefef]/50 opaccity-[0.5] shadow-light-1 shadow-light-2 px-6 py-4 flex items-center justify-between z-1">
+      <header className="w-full h-[75px] bg-[#efefef]/50 opacity-[0.5] shadow-light-1 shadow-light-2 px-6 py-4 flex items-center justify-between z-1">
         <div className="flex items-center space-x-4">
           <Logo
             height={60}
