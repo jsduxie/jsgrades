@@ -49,7 +49,7 @@ export const addUser = async ({
     last_name || null,
     date_of_birth || null,
     highest_qual_level || null,
-    '',
+    null,
     verified,
     onBoarded,
     count_sign_in,
