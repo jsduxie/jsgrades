@@ -37,8 +37,8 @@ export const addUser = async ({
 }) => {
   const query = `
     INSERT INTO users (
-      uid, email, first_name, last_name, date_of_birth, highest_qual_level, verified, onBoarded, count_sign_in
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      uid, email, first_name, last_name, date_of_birth, highest_qual_level, profile_picture, verified, onBoarded, count_sign_in
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     RETURNING *
   `;
 
@@ -49,6 +49,7 @@ export const addUser = async ({
     last_name || null,
     date_of_birth || null,
     highest_qual_level || null,
+    null,
     verified,
     onBoarded,
     count_sign_in,
