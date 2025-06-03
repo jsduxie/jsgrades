@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import 'dotenv/config';
 import authRoutes from './routes/auth.js';
+import qualificationRoutes from './routes/qualification.js';
 import userRoutes from './routes/user.js';
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/qualification', qualificationRoutes);
 
 app.get('/', (req, res) => {
   res.send('Server is running.');
