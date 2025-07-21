@@ -7,8 +7,9 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import Register from './pages/Register';
-
-const theme = createTheme();
+import { AddQualificationForm } from './pages/AddQualification';
+import { theme } from './theme/theme';
+import { CssBaseline } from '@mui/material';
 
 function App() {
   const routesArray = [
@@ -18,6 +19,7 @@ function App() {
     { path: '/home', element: <Home /> },
     { path: '/forgot-password', element: <ForgotPassword /> },
     { path: '/onboarding', element: <Onboarding /> },
+    { path: '/add-qualification', element: <AddQualificationForm /> },
   ];
   const routesElement = useRoutes(routesArray);
 
@@ -27,6 +29,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <AuthProvider>
         <div className="w-full h-screen flex flex-col">{routesElement}</div>
       </AuthProvider>

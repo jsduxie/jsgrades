@@ -123,3 +123,41 @@
     @apply bg-background text-foreground;
   }
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* Apply font to text elements but preserve Material-UI input behavior */
+body,
+h1, h2, h3, h4, h5, h6,
+p, span, div:not(.MuiOutlinedInput-root):not(.MuiInputBase-root),
+button,
+.MuiTypography-root {
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.MuiOutlinedInput-root *,
+.MuiTextField-root *,
+.MuiFormControl-root *,
+.MuiSelect-root * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border: 1px solid #d1d5db !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #9ca3af !important;
+  border-width: 1px !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #3b82f6 !important;
+  border-width: 2px !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #3b82f6 !important;
+}
