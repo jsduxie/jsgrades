@@ -22,7 +22,7 @@ const Register = () => {
 
     useEffect(() => {
         if (userLoggedIn) {
-            router.push('/auth/onboarding');
+            router.push('/onboarding');
         }
     }, [userLoggedIn, router]);
 
@@ -38,7 +38,7 @@ const Register = () => {
 
             try {
                 await doCreateUserWithEmailAndPassword(email, password);
-                router.push('/auth/onboarding');
+                router.push('/onboarding');
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     setErrorMessage(err.message || 'Failed to create account.');

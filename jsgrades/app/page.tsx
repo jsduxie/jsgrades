@@ -17,7 +17,7 @@ export default function Home() {
     }, [userLoggedIn, loading, router]);
 
     if (loading) {
-        return <LoadingIcon colour='primary' size='lg' />;
+        return <LoadingIcon />;
     }
 
     return (

@@ -1,89 +1,111 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import { doSignOut } from '@/lib/client-auth';
+import { ClientUserDetails } from '../types';
 
 export default function Home() {
-    const router = useRouter();
+    const [userDetails, setUserDetails] = useState<ClientUserDetails | null>(
+        null
+    );
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const auth = useAuth();
 
-    const userDetails = auth?.userDetails;
-    const loading = auth?.loading;
     const currentUser = auth?.currentUser;
+    const router = useRouter();
 
-    const signOut = async () => {
-        try {
-            await doSignOut();
-            router.push('/');
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    useEffect(() => {
+        if (!currentUser) return;
 
-    if (loading) {
+        const fetchUserDetails = async () => {
+            try {
+                const res = await fetch(`/api/user/${currentUser.uid}`);
+
+                if (res.status === 404) {
+                    router.push('/onboarding');
+                    return;
+                }
+
+                const data = await res.json();
+                setUserDetails(data);
+
+                if (!data.onboarded && !loading) {
+                    router.push('/onboarding');
+                    return;
+                }
+            } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserDetails();
+    }, [currentUser, router, loading]);
+
+    if (!auth || !auth.currentUser) {
         return (
-            <div className='pt-14 text-center text-xl font-semibold'>
-                Loading...
+            <div className='pt-14 text-2xl font-bold'>
+                Not logged in: {error}
             </div>
         );
     }
 
-    if (!currentUser || !userDetails) {
+    if (userDetails) {
         return (
-            <div className='pt-14 text-center text-xl font-semibold'>
-                Not logged in or user data missing.
-            </div>
-        );
-    }
+            <>
+                <Navbar
+                    user={userDetails}
+                    onSignOut={doSignOut}
+                    onProfileSettings={() => router.push('/profile-settings')}
+                    logoSrc=''
+                    logoAlt=''
+                />
+                <Sidebar />
+                <main className='ml-[75px] p-8'>
+                    <div className='mx-auto max-w-7xl'>
+                        <h1 className='mb-8 text-3xl font-bold text-gray-900'>
+                            Welcome back, {userDetails.firstName || 'User'}!
+                        </h1>
 
-    return (
-        <>
-            <Navbar
-                user={userDetails}
-                onSignOut={signOut}
-                onProfileSettings={() => router.push('/profile-settings')}
-            />
-            <Sidebar />
-            <main className='ml-[75px] p-8'>
-                <div className='mx-auto max-w-7xl'>
-                    <h1 className='mb-8 text-3xl font-bold text-gray-900'>
-                        Welcome back, {userDetails.firstName || 'User'}!
-                    </h1>
+                        <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+                            <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+                                <h2 className='mb-4 text-xl font-semibold text-gray-800'>
+                                    Quick Stats
+                                </h2>
+                                <p className='text-gray-600'>
+                                    View your academic progress at a glance
+                                </p>
+                            </div>
 
-                    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
-                        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
-                            <h2 className='mb-4 text-xl font-semibold text-gray-800'>
-                                Quick Stats
-                            </h2>
-                            <p className='text-gray-600'>
-                                View your academic progress at a glance
-                            </p>
-                        </div>
+                            <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+                                <h2 className='mb-4 text-xl font-semibold text-gray-800'>
+                                    Recent Grades
+                                </h2>
+                                <p className='text-gray-600'>
+                                    Check your latest assessment results
+                                </p>
+                            </div>
 
-                        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
-                            <h2 className='mb-4 text-xl font-semibold text-gray-800'>
-                                Recent Grades
-                            </h2>
-                            <p className='text-gray-600'>
-                                Check your latest assessment results
-                            </p>
-                        </div>
-
-                        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
-                            <h2 className='mb-4 text-xl font-semibold text-gray-800'>
-                                Upcoming Tasks
-                            </h2>
-                            <p className='text-gray-600'>
-                                Stay on top of your assignments
-                            </p>
+                            <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+                                <h2 className='mb-4 text-xl font-semibold text-gray-800'>
+                                    Upcoming Tasks
+                                </h2>
+                                <p className='text-gray-600'>
+                                    Stay on top of your assignments
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </main>
-        </>
-    );
+                </main>
+            </>
+        );
+    }
+
+    return null;
 }

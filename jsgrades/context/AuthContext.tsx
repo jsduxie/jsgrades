@@ -6,8 +6,12 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import { LoadingIcon } from '@/components/ui/UI';
 import { auth } from '@/lib/Firebase';
-import { useRouter } from 'next/navigation';
-import { APIResponse, AuthContextType, ClientUserDetails } from '@/types';
+
+type AuthContextType = {
+    currentUser: User | null;
+    userLoggedIn: boolean;
+    loading: boolean;
+};
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
@@ -19,61 +23,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [userLoggedIn, setUserLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [userDetails, setUserDetails] = useState<ClientUserDetails | null>(
-        null
-    );
-
-    const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                setCurrentUser(user);
-                setUserLoggedIn(true);
+        const unsubscribe = onAuthStateChanged(auth, initialiseUser);
+        return unsubscribe;
+    }, []);
 
-                try {
-                    const res = await fetch(`/api/user/${user.uid}`);
-                    const json: APIResponse<Partial<ClientUserDetails>> =
-                        await res.json();
-
-                    if (json.status === 'success' && json.data) {
-                        if (!json.data.onBoarded) {
-                            setUserDetails(null);
-                            router.push('/auth/onboarding');
-                        } else {
-                            setUserDetails(json.data as ClientUserDetails);
-                        }
-                    } else {
-                        setUserDetails(null);
-                        router.push('/auth/onboarding');
-                    }
-                } catch (err) {
-                    console.error('Error fetching user details:', err);
-                    setUserDetails(null);
-                    router.push('/auth/onboarding');
-                }
-            } else {
-                setCurrentUser(null);
-                setUserLoggedIn(false);
-                setUserDetails(null);
-            }
-
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [router]);
+    function initialiseUser(user: User | null) {
+        if (user) {
+            setCurrentUser(user);
+            setUserLoggedIn(true);
+        } else {
+            setCurrentUser(null);
+            setUserLoggedIn(false);
+        }
+        setLoading(false);
+    }
 
     const value = {
         currentUser,
         userLoggedIn,
         loading,
-        userDetails,
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {loading ? <LoadingIcon colour='primary' size='lg' /> : children}
+            {loading ? <LoadingIcon /> : children}
         </AuthContext.Provider>
     );
 }
