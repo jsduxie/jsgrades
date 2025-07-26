@@ -6,12 +6,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import { LoadingIcon } from '@/components/ui/UI';
 import { auth } from '@/lib/Firebase';
-
-type AuthContextType = {
-    currentUser: User | null;
-    userLoggedIn: boolean;
-    loading: boolean;
-};
+import { AuthContextType } from '@/types';
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
@@ -48,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={value}>
-            {loading ? <LoadingIcon /> : children}
+            {loading ? <LoadingIcon colour='primary' size='lg' /> : children}
         </AuthContext.Provider>
     );
 }

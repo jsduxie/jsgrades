@@ -7,39 +7,39 @@ import CssBaseline from '@mui/material/CssBaseline';
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#0066CC', // Compare the Market's primary blue
-            light: '#4D94FF', // Lighter blue for hover states
-            dark: '#004999', // Darker blue for active states
+            main: '#0066CC',
+            light: '#4D94FF',
+            dark: '#004999',
             contrastText: '#ffffff',
         },
         secondary: {
-            main: '#64748B', // Modern slate gray
+            main: '#64748B',
             light: '#94A3B8',
             dark: '#475569',
             contrastText: '#ffffff',
         },
         error: {
-            main: '#DC2626', // Red for errors
+            main: '#DC2626',
             light: '#F87171',
             dark: '#B91C1C',
         },
         warning: {
-            main: '#D97706', // Orange for warnings
+            main: '#D97706',
             light: '#FBBF24',
             dark: '#B45309',
         },
         info: {
-            main: '#0284C7', // Info blue (slightly different from primary)
+            main: '#0284C7',
             light: '#38BDF8',
             dark: '#0369A1',
         },
         success: {
-            main: '#059669', // Green only for success states
+            main: '#059669',
             light: '#34D399',
             dark: '#047857',
         },
         background: {
-            default: '#FAFAFA', // Very light grey background like CTM
+            default: '#FAFAFA',
             paper: '#FFFFFF',
         },
         grey: {
@@ -55,8 +55,14 @@ const theme = createTheme({
             900: '#0F172A',
         },
         text: {
-            primary: '#0F172A', // Dark slate for primary text
-            secondary: '#475569', // Medium slate for secondary text
+            primary: '#0F172A',
+            secondary: '#475569',
+        },
+        sidebar: {
+            main: '#0066CC',
+            hover: '#0055bb',
+            contrastText: '#ffffff',
+            text: '#ffffff',
         },
     },
     typography: {
@@ -140,7 +146,8 @@ const themeWithComponents = createTheme(theme, {
                     color: theme.palette.primary.main,
                     backgroundColor: 'transparent',
                     '&:hover': {
-                        backgroundColor: '#EBF4FF', // Very light blue
+                        backgroundColor: '#EBF4FF',
+                        backgroundColor: '#EBF4FF',
                         borderColor: theme.palette.primary.main,
                     },
                 },

@@ -1,8 +1,9 @@
-// Utility functions for user management
-
 import pool from './db';
+import { ClientUserDetails } from '@/types';
 
-export const getUserDetails = async (uid: string) => {
+export const getUser = async (
+    uid: string
+): Promise<Partial<ClientUserDetails>> => {
     const userQuery = await pool.query('SELECT * FROM users WHERE uid = $1', [
         uid,
     ]);
@@ -10,7 +11,18 @@ export const getUserDetails = async (uid: string) => {
     if (userQuery.rows.length === 0) {
         return {};
     } else {
-        return userQuery.rows[0];
+        const row = userQuery.rows[0];
+        return {
+            uid: row.uid,
+            email: row.email,
+            firstName: row.first_name ?? undefined,
+            lastName: row.last_name ?? undefined,
+            dateOfBirth: row.date_of_birth
+                ? new Date(row.date_of_birth)
+                : undefined,
+            verified: row.verified ?? undefined,
+            onBoarded: row.onboarded ?? undefined,
+        };
     }
 };
 

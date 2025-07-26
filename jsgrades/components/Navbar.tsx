@@ -1,166 +1,198 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Logo } from './ui/UI';
+import React, { useState } from 'react';
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    IconButton,
+    Menu,
+    MenuItem,
+    Avatar,
+    Box,
+    Tooltip,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    useMediaQuery,
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import { useTheme } from '@mui/material/styles';
 import Link from 'next/link';
-
-interface NavbarProps {
-    user: {
-        name?: string;
-        email: string;
-        photoURL?: string;
-        displayName?: string;
-        first_name?: string;
-        last_name?: string;
-        created_at?: string;
-    };
-    onSignOut: () => void;
-    onProfileSettings?: () => void;
-    logoSrc?: string;
-    logoAlt?: string;
-}
+import { NavbarProps } from '@/types';
+import { Logo } from '@/components/ui';
 
 export const Navbar: React.FC<NavbarProps> = ({
     user,
     onSignOut,
     onProfileSettings,
 }) => {
-    const [isUserModal, setIsUserModal] = useState(false);
-    const modalRef = useRef<HTMLDivElement>(null);
-    const triggerRef = useRef<HTMLDivElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    useEffect(() => {
-        function handleOutsideClick(event: MouseEvent) {
-            if (
-                modalRef.current &&
-                !modalRef.current.contains(event.target as Node) &&
-                triggerRef.current &&
-                !triggerRef.current.contains(event.target as Node)
-            ) {
-                setIsUserModal(false);
-            }
-        }
+    const getInitials = (firstName?: string, lastName?: string) =>
+        `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
 
-        if (isUserModal) {
-            document.addEventListener('mousedown', handleOutsideClick);
-        } else {
-            document.removeEventListener('mousedown', handleOutsideClick);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleOutsideClick);
-        };
-    }, [isUserModal]);
-
-    const getInitials = (firstName?: string, lastName?: string) => {
-        let initials = '';
-
-        if (firstName) {
-            initials += firstName.trim()[0].toUpperCase();
-        } else {
-            return initials;
-        }
-
-        if (lastName) {
-            initials += lastName.trim()[0].toUpperCase();
-        }
-
-        return initials;
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
     };
 
-    const memberSince = user.created_at
-        ? new Date(user.created_at).toLocaleDateString()
-        : 'N/A';
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const navLinks = [
+        { label: 'Home', href: '/home' },
+        { label: 'Support', href: '/support' },
+    ];
+
+    const drawerContent = (
+        <Box
+            width={250}
+            role='presentation'
+            onClick={() => setDrawerOpen(false)}
+        >
+            <List>
+                {navLinks.map(({ label, href }) => (
+                    <Link key={label} href={href} passHref>
+                        <ListItem disablePadding>
+                            <ListItemButton>
+                                <ListItemText primary={label} />
+                            </ListItemButton>
+                        </ListItem>
+                    </Link>
+                ))}
+                <ListItem disablePadding>
+                    <ListItemButton onClick={onProfileSettings}>
+                        <ListItemText primary='Profile Settings' />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={onSignOut}>
+                        <ListItemText
+                            primary='Sign Out'
+                            sx={{ color: 'error.main' }}
+                        />
+                    </ListItemButton>
+                </ListItem>
+            </List>
+        </Box>
+    );
 
     return (
-        <>
-            <header className='shadow-light-1 shadow-light-2 z-1 flex h-[75px] w-full items-center justify-between bg-[#efefef]/50 px-6 py-4 opacity-[0.5]'>
-                <div className='flex items-center space-x-4'>
-                    <Logo
-                        height={60}
-                        style='object-contain align-center mt-[25px] ml-[75px]'
-                    />
-                </div>
-
-                <div className='mr-[25px] flex items-center space-x-[64px]'>
-                    <Link
-                        href='/home'
-                        className='text-md text-gray-600 hover:text-purple-600'
-                    >
-                        Home
-                    </Link>
-                    <Link
-                        href='/support'
-                        className='text-md text-gray-600 hover:text-purple-600'
-                    >
-                        Support
-                    </Link>
-                    <div className='relative' ref={triggerRef}>
-                        {user.photoURL ? (
-                            <img
-                                src={user.photoURL}
-                                alt='Profile'
-                                className='h-12 w-12 cursor-pointer rounded-full object-cover'
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsUserModal(!isUserModal);
-                                }}
-                            />
-                        ) : (
-                            <div
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsUserModal(!isUserModal);
-                                }}
-                                className='bg-primary flex h-12 w-12 cursor-pointer items-center justify-center rounded-full font-semibold text-white select-none'
-                            >
-                                {getInitials(user.first_name, user.last_name)}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </header>
-            {isUserModal && (
-                <div
-                    ref={modalRef}
-                    className={
-                        'shadow-light-1 shadow-light-2 fixed top-[100px] right-[25px] z-20 flex h-[350px] w-[300px] flex-col items-center justify-start rounded-[12px] bg-[#efefef] p-[15px] transition-opacity duration-500'
-                    }
+        <AppBar
+            position='fixed'
+            color='primary'
+            elevation={0}
+            sx={{
+                backgroundColor: theme.palette.primary.main,
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+            }}
+        >
+            <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        height: '100%',
+                        ml: 5,
+                    }}
                 >
-                    <p className='height-[50px] mb-[25px] text-sm'>
-                        {user.email}
-                    </p>
-                    <div className='relative mb-[25px]'>
-                        {user.photoURL ? (
-                            <img
-                                src={user.photoURL}
-                                alt='Profile'
-                                className='h-24 w-24 cursor-pointer rounded-full object-cover'
-                            />
-                        ) : (
-                            <div className='bg-primary flex h-24 w-24 cursor-pointer items-center justify-center rounded-full text-xl font-semibold text-white select-none'>
-                                {getInitials(user.first_name, user.last_name)}
-                            </div>
-                        )}
-                    </div>
-                    <p className='text-xl font-bold'>{`${user.first_name} ${user.last_name}`}</p>
-                    <p className='mt-[5px] text-sm'>{`Member Since ${memberSince}`}</p>
-                    <div className='mt-[20px] flex w-full justify-around'>
-                        <button
-                            onClick={onSignOut}
-                            className='transition-300 mt-6 rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600'
+                    <Logo height={60} fill='#fff' />
+                </Box>
+
+                {/* Desktop Links */}
+                {!isMobile && (
+                    <Box display='flex' alignItems='center' gap={3}>
+                        {navLinks.map(({ label, href }) => (
+                            <Link key={label} href={href} passHref>
+                                <Button
+                                    color='inherit'
+                                    sx={{ fontSize: '1rem', fontWeight: 500 }}
+                                >
+                                    {label}
+                                </Button>
+                            </Link>
+                        ))}
+
+                        <Tooltip title='Account'>
+                            <IconButton onClick={handleMenuOpen}>
+                                <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                                    {getInitials(user.firstName, user.lastName)}
+                                </Avatar>
+                            </IconButton>
+                        </Tooltip>
+
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleMenuClose}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
                         >
-                            Sign Out
-                        </button>
-                        <button
-                            onClick={onProfileSettings}
-                            className='bg-primary hover:bg-secondary mt-6 rounded px-4 py-2 text-white'
+                            <Box px={2} py={1}>
+                                <Typography variant='subtitle1'>
+                                    {user.firstName} {user.lastName}
+                                </Typography>
+                                <Typography
+                                    variant='body2'
+                                    color='text.secondary'
+                                >
+                                    {user.email}
+                                </Typography>
+                            </Box>
+                            <MenuItem
+                                onClick={() => {
+                                    handleMenuClose();
+                                    onProfileSettings?.();
+                                }}
+                            >
+                                Profile Settings
+                            </MenuItem>
+                            <MenuItem
+                                onClick={() => {
+                                    handleMenuClose();
+                                    onSignOut();
+                                }}
+                                sx={{ color: 'error.main' }}
+                            >
+                                Sign Out
+                            </MenuItem>
+                        </Menu>
+                    </Box>
+                )}
+
+                {/* Mobile Hamburger */}
+                {isMobile && (
+                    <>
+                        <IconButton
+                            edge='end'
+                            color='inherit'
+                            onClick={() => setDrawerOpen(true)}
                         >
-                            Profile Settings
-                        </button>
-                    </div>
-                </div>
-            )}
-        </>
+                            <MenuIcon />
+                        </IconButton>
+                        <Drawer
+                            anchor='right'
+                            open={drawerOpen}
+                            onClose={() => setDrawerOpen(false)}
+                        >
+                            {drawerContent}
+                        </Drawer>
+                    </>
+                )}
+            </Toolbar>
+        </AppBar>
     );
 };

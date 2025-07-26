@@ -1,6 +1,5 @@
 export interface ClientUserDetails {
     uid?: string;
-    id?: string;
     email?: string;
     firstName?: string;
     lastName?: string;

@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import { doSignOut } from '@/lib/client-auth';
-import { ClientUserDetails } from '../types';
+import { ClientUserDetails, APIResponse } from '@/types';
 
 export default function Home() {
     const [userDetails, setUserDetails] = useState<ClientUserDetails | null>(
@@ -25,18 +25,23 @@ export default function Home() {
         const fetchUserDetails = async () => {
             try {
                 const res = await fetch(`/api/user/${currentUser.uid}`);
+                const json: APIResponse<Partial<ClientUserDetails>> =
+                    await res.json();
 
-                if (res.status === 404) {
+                if (res.status === 404 || json.status === 'error') {
                     router.push('/onboarding');
                     return;
                 }
 
-                const data = await res.json();
-                setUserDetails(data);
+                if (json.data) {
+                    setUserDetails(json.data);
 
-                if (!data.onboarded && !loading) {
-                    router.push('/onboarding');
-                    return;
+                    if (!json.data.onBoarded && !loading) {
+                        router.push('/onboarding');
+                        return;
+                    }
+                } else {
+                    setError('No user data returned');
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : String(err));
@@ -46,7 +51,7 @@ export default function Home() {
         };
 
         fetchUserDetails();
-    }, [currentUser, router, loading]);
+    }, [currentUser, loading, router]);
 
     if (!auth || !auth.currentUser) {
         return (
@@ -63,8 +68,6 @@ export default function Home() {
                     user={userDetails}
                     onSignOut={doSignOut}
                     onProfileSettings={() => router.push('/profile-settings')}
-                    logoSrc=''
-                    logoAlt=''
                 />
                 <Sidebar />
                 <main className='ml-[75px] p-8'>

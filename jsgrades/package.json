@@ -9,8 +9,8 @@
         "lint": "next lint",
         "test": "echo \"No tests specified yet - please add tests!\" && exit 0",
         "clean": "rm -rf node_modules package-lock.json && npm install ",
-        "format": "prettier --check --ignore-path .gitignore .",
-        "format:fix": "prettier --write --ignore-path .gitignore ."
+        "format": "prettier --check --ignore-path ../.gitignore .",
+        "format:fix": "prettier --write --ignore-path ../.gitignore ."
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
