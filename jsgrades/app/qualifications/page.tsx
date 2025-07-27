@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AddQualification from '@/components/AddQualification';
-import { Qualification, APIResponse } from '@/types';
+import { Qualification } from '@/types';
 import { Button, Container, Typography, Stack } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 
@@ -19,7 +19,7 @@ export default function QualificationsPage() {
             try {
                 const res = await fetch(`/api/qualifications?userId=${userId}`);
                 const json: APIResponse<Qualification[]> = await res.json();
-                if (json.status === 'success' && json.data) {
+                if (json.status === 'success') {
                     setQualifications(json.data);
                 } else {
                     console.error(json.message);
@@ -40,8 +40,8 @@ export default function QualificationsPage() {
                 body: JSON.stringify({ ...newQual, userId }),
             });
             const json: APIResponse<Qualification> = await res.json();
-            if (json.status === 'success' && json.data) {
-                setQualifications((prev) => [...prev, json.data!]);
+            if (json.status === 'success') {
+                setQualifications((prev) => [...prev, json.data]);
             } else {
                 console.error(json.message);
             }

@@ -4,11 +4,11 @@ export type Qualification = {
     level: string;
     name: string;
     institution: string;
-    startDate?: Date;
-    endDate?: Date;
-    currentGrade?: number | null;
-    targetGrade?: number | null;
-    predictedGrade?: number | null;
+    startDate: Date;
+    endDate: Date;
+    currentGrade: number;
+    targetGrade: number;
+    predictedGrade: number;
     inProgress: boolean;
     created: Date;
     updated: Date;
@@ -25,28 +25,3 @@ export type QualificationLevel = {
     name: string;
     level: number;
 };
-
-export type NewQualification = {
-    userId: string;
-    level: string;
-    name: string;
-    institution: string;
-    startDate?: Date | null;
-    endDate?: Date | null;
-    currentGrade?: number | null;
-    targetGrade?: number | null;
-    predictedGrade?: number | null;
-    inProgress?: boolean;
-};
-
-export interface QualificationFormData {
-    name: string;
-    institution: string;
-    level: string;
-    startDate: string;
-    endDate: string;
-    currentGrade: string;
-    targetGrade: string;
-    predictedGrade: string;
-    inProgress: boolean;
-}

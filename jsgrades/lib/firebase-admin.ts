@@ -10,8 +10,8 @@ if (!admin.apps.length) {
     let serviceAccount;
     try {
         serviceAccount = JSON.parse(raw);
-    } catch (error) {
-        throw new Error('Invalid FIREBASE_SDK_KEY: must be valid JSON');
+    } catch (err) {
+        throw new Error(`Invalid FIREBASE_SDK_KEY: must be valid JSON: ${err}`);
     }
 
     if (serviceAccount.private_key) {

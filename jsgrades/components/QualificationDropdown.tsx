@@ -26,8 +26,8 @@ interface QualificationDropdownProps {
     onChange: (value: number) => void;
 }
 
-// Reusable component to display dropdown to select qualification level and store as int based on level
-// numbers are based on standard qualification levels in UK
+// Reusable component to display dropdown to select qualifications level and store as int based on level
+// numbers are based on standard qualifications levels in UK
 export function QualificationDropdown({
     value,
     onChange,
