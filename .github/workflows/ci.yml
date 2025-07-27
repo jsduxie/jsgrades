@@ -34,6 +34,7 @@ jobs:
         run: npm ci
         working-directory: jsgrades
 
+
       - name: Lint
         run: npm run lint
         working-directory: jsgrades
