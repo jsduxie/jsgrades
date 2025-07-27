@@ -1,13 +1,14 @@
 {
     "name": "jsgrades",
     "version": "0.1.0",
+    "type": "module",
     "private": true,
     "scripts": {
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "test": "echo \"No tests specified yet - please add tests!\" && exit 0",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "clean": "rm -rf node_modules package-lock.json && npm install ",
         "format": "prettier --check --ignore-path ../.gitignore .",
         "format:fix": "prettier --write --ignore-path ../.gitignore ."
@@ -22,7 +23,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
-        "firebase": "^12.0.0",
+        "firebase": "^10.14.1",
         "firebase-admin": "^13.4.0",
         "firebaseui": "^6.1.0",
         "flowbite": "^3.1.2",
@@ -41,7 +42,9 @@
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",
+        "@jest/reporters": "^30.0.5",
         "@tailwindcss/postcss": "^4",
+        "@types/jest": "^30.0.0",
         "@types/node": "^20",
         "@types/pg": "^8.15.2",
         "@types/react": "^19",
@@ -50,10 +53,17 @@
         "eslint": "^9",
         "eslint-config-next": "15.4.3",
         "eslint-config-prettier": "^10.1.8",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^30.0.5",
+        "jest-esm-transformer": "^1.0.0",
+        "jest-junit": "^16.0.0",
+        "node-fetch": "^3.3.2",
         "postcss": "^8.5.6",
         "prettier": "^3.6.2",
         "prettier-plugin-tailwindcss": "^0.6.14",
         "tailwindcss": "^4.1.11",
-        "typescript": "^5"
+        "ts-jest": "^29.4.0",
+        "typescript": "^5",
+        "util": "^0.12.5"
     }
 }

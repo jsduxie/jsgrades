@@ -3,6 +3,7 @@ import {
     getQualifications,
 } from '@/lib/server/qualifications';
 import { NextResponse } from 'next/server';
+import { APIResponse, Qualification } from '@/types';
 
 export async function POST(req: Request) {
     try {
@@ -32,16 +33,16 @@ export async function POST(req: Request) {
             level,
             name,
             institution,
-            startDate: startDate ? new Date(startDate) : undefined,
-            endDate: inProgress ? undefined : new Date(endDate),
+            startDate: startDate ? new Date(startDate) : null,
+            endDate: inProgress ? null : endDate ? new Date(endDate) : null,
             currentGrade,
             targetGrade,
             predictedGrade,
             inProgress: inProgress ?? true,
         });
 
-        return NextResponse.json<APIResponse>(
-            { status: 'success', data: saved },
+        return NextResponse.json<APIResponse<Qualification>>(
+            { status: 'success', message: 'Qualification saved', data: saved },
             { status: 201 }
         );
     } catch (error) {
@@ -67,7 +68,7 @@ export async function GET(req: Request) {
         const data: Qualification[] = await getQualifications(userId);
 
         return NextResponse.json<APIResponse<Qualification[]>>(
-            { status: 'success', data },
+            { status: 'success', message: 'Qualifications fetched', data },
             { status: 200 }
         );
     } catch (error) {

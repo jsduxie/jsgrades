@@ -1,7 +1,9 @@
 import pool from './db';
-import { Qualification, QualificationLevel } from '@/types';
+import { Qualification, QualificationLevel, NewQualification } from '@/types';
 
-export const getQualificationLevels = async (): QualificationLevel[] => {
+export const getQualificationLevels = async (): Promise<
+    QualificationLevel[]
+> => {
     const result = await pool.query(
         'SELECT id, name, level FROM qualification_levels ORDER BY level ASC'
     );
@@ -9,7 +11,7 @@ export const getQualificationLevels = async (): QualificationLevel[] => {
 };
 
 export const addQualification = async (
-    q: Qualification
+    q: NewQualification
 ): Promise<Qualification> => {
     const query = `
         INSERT INTO qualifications (
