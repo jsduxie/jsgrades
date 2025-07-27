@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug - list files in jsgrades
+        run: ls -la jsgrades
+
       - name: Checkout code
         uses: actions/checkout@v4
 
