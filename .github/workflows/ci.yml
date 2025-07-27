@@ -2,7 +2,7 @@ name: CI - Lint & Test
 
 on:
   push:
-    branches: [dev, test, main, issue-*]
+    branches: [dev, test, main]
   pull_request:
     branches: [main, dev, test]
 
@@ -11,9 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug - list files in jsgrades
-        run: ls -la jsgrades
-
       - name: Checkout code
         uses: actions/checkout@v4
 
