@@ -14,6 +14,7 @@ export const getUser = async (
         const row = userQuery.rows[0];
         return {
             uid: row.uid,
+            id: row.id,
             email: row.email,
             firstName: row.first_name ?? undefined,
             lastName: row.last_name ?? undefined,

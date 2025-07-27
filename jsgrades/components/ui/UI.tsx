@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+
 import React from 'react';
 import {
     Button as MuiButton,
@@ -14,23 +14,20 @@ import {
     Card as MuiCard,
     Paper as MuiPaper,
     CircularProgress,
-    ButtonProps,
-    TextFieldProps,
-    SelectProps,
     CheckboxProps,
     RadioProps,
     SwitchProps,
-    CardProps,
     PaperProps,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-
-type LogoProps = {
-    height?: number;
-    bg?: string;
-    fill?: string;
-    style?: string;
-};
+import {
+    LogoProps,
+    CustomButtonProps,
+    CustomTextFieldProps,
+    CustomSelectProps,
+    CustomCardProps,
+    LoadingIconProps,
+} from '@/types';
 
 export const Logo = ({
     height = 30,
@@ -133,11 +130,6 @@ const StyledCard = styled(MuiCard)(({ theme }) => ({
     border: `1px solid ${theme.palette.grey[200]}`,
 }));
 
-interface CustomButtonProps extends Omit<ButtonProps, 'variant' | 'size'> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-    size?: 'sm' | 'md' | 'lg';
-}
-
 export const Button: React.FC<CustomButtonProps> = ({
     variant = 'primary',
     size = 'md',
@@ -194,10 +186,6 @@ export const Button: React.FC<CustomButtonProps> = ({
     );
 };
 
-type CustomTextFieldProps = TextFieldProps & {
-    className?: string;
-};
-
 export const TextField: React.FC<CustomTextFieldProps> = ({
     className = '',
     fullWidth = true,
@@ -212,13 +200,6 @@ export const TextField: React.FC<CustomTextFieldProps> = ({
             {...props}
         />
     );
-};
-
-type CustomSelectProps = SelectProps & {
-    label?: string;
-    options: { value: string | number; label: string }[];
-    className?: string;
-    fullWidth?: boolean;
 };
 
 export const Select: React.FC<CustomSelectProps> = ({
@@ -241,11 +222,6 @@ export const Select: React.FC<CustomSelectProps> = ({
         </FormControl>
     );
 };
-
-interface CustomCardProps extends CardProps {
-    children: React.ReactNode;
-    hover?: boolean;
-}
 
 export const Card: React.FC<CustomCardProps> = ({
     children,
@@ -348,18 +324,6 @@ export const Switch: React.FC<SwitchProps & { label?: string }> = ({
     }
     return <MuiSwitch {...props} sx={switchStyles} />;
 };
-
-interface LoadingIconProps {
-    colour?:
-        | 'primary'
-        | 'secondary'
-        | 'inherit'
-        | 'error'
-        | 'info'
-        | 'success'
-        | 'warning';
-    size?: 'sm' | 'md' | 'lg';
-}
 
 export const LoadingIcon: React.FC<LoadingIconProps> = ({
     colour = 'primary',

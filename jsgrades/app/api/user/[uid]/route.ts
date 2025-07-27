@@ -25,6 +25,8 @@ export async function GET(
             );
         }
 
+        console.log(userDetails);
+
         return NextResponse.json<APIResponse<Partial<ClientUserDetails>>>(
             { status: 'success', message: 'User found', data: userDetails },
             { status: 200 }

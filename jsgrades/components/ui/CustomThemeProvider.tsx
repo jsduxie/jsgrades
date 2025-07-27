@@ -147,7 +147,6 @@ const themeWithComponents = createTheme(theme, {
                     backgroundColor: 'transparent',
                     '&:hover': {
                         backgroundColor: '#EBF4FF',
-                        backgroundColor: '#EBF4FF',
                         borderColor: theme.palette.primary.main,
                     },
                 },

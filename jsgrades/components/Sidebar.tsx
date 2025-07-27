@@ -25,7 +25,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 const navItems: NavItem[] = [
     { label: 'Home', href: '/home', icon: <HomeIcon /> },
-    { label: 'Grades', href: '/grades', icon: <SchoolIcon /> },
+    { label: 'Qualifications', href: '/qualifications', icon: <SchoolIcon /> },
     { label: 'Tasks', href: '/tasks', icon: <AssignmentIcon /> },
     { label: 'Visualise', href: '/vis', icon: <ShowChartIcon /> },
 ];
