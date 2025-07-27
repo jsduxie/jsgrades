@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AddQualification from '@/components/AddQualification';
-import { Qualification } from '@/types';
+import { Qualification, APIResponse } from '@/types';
 import { Button, Container, Typography, Stack } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 

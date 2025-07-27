@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from 'react';
 import {
     QualificationLevel,
-    Qualification,
+    QualificationFormData,
     AddQualificationProps,
 } from '@/types';
 
@@ -25,7 +25,7 @@ export default function AddQualification({
     onSave,
 }: AddQualificationProps) {
     const [levels, setLevels] = useState<QualificationLevel[]>([]);
-    const [formData, setFormData] = useState<Partial<Qualification>>({
+    const [formData, setFormData] = useState<QualificationFormData>({
         name: '',
         institution: '',
         level: '',
@@ -48,7 +48,9 @@ export default function AddQualification({
     }, [open]);
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
     ) => {
         const { name, value, type, checked } = e.target;
         setFormData((prev) => ({
