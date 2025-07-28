@@ -45,9 +45,6 @@
         "web-vitals": "^2.1.4"
     },
     "devDependencies": {
-        "@babel/preset-env": "^7.28.0",
-        "@babel/preset-react": "^7.27.1",
-        "@babel/preset-typescript": "^7.27.1",
         "@eslint/eslintrc": "^3",
         "@jest/reporters": "^30.0.5",
         "@tailwindcss/postcss": "^4",
@@ -58,7 +55,6 @@
         "@types/react-dom": "^19",
         "@types/uuid": "^10.0.0",
         "autoprefixer": "^10.4.21",
-        "babel-jest": "^30.0.5",
         "dotenv": "^17.2.1",
         "eslint": "^9",
         "eslint-config-next": "15.4.3",
