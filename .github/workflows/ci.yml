@@ -56,7 +56,7 @@ jobs:
           DATABASE_URL_DEV: ${{ secrets.DATABASE_URL_DEV }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_USER: ${{ secrets.DB_USER }}
-          STATUS: ${{ secrets.STATUS }}
+          STATUS: DEV
           FIREBASE_SDK_KEY: ${{ secrets.FIREBASE_SDK_KEY }}
           NODE_ENV: test
 
