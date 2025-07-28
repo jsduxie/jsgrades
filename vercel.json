@@ -1,8 +1,0 @@
-{
-  "version": 2,
-  "framework": "nextjs",
-  "rootDirectory": "jsgrades",
-  "buildCommand": "npm run build",
-  "installCommand": "npm ci",
-  "devCommand": "npm run dev"
-}
