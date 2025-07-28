@@ -1,49 +1,128 @@
-name: Feature (Development) Request
-description: Features or enhancements
-title: "[Feat] <description>"
-labels: ["feature", "awaiting-triage"]
+name: User Story
+description: User story following Jira format with acceptance criteria
+title: "[Story] As a <user_type>, I want <goal> so that <benefit>"
+labels: ["user-story", "awaiting-triage"]
 assignees: ["jsduxie"]
 
 body:
   - type: markdown
     attributes:
-      value: "##This template is for outlining features or enhancements, or general development tasks."
+      value: |
+        ## User Story Template
+        This template follows Jira story format with proper acceptance criteria and definition of done.
   
+  - type: dropdown
+    id: epic
+    attributes:
+      label: Epic
+      description: Which epic does this story belong to?
+      options:
+        - Authentication & User Management
+        - Qualification Management
+        - Grade Tracking
+        - Dashboard & Analytics
+        - System Administration
+        - Other
+    validations:
+      required: true
+
   - type: input
-    id: related-component
+    id: story-points
     attributes:
-      label: Related Components
-      description: Please describe the component(s) this feature would affect.
-      placeholder: "Frontend / Home"
-    validations:
-      required: true
-
-  - type: textarea
-    id: description
-    attributes:
-      label: Feature description
-      description: Please describe what the feature should do
-      placeholder: "A page to provide an overview of all qualifications the user has recorded."
-    validations:
-      required: true
-
-  - type: textarea
-    id: benefit
-    attributes:
-      label: Feature Utility
-      description: Describe the benefit of this feature
-      placeholder: "This improves UX and provides a centralised point to access "
+      label: Story Points (Estimate)
+      description: Estimated complexity (1, 2, 3, 5, 8, 13, 21)
+      placeholder: "5"
     validations:
       required: false
 
   - type: textarea
-    id: checklist
+    id: user-story
     attributes:
-      label: Implementation Requirements
-      description: Provide a checklist of tasks for this feature to be implemented
+      label: User Story
+      description: Write the user story in the format "As a [user type], I want [goal] so that [benefit]"
       placeholder: |
-        - [ ] Design UI wireframe
-        - [ ] Create API endpoint
-        - [ ] Implement frontend logic
+        As a student,
+        I want to view all my qualifications in a centralized dashboard
+        So that I can easily track my academic progress and achievements
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: Background/Context
+      description: Provide additional context or background information
+      placeholder: "Currently users have to navigate through multiple pages to see their qualifications..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: List the specific conditions that must be met for this story to be complete
+      placeholder: |
+        **Given** I am a logged-in student
+        **When** I navigate to the dashboard
+        **Then** I should see a list of all my qualifications
+
+        **Given** I have multiple qualifications
+        **When** I view the qualifications list
+        **Then** each qualification should display:
+        - Qualification name
+        - Level (e.g., Bachelor's, Master's)
+        - Progress percentage
+        - Institution name
+        - Expected completion date
+
+        **Given** I have no qualifications yet
+        **When** I view the dashboard
+        **Then** I should see a helpful message with a call-to-action to add my first qualification
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: Technical and quality criteria that must be met
+      placeholder: |
+        - [ ] Feature implemented according to acceptance criteria
+        - [ ] Unit tests written and passing (>80% coverage)
+        - [ ] Integration tests passing
+        - [ ] Code reviewed and approved
+        - [ ] UI/UX matches design specifications
+        - [ ] Responsive design tested on mobile/tablet/desktop
+        - [ ] Accessibility standards met (WCAG 2.1 AA)
+        - [ ] Performance tested (page load <3s)
+        - [ ] Error handling implemented
+        - [ ] Documentation updated
+        - [ ] Deployed to staging environment
+        - [ ] QA testing completed
+        - [ ] Product owner acceptance
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Implementation Notes
+      description: Technical considerations, dependencies, or implementation details
+      placeholder: |
+        - API endpoints needed: GET /api/qualifications
+        - Database tables: qualifications, users
+        - Frontend components: QualificationCard, DashboardLayout
+        - Third-party integrations: None required
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies & Blockers
+      description: Other stories or tasks that must be completed first
+      placeholder: |
+        - Depends on: User authentication system (#123)
+        - Blocks: Grade tracking feature (#456)
     validations:
       required: false
