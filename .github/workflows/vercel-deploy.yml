@@ -1,0 +1,49 @@
+name: Vercel deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jsgrades
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_FIREBASE_apiKey: ${{ secrets.NEXT_PUBLIC_FIREBASE_APIKEY }}
+          NEXT_PUBLIC_FIREBASE_authDomain: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN }}
+          NEXT_PUBLIC_FIREBASE_projectId: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECTID }}
+          NEXT_PUBLIC_FIREBASE_storageBucket: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGEBUCKET }}
+          NEXT_PUBLIC_FIREBASE_messagingSenderId: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID }}
+          NEXT_PUBLIC_FIREBASE_appId: ${{ secrets.NEXT_PUBLIC_FIREBASE_APPID }}
+          DATABASE_URL_PROD: ${{ secrets.DATABASE_URL_PROD }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_USER: ${{ secrets.DB_USER }}
+          STATUS: ${{ secrets.STATUS }}
+          FIREBASE_SDK_KEY: ${{ secrets.FIREBASE_SDK_KEY }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+
+      - name: Deploy
+        run: npx vercel --prod \
+          --token=${{ secrets.VERCEL_TOKEN }} \
+          --org-id=${{ secrets.VERCEL_ORG_ID }} \
+          --project-id=${{ secrets.VERCEL_PROJECT_ID }} \
+          --confirm --cwd=.
