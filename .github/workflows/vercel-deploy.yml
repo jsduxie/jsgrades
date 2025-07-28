@@ -42,8 +42,10 @@ jobs:
           NODE_ENV: ${{ secrets.NODE_ENV }}
 
       - name: Deploy
-        run: npx vercel --prod \
-          --token=${{ secrets.VERCEL_TOKEN }} \
-          --org-id=${{ secrets.VERCEL_ORG_ID }} \
-          --project-id=${{ secrets.VERCEL_PROJECT_ID }} \
-          --confirm
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: jsgrades
+          vercel-args: '--prod'
