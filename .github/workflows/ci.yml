@@ -41,9 +41,23 @@ jobs:
 
       - name: Test
         run: |
-          echo "Running tests..."
+          echo "Running all tests..."
           npm test
         working-directory: jsgrades
+        env:
+          NEXT_PUBLIC_FIREBASE_apiKey: ${{ secrets.NEXT_PUBLIC_FIREBASE_APIKEY }}
+          NEXT_PUBLIC_FIREBASE_authDomain: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN }}
+          NEXT_PUBLIC_FIREBASE_projectId: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECTID }}
+          NEXT_PUBLIC_FIREBASE_storageBucket: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGEBUCKET }}
+          NEXT_PUBLIC_FIREBASE_messagingSenderId: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID }}
+          NEXT_PUBLIC_FIREBASE_appId: ${{ secrets.NEXT_PUBLIC_FIREBASE_APPID }}
+          DATABASE_URL_PROD: ${{ secrets.DATABASE_URL_PROD }}
+          DATABASE_URL_DEV: ${{ secrets.DATABASE_URL_DEV }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_USER: ${{ secrets.DB_USER }}
+          STATUS: ${{ secrets.STATUS }}
+          FIREBASE_SDK_KEY: ${{ secrets.FIREBASE_SDK_KEY }}
+          NODE_ENV: test
 
       - name: Upload artifacts
         if: always()
