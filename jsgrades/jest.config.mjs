@@ -39,7 +39,7 @@ export default {
     coveragePathIgnorePatterns: ['/node_modules/', '/.next/', '/coverage/'],
     collectCoverageFrom: [
         'app/**/*.{ts,tsx}',
-        'components/**/*.{ts,tsx}', 
+        'components/**/*.{ts,tsx}',
         'context/**/*.{ts,tsx}',
         'lib/**/*.{ts,tsx}',
         'types/**/*.{ts,tsx}',

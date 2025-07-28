@@ -20,7 +20,8 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 if (!db_url) {
-    const envVarName = status === 'PROD' ? 'DATABASE_URL_PROD' : 'DATABASE_URL_DEV';
+    const envVarName =
+        status === 'PROD' ? 'DATABASE_URL_PROD' : 'DATABASE_URL_DEV';
     throw new Error(`Missing required environment variable: ${envVarName}`);
 }
 
