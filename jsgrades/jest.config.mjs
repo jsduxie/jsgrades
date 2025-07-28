@@ -9,6 +9,11 @@ export default {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
+    globals: {
+        'ts-jest': {
+            useESM: true,
+        },
+    },
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
     },
@@ -32,19 +37,4 @@ export default {
     coverageDirectory: 'coverage',
     coverageReporters: ['json', 'lcov', 'text', 'clover'],
     coveragePathIgnorePatterns: ['/node_modules/', '/.next/', '/coverage/'],
-    collectCoverageFrom: [
-        'app/api/**/*.{ts,tsx}',
-        'lib/server/**/*.{ts,tsx}',
-        'lib/auth*.ts',
-        'lib/utils.ts',
-        '!context/**/*.{ts,tsx}',
-        '!components/**/*.{ts,tsx}',
-        '!app/**/page.tsx',
-        '!**/*.d.ts',
-        '!**/index.ts',
-        '!**/*.config.{js,ts,mjs}',
-        '!**/node_modules/**',
-        '!**/coverage/**',
-        '!**/.next/**',
-    ],
 };
