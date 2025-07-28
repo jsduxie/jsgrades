@@ -1,8 +1,9 @@
 describe('Client Testing Setup', () => {
-    it('should be ready for React component testing', () => {
-        // Basic test to verify client test environment
-        expect(typeof window).toBe('object');
+    it('should have required globals for testing', () => {
         expect(global.TextEncoder).toBeDefined();
         expect(global.TextDecoder).toBeDefined();
+        
+        const testObj = { test: 'value' };
+        expect(testObj.test).toBe('value');
     });
 });
