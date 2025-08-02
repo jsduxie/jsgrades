@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setCurrentUser(null);
                 setUserLoggedIn(false);
                 setUserDetails(null);
+                router.push('/');
             }
 
             setLoading(false);
