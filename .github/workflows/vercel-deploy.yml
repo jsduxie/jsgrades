@@ -1,4 +1,8 @@
-name: Vercel deployment
+name: Vercel Production Deployment
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 on:
   push:
@@ -6,9 +10,12 @@ on:
       - main
 
 jobs:
-  deploy:
+  Deploy-Production:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: jsgrades
+        
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,11 +29,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: jsgrades
 
-      - name: Build
-        run: npm run build
-        working-directory: jsgrades
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           NEXT_PUBLIC_FIREBASE_apiKey: ${{ secrets.NEXT_PUBLIC_FIREBASE_APIKEY }}
           NEXT_PUBLIC_FIREBASE_authDomain: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN }}
@@ -41,26 +52,5 @@ jobs:
           FIREBASE_SDK_KEY: ${{ secrets.FIREBASE_SDK_KEY }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
 
-      - name: Debug - Check directory structure
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Contents of current directory:"
-          ls -la
-          echo "Checking if jsgrades directory exists:"
-          ls -la jsgrades/ || echo "jsgrades directory not found"
-
-      - name: Deploy to Vercel
-        id: deploy
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --cwd jsgrades'
-
-      - name: Verify Deployment
-        run: |
-          echo "Deployment completed"
-          echo "Preview URL: ${{ steps.deploy.outputs.preview-url }}"
-          echo "Deployment successful!"
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

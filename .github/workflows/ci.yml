@@ -2,7 +2,7 @@ name: CI - Lint & Test
 
 on:
   push:
-    branches: [dev, test, main]
+    branches: [dev, test, main, issue-*]
   pull_request:
     branches: [main, dev, test]
 
@@ -60,13 +60,30 @@ jobs:
           FIREBASE_SDK_KEY: ${{ secrets.FIREBASE_SDK_KEY }}
           NODE_ENV: test
 
-      - name: Upload artifacts
+      - name: Extract test summary
+        if: always()
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const path = 'jsgrades/test-results.json';
+          const results = JSON.parse(fs.readFileSync(path, 'utf-8'));
+          
+          const summary = {
+            total: results.numTotalTests,
+            passed: results.numPassedTests,
+            failed: results.numFailedTests,
+            skipped: results.numPendingTests
+          };
+          
+          fs.writeFileSync('jsgrades/test-summary.txt', JSON.stringify(summary, null, 2));
+          EOF
+
+      - name: Upload test summary artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jsgrades-test-and-lint-logs
-          path: jsgrades/test-reports/
-          retention-days: 7
+          name: test-summary
+          path: jsgrades/test-summary.txt
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
