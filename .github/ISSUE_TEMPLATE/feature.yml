@@ -1,7 +1,7 @@
-name: User Story
-description: User story following Jira format with acceptance criteria
-title: "[Story] As a <user_type>, I want <goal> so that <benefit>"
-labels: ["user-story", "awaiting-triage"]
+name: Feature
+description: Create an issue to request a new feature
+title: "Feature: [feature description]"
+labels: ["feature", "awaiting-triage"]
 assignees: ["jsduxie"]
 
 body:
