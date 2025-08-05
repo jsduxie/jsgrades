@@ -6,9 +6,11 @@ import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import { doSignOut } from '@/lib/client-auth';
+import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
 
 export default function Home() {
     const router = useRouter();
+    const protectedRouter = useProtectedRoute();
     const auth = useAuth();
 
     const userDetails = auth?.userDetails;
@@ -45,9 +47,10 @@ export default function Home() {
             <Navbar
                 user={userDetails}
                 onSignOut={signOut}
-                onProfileSettings={() => router.push('/profile-settings')}
+                onProfileSettings={() =>
+                    protectedRouter.push('/profile-settings')
+                }
             />
-            <Sidebar />
             <main className='ml-[75px] p-8'>
                 <div className='mx-auto max-w-7xl'>
                     <h1 className='mb-8 text-3xl font-bold text-gray-900'>

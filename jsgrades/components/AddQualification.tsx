@@ -1,207 +1,206 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
+import AddQualification from '@/components/AddQualification';
+import { Qualification, APIResponse } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    TextField,
-    MenuItem,
-    FormControlLabel,
-    Checkbox,
-    Stack,
-    CircularProgress,
-    Box,
-    Typography,
-} from '@mui/material';
-import { useEffect, useState } from 'react';
-import {
-    QualificationLevel,
-    QualificationFormData,
-    AddQualificationProps,
-} from '@/types';
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
+import { doSignOut } from '@/lib/client-auth';
+import { useRouter } from 'next/navigation';
 
-export default function AddQualification({
-    open,
-    onClose,
-    onSave,
-}: AddQualificationProps) {
-    const [levels, setLevels] = useState<QualificationLevel[]>([]);
-    const [isLoadingLevels, setIsLoadingLevels] = useState(false);
-    const [formData, setFormData] = useState<QualificationFormData>({
-        name: '',
-        institution: '',
-        level: '',
-        startDate: '',
-        endDate: '',
-        currentGrade: '',
-        targetGrade: '',
-        predictedGrade: '',
-        inProgress: true,
-    });
+export default function QualificationsPage() {
+    const auth = useAuth();
+    const router = useRouter();
+    const protectedRouter = useProtectedRoute();
+    const [loading, setLoading] = useState(false);
+
+    const [open, setOpen] = useState(false);
+    const [qualifications, setQualifications] = useState<Qualification[]>([]);
+
+    if (!auth?.userDetails) {
+        return null;
+    }
+
+    const userDetails = auth?.userDetails;
+    const userId = userDetails.id;
 
     useEffect(() => {
-        if (!open) return;
-        const fetchLevels = async () => {
-            setIsLoadingLevels(true);
+        async function fetchQualifications() {
+            if (!userId) return;
+            setLoading(true);
             try {
-                const res = await fetch('/api/qualifications/levels');
-                const json = await res.json();
-                if (json.status === 'success') setLevels(json.data);
+                const res = await fetch(`/api/qualifications?userId=${userId}`);
+                const json: APIResponse<Qualification[]> = await res.json();
+                if (json.status === 'success' && json.data) {
+                    setQualifications(json.data);
+                } else {
+                    console.error(json.message);
+                }
             } catch (error) {
-                console.error('Failed to fetch qualification levels:', error);
+                console.error('Failed to fetch qualifications', error);
             } finally {
-                setIsLoadingLevels(false);
+                setLoading(false);
             }
-        };
-        fetchLevels();
-    }, [open]);
+        }
+        fetchQualifications();
+    }, [userId]);
 
-    const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >
-    ) => {
-        const { name, value, type } = e.target;
-        const checked = (e.target as HTMLInputElement).checked;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
+    const handleAddQualification = async (newQual: Partial<Qualification>) => {
+        if (!userId) return;
+        try {
+            setLoading(true);
+            const res = await fetch('/api/qualifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...newQual, userId }),
+            });
+            const json: APIResponse<Qualification> = await res.json();
+            if (json.status === 'success' && json.data) {
+                setQualifications((prev) => [...prev, json.data!]);
+            } else {
+                console.error(json.message);
+            }
+        } catch (error) {
+            console.error('Failed to add qualification', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleSubmit = async () => {
-        const payload = {
-            ...formData,
-            currentGrade: parseFloat(formData.currentGrade) || undefined,
-            targetGrade: parseFloat(formData.targetGrade) || undefined,
-            predictedGrade: parseFloat(formData.predictedGrade) || undefined,
-            startDate: new Date(formData.startDate),
-            endDate: new Date(formData.endDate),
-        };
-
-        await onSave(payload);
-        onClose();
-        setFormData({
-            name: '',
-            institution: '',
-            level: '',
-            startDate: '',
-            endDate: '',
-            currentGrade: '',
-            targetGrade: '',
-            predictedGrade: '',
-            inProgress: true,
-        });
+    const signOut = async () => {
+        try {
+            await doSignOut();
+            router.push('/');
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
-            <DialogTitle>Add Qualification</DialogTitle>
-            <DialogContent>
-                {isLoadingLevels ? (
-                    <Box
-                        display='flex'
-                        flexDirection='column'
-                        alignItems='center'
-                        justifyContent='center'
-                        minHeight='200px'
-                        gap={2}
-                    >
-                        <CircularProgress />
-                        <Typography variant='body2' color='text.secondary'>
-                            Loading qualification levels...
-                        </Typography>
-                    </Box>
-                ) : (
-                    <Stack spacing={2} mt={1}>
-                        <TextField
-                            label='Name'
-                            name='name'
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                        />
-                        <TextField
-                            label='Institution'
-                            name='institution'
-                            value={formData.institution}
-                            onChange={handleChange}
-                            required
-                        />
-                        <TextField
-                            select
-                            label='Level'
-                            name='level'
-                            value={formData.level}
-                            onChange={handleChange}
-                            required
-                        >
-                            {levels.map((l) => (
-                                <MenuItem key={l.id} value={l.id}>
-                                    {l.name} (Level {l.level})
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <TextField
-                            type='date'
-                            label='Start Date'
-                            name='startDate'
-                            value={formData.startDate}
-                            onChange={handleChange}
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <TextField
-                            type='date'
-                            label='End Date'
-                            name='endDate'
-                            value={formData.endDate}
-                            onChange={handleChange}
-                            InputLabelProps={{ shrink: true }}
-                            disabled={formData.inProgress}
-                        />
-                        <TextField
-                            label='Current Grade'
-                            name='currentGrade'
-                            value={formData.currentGrade}
-                            onChange={handleChange}
-                        />
-                        <TextField
-                            label='Target Grade'
-                            name='targetGrade'
-                            value={formData.targetGrade}
-                            onChange={handleChange}
-                        />
-                        <TextField
-                            label='Predicted Grade'
-                            name='predictedGrade'
-                            value={formData.predictedGrade}
-                            onChange={handleChange}
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={formData.inProgress}
-                                    onChange={handleChange}
-                                    name='inProgress'
-                                />
-                            }
-                            label='In Progress'
-                        />
-                    </Stack>
+        <>
+            <Navbar
+                user={userDetails}
+                onSignOut={signOut}
+                onProfileSettings={() =>
+                    protectedRouter.push('/profile-settings')
+                }
+            />
+            <div className='min-h-screen w-full pt-[100px] pb-8 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto'>
+                {/* Header with spacing */}
+                <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8'>
+                    <h1 className='text-3xl font-bold'>My Qualifications2</h1>
+                    <Button onClick={() => setOpen(true)}>Add Qualification</Button>
+                </div>
+
+                {/* Loading Spinner */}
+                {loading && (
+                    <div className='flex justify-center py-10'>
+                        <Loader2 className='text-muted-foreground h-8 w-8 animate-spin' />
+                    </div>
                 )}
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                    onClick={handleSubmit}
-                    variant='contained'
-                    disabled={isLoadingLevels}
-                >
-                    Save
-                </Button>
-            </DialogActions>
-        </Dialog>
+
+                {/* Empty State */}
+                {!loading && qualifications.length === 0 && (
+                    <p className='text-muted-foreground text-center'>
+                        No qualifications added yet.
+                    </p>
+                )}
+
+                {/* Qualifications Grid */}
+                {!loading && qualifications.length > 0 && (
+                    <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+                        {qualifications.map((q) => (
+                            <Card
+                                key={q.id}
+                                className='bg-muted rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow flex flex-col'
+                            >
+                                <CardHeader className='pb-2'>
+                                    <CardTitle className='text-lg font-semibold text-foreground'>
+                                        {q.name}
+                                    </CardTitle>
+                                    <CardDescription className='text-muted-foreground text-sm'>
+                                        {q.level} &bull; {q.institution}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className='flex-grow text-muted-foreground text-sm'>
+                                    <div className='grid grid-cols-2 gap-6'>
+                                        <div>
+                                            <p className='text-xs font-medium text-muted-foreground'>
+                                                Predicted
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.predictedGrade ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-medium text-muted-foreground'>
+                                                Target
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.targetGrade ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-medium text-muted-foreground'>
+                                                Current
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.currentGrade ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-medium text-muted-foreground'>
+                                                Dates
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.startDate
+                                                    ? new Date(q.startDate).toLocaleDateString()
+                                                    : '—'}{' '}
+                                                –{' '}
+                                                {q.endDate
+                                                    ? new Date(q.endDate).toLocaleDateString()
+                                                    : '—'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+
+                                {/* Button to route to qualification detail */}
+                                <CardFooter className='pt-2'>
+                                    <Button
+                                        variant='outline'
+                                        size='sm'
+                                        onClick={() =>
+                                            router.push(`/qualifications/${q.id}`)
+                                        }
+                                        className='w-full'
+                                    >
+                                        View Details
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+
+                {/* Modal */}
+                <AddQualification
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    onSave={handleAddQualification}
+                />
+            </div>
+        </>
     );
 }

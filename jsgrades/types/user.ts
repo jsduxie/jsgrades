@@ -7,4 +7,5 @@ export interface ClientUserDetails {
     dateOfBirth?: Date;
     verified?: boolean;
     onBoarded?: boolean;
+    avatarUrl?: string;
 }

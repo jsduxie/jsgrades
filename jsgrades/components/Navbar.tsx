@@ -35,17 +35,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    const getInitials = (firstName?: string, lastName?: string) =>
-        `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
-
-    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
-
     const navLinks = [
         { label: 'Home', href: '/home' },
         { label: 'Support', href: '/support' },
@@ -119,57 +108,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                                 </Button>
                             </Link>
                         ))}
-
-                        <Tooltip title='Account'>
-                            <IconButton onClick={handleMenuOpen}>
-                                <Avatar sx={{ bgcolor: 'secondary.main' }}>
-                                    {getInitials(user.firstName, user.lastName)}
-                                </Avatar>
-                            </IconButton>
-                        </Tooltip>
-
-                        <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
-                            onClose={handleMenuClose}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'right',
-                            }}
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                        >
-                            <Box px={2} py={1}>
-                                <Typography variant='subtitle1'>
-                                    {user.firstName} {user.lastName}
-                                </Typography>
-                                <Typography
-                                    variant='body2'
-                                    color='text.secondary'
-                                >
-                                    {user.email}
-                                </Typography>
-                            </Box>
-                            <MenuItem
-                                onClick={() => {
-                                    handleMenuClose();
-                                    onProfileSettings?.();
-                                }}
-                            >
-                                Profile Settings
-                            </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    handleMenuClose();
-                                    onSignOut();
-                                }}
-                                sx={{ color: 'error.main' }}
-                            >
-                                Sign Out
-                            </MenuItem>
-                        </Menu>
                     </Box>
                 )}
 
