@@ -1,17 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AddQualification from '@/components/AddQualification';
 import { Qualification, APIResponse } from '@/types';
-import { Button, Container, Typography, Stack } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+import { Sidebar } from '@/components/Sidebar';
+import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
+import { doSignOut } from '@/lib/client-auth';
+import { useRouter } from 'next/navigation';
 
 export default function QualificationsPage() {
     const auth = useAuth();
-    const userId = auth?.userDetails?.id;
+    const router = useRouter();
+    const protectedRouter = useProtectedRoute();
+    const [loading, setLoading] = useState(false);
 
     const [open, setOpen] = useState(false);
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
+
+    if (!auth?.userDetails) {
+        return null;
+    }
+
+    const userDetails = auth?.userDetails;
+    const userId = userDetails.id;
 
     useEffect(() => {
         async function fetchQualifications() {
@@ -29,12 +53,15 @@ export default function QualificationsPage() {
                 console.error('Failed to fetch qualifications', error);
             }
         }
+        setLoading(true);
         fetchQualifications();
+        setLoading(false);
     }, [userId]);
 
     const handleAddQualification = async (newQual: Partial<Qualification>) => {
         if (!userId) return;
         try {
+            setLoading(true);
             const res = await fetch('/api/qualifications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -49,51 +76,128 @@ export default function QualificationsPage() {
             }
         } catch (error) {
             console.error('Failed to add qualification', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const signOut = async () => {
+        try {
+            await doSignOut();
+            router.push('/');
+        } catch (err) {
+            console.error(err);
         }
     };
 
     return (
-        <Container maxWidth='md' sx={{ mt: 5 }}>
-            <Stack
-                direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                mb={3}
-            >
-                <Typography variant='h4'>My Qualifications</Typography>
-                <Button variant='contained' onClick={() => setOpen(true)}>
-                    Add Qualification
-                </Button>
-            </Stack>
-
-            {qualifications.length === 0 ? (
-                <Typography color='text.secondary'>
-                    No qualifications added yet.
-                </Typography>
-            ) : (
-                <Stack spacing={2}>
-                    {qualifications.map((q) => (
-                        <div key={q.id}>
-                            <Typography variant='subtitle1'>
-                                {q.name} — {q.level}
-                            </Typography>
-                            <Typography variant='body2'>
-                                {q.institution}
-                            </Typography>
-                            {/*
-                Here you could add an Edit button that opens a modal/form
-                to update the qualification by calling handleUpdateQualification
-              */}
-                        </div>
-                    ))}
-                </Stack>
-            )}
-
-            <AddQualification
-                open={open}
-                onClose={() => setOpen(false)}
-                onSave={handleAddQualification}
+        <>
+            <Navbar
+                user={userDetails}
+                onSignOut={signOut}
+                onProfileSettings={() =>
+                    protectedRouter.push('/profile-settings')
+                }
             />
-        </Container>
+            <div className='min-h-screen w-full pt-[100px] pb-8'>
+                {/* Header */}
+                <div className='flex items-center justify-between'>
+                    <h1 className='text-3xl font-bold'>My Qualifications</h1>
+                    <Button onClick={() => setOpen(true)}>
+                        Add Qualification
+                    </Button>
+                </div>
+
+                {/* Loading Spinner */}
+                {loading && (
+                    <div className='flex justify-center'>
+                        <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!loading && qualifications.length === 0 && (
+                    <p className='text-muted-foreground'>
+                        No qualifications added yet.
+                    </p>
+                )}
+
+                {/* Qualifications Grid */}
+                {!loading && qualifications.length > 0 && (
+                    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+                        {qualifications.map((q) => (
+                            <Card
+                                key={q.id}
+                                className='bg-muted rounded-2xl border shadow-sm transition hover:shadow-md'
+                            >
+                                <CardHeader>
+                                    <div className='flex items-center justify-between'>
+                                        <CardTitle className='text-foreground text-base font-semibold'>
+                                            {q.name}
+                                        </CardTitle>
+                                    </div>
+                                    <CardDescription className='text-muted-foreground text-sm'>
+                                        {q.level} &bull; {q.institution}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className='text-muted-foreground grid gap-4 text-sm'>
+                                    <div className='grid grid-cols-2 gap-4'>
+                                        <div>
+                                            <p className='text-muted-foreground text-xs font-medium'>
+                                                Predicted
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.predictedGrade ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className='text-muted-foreground text-xs font-medium'>
+                                                Target
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.targetGrade ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className='text-muted-foreground text-xs font-medium'>
+                                                Current
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.currentGrade ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className='text-muted-foreground text-xs font-medium'>
+                                                Dates
+                                            </p>
+                                            <p className='text-foreground'>
+                                                {q.startDate
+                                                    ? new Date(
+                                                          q.startDate
+                                                      ).toLocaleDateString()
+                                                    : '—'}{' '}
+                                                –{' '}
+                                                {q.endDate
+                                                    ? new Date(
+                                                          q.endDate
+                                                      ).toLocaleDateString()
+                                                    : '—'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+
+                {/* Modal */}
+                <AddQualification
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    onSave={handleAddQualification}
+                />
+            </div>
+        </>
     );
 }

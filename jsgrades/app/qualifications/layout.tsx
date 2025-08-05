@@ -4,13 +4,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/context/AuthContext';
 
-'use client';
-
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
-import { useAuth } from '@/context/AuthContext';
-
-export default function HomeLayout({
+export default function QualificationsLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -21,7 +15,6 @@ export default function HomeLayout({
         <SidebarProvider>
             <AppSidebar user={auth?.userDetails} />
             <SidebarTrigger />
-            <div className='pt-16'>{children}</div>
             <div className='pt-16'>{children}</div>
         </SidebarProvider>
     );
