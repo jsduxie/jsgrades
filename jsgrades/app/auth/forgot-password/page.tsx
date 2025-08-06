@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Logo } from '@/components/ui';
+import { Logo } from '@/components/ui/UI';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -77,7 +77,7 @@ const ForgotPassword = () => {
                         </div>
 
                         {errorMessage && (
-                            <p className='mb-4 w-100 text-center font-bold text-red-600'>
+                            <p className='mb-4 text-center font-bold text-red-600'>
                                 {errorMessage}
                             </p>
                         )}
