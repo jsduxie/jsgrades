@@ -59,13 +59,18 @@ const Onboarding = () => {
         setStep(step + 1);
     };
 
+    if (!currentUser) {
+        router.push('/');
+        return;
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsValidating(true);
         setErrorMessage('');
 
         try {
-            const res = await fetch('/api/user', {
+            const res = await fetch(`/api/user/${currentUser.uid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -197,8 +202,9 @@ const Onboarding = () => {
                                 </div>
                             </>
                         )}
+
                         {errorMessage && (
-                            <p className='mb-4 w-100 text-center font-bold text-red-600'>
+                            <p className='mb-4 text-center font-bold text-red-600'>
                                 {errorMessage}
                             </p>
                         )}
