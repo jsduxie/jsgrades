@@ -11,7 +11,7 @@ export function useProtectedRoute() {
             if (currentUser) {
                 router.push(`/${href}`);
             } else {
-                router.push(`/auth/login}`);
+                router.push(`/auth/login`);
             }
         },
     };
