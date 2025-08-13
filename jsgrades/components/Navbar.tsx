@@ -25,7 +25,6 @@ import Link from 'next/link';
 import { NavbarProps } from '@/types';
 import { Logo } from '@/components/ui/UI';
 
-
 export const Navbar: React.FC<NavbarProps> = ({
     user,
     onSignOut,
