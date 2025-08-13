@@ -19,7 +19,8 @@ export default function QualificationsPage() {
             try {
                 const res = await fetch(`/api/qualifications?userId=${userId}`);
                 const json: APIResponse<Qualification[]> = await res.json();
-                if (json.status === 'success') {
+
+                if (json.status === 'success' && json.data) {
                     setQualifications(json.data);
                 } else {
                     console.error(json.message);
@@ -40,8 +41,9 @@ export default function QualificationsPage() {
                 body: JSON.stringify({ ...newQual, userId }),
             });
             const json: APIResponse<Qualification> = await res.json();
-            if (json.status === 'success') {
-                setQualifications((prev) => [...prev, json.data]);
+
+            if (json.status === 'success' && json.data) {
+                setQualifications((prev) => [...prev, json.data!]);
             } else {
                 console.error(json.message);
             }

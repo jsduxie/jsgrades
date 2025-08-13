@@ -20,8 +20,6 @@ describe('Qualifications API Integration Tests', () => {
             console.warn('Database connection test failed:', error);
             throw error;
         }
-
-        jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     afterAll(async () => {

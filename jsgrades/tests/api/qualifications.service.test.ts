@@ -14,7 +14,6 @@ import {
 describe('Qualifications Service', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     describe('getQualificationLevels', () => {

@@ -7,6 +7,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/shadcn/DropdownMenu';
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    SelectChangeEvent,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 type QualificationLevel = {
     value: number;
@@ -25,6 +32,22 @@ interface QualificationDropdownProps {
     value: number;
     onChange: (value: number) => void;
 }
+
+    label?: string;
+    variant?: 'outlined' | 'filled' | 'standard';
+    fullWidth?: boolean;
+}
+
+const StyledFormControl = styled(FormControl)(({ theme }) => ({
+    '& .MuiOutlinedInput-root': {
+        '&:hover fieldset': {
+            borderColor: theme.palette.primary.main,
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: theme.palette.primary.main,
+        },
+    },
+}));
 
 // Reusable component to display dropdown to select qualifications level and store as int based on level
 // numbers are based on standard qualifications levels in UK
@@ -73,5 +96,6 @@ export function QualificationDropdown({
                 ))}
             </DropdownMenuContent>
         </DropdownMenu>
+
     );
 }
