@@ -19,3 +19,4 @@ Thumbs.db
 ehthumbs.db
 jsgrades/.env*
 *.iml
+jsgrades/test-results.json
