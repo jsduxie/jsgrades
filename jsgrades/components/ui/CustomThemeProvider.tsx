@@ -62,7 +62,6 @@ const theme = createTheme({
             main: '#0066CC',
             hover: '#0055bb',
             contrastText: '#ffffff',
-            text: '#ffffff',
         },
     },
     typography: {

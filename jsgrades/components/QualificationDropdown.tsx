@@ -36,7 +36,7 @@ export function QualificationDropdown({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
                 <button
                     type='button'
                     className='mt-2 flex w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-gray-700 shadow-sm transition duration-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
