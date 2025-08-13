@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 
 const status =
     process.env.NODE_ENV === 'test' ? 'DEV' : process.env.STATUS || 'DEV';
-let db_url =
+const db_url =
     status === 'PROD'
         ? process.env.DATABASE_URL_PROD
         : process.env.DATABASE_URL_DEV;

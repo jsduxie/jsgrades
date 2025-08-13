@@ -1,8 +1,6 @@
-// jest.config.mjs
 import { config } from 'dotenv';
 import path from 'path';
 
-// Load environment variables from .env.local (silently)
 config({ path: path.resolve(process.cwd(), '.env.local'), debug: false });
 
 export default {

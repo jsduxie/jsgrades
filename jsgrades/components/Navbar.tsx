@@ -23,7 +23,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 import Link from 'next/link';
 import { NavbarProps } from '@/types';
-import { Logo } from '@/components/ui';
+import { Logo } from '@/components/ui/UI';
 
 export const Navbar: React.FC<NavbarProps> = ({
     user,
