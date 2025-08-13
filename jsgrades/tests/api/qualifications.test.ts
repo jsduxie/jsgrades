@@ -22,6 +22,7 @@ import { POST, GET } from '@/app/api/qualifications/route';
 describe('Qualifications API Routes', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     describe('POST /api/qualifications', () => {
