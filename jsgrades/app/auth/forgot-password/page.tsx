@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Logo } from '@/components/ui';
+import { Logo } from '@/components/ui/UI';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';

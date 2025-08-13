@@ -77,8 +77,6 @@ export default function AddQualification({
             currentGrade: parseFloat(formData.currentGrade) || undefined,
             targetGrade: parseFloat(formData.targetGrade) || undefined,
             predictedGrade: parseFloat(formData.predictedGrade) || undefined,
-            startDate: new Date(formData.startDate),
-            endDate: new Date(formData.endDate),
         };
 
         await onSave(payload);

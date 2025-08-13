@@ -19,6 +19,7 @@ export default function QualificationsPage() {
             try {
                 const res = await fetch(`/api/qualifications?userId=${userId}`);
                 const json: APIResponse<Qualification[]> = await res.json();
+
                 if (json.status === 'success' && json.data) {
                     setQualifications(json.data);
                 } else {
@@ -40,6 +41,7 @@ export default function QualificationsPage() {
                 body: JSON.stringify({ ...newQual, userId }),
             });
             const json: APIResponse<Qualification> = await res.json();
+
             if (json.status === 'success' && json.data) {
                 setQualifications((prev) => [...prev, json.data!]);
             } else {
