@@ -4,12 +4,6 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/context/AuthContext';
 
-'use client';
-
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
-import { useAuth } from '@/context/AuthContext';
-
 export default function HomeLayout({
     children,
 }: {

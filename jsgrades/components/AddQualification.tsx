@@ -14,8 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
-import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
+import { useProtectedRoute } from '@/hooks/useProtectedHook';
 import { doSignOut } from '@/lib/client-auth';
 import { useRouter } from 'next/navigation';
 
@@ -89,18 +88,13 @@ export default function QualificationsPage() {
 
     return (
         <>
-            <Navbar
-                user={userDetails}
-                onSignOut={signOut}
-                onProfileSettings={() =>
-                    protectedRouter.push('/profile-settings')
-                }
-            />
-            <div className='min-h-screen w-full pt-[100px] pb-8 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto'>
+            <div className='mx-auto min-h-screen w-full max-w-7xl px-6 pt-[100px] pb-8 sm:px-8 lg:px-12'>
                 {/* Header with spacing */}
-                <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8'>
+                <div className='mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
                     <h1 className='text-3xl font-bold'>My Qualifications2</h1>
-                    <Button onClick={() => setOpen(true)}>Add Qualification</Button>
+                    <Button onClick={() => setOpen(true)}>
+                        Add Qualification
+                    </Button>
                 </div>
 
                 {/* Loading Spinner */}
@@ -123,20 +117,20 @@ export default function QualificationsPage() {
                         {qualifications.map((q) => (
                             <Card
                                 key={q.id}
-                                className='bg-muted rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow flex flex-col'
+                                className='bg-muted border-border flex flex-col rounded-2xl border shadow-sm transition-shadow hover:shadow-md'
                             >
                                 <CardHeader className='pb-2'>
-                                    <CardTitle className='text-lg font-semibold text-foreground'>
+                                    <CardTitle className='text-foreground text-lg font-semibold'>
                                         {q.name}
                                     </CardTitle>
                                     <CardDescription className='text-muted-foreground text-sm'>
                                         {q.level} &bull; {q.institution}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className='flex-grow text-muted-foreground text-sm'>
+                                <CardContent className='text-muted-foreground flex-grow text-sm'>
                                     <div className='grid grid-cols-2 gap-6'>
                                         <div>
-                                            <p className='text-xs font-medium text-muted-foreground'>
+                                            <p className='text-muted-foreground text-xs font-medium'>
                                                 Predicted
                                             </p>
                                             <p className='text-foreground'>
@@ -144,7 +138,7 @@ export default function QualificationsPage() {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className='text-xs font-medium text-muted-foreground'>
+                                            <p className='text-muted-foreground text-xs font-medium'>
                                                 Target
                                             </p>
                                             <p className='text-foreground'>
@@ -152,7 +146,7 @@ export default function QualificationsPage() {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className='text-xs font-medium text-muted-foreground'>
+                                            <p className='text-muted-foreground text-xs font-medium'>
                                                 Current
                                             </p>
                                             <p className='text-foreground'>
@@ -160,29 +154,34 @@ export default function QualificationsPage() {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className='text-xs font-medium text-muted-foreground'>
+                                            <p className='text-muted-foreground text-xs font-medium'>
                                                 Dates
                                             </p>
                                             <p className='text-foreground'>
                                                 {q.startDate
-                                                    ? new Date(q.startDate).toLocaleDateString()
+                                                    ? new Date(
+                                                          q.startDate
+                                                      ).toLocaleDateString()
                                                     : '—'}{' '}
                                                 –{' '}
                                                 {q.endDate
-                                                    ? new Date(q.endDate).toLocaleDateString()
+                                                    ? new Date(
+                                                          q.endDate
+                                                      ).toLocaleDateString()
                                                     : '—'}
                                             </p>
                                         </div>
                                     </div>
                                 </CardContent>
 
-                                {/* Button to route to qualification detail */}
                                 <CardFooter className='pt-2'>
                                     <Button
                                         variant='outline'
                                         size='sm'
                                         onClick={() =>
-                                            router.push(`/qualifications/${q.id}`)
+                                            router.push(
+                                                `/qualifications/${q.id}`
+                                            )
                                         }
                                         className='w-full'
                                     >

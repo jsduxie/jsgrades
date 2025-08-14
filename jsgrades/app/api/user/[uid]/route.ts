@@ -53,15 +53,15 @@ export async function POST(
 
     try {
         const body = await req.json();
-        
+
         // Validate required fields
         const { email } = body;
-        
+
         if (!email) {
             return NextResponse.json<APIResponse>(
-                { 
-                    status: 'error', 
-                    message: 'Missing required field: email' 
+                {
+                    status: 'error',
+                    message: 'Missing required field: email',
                 },
                 { status: 400 }
             );
@@ -69,26 +69,30 @@ export async function POST(
 
         // Check if user already exists
         const existingUser = await getUser(uid);
-        
+
         if (existingUser && Object.keys(existingUser).length > 0) {
             // User exists, update the user
             const updateData: any = {};
-            
+
             if (body.firstName) updateData.first_name = body.firstName;
             if (body.lastName) updateData.last_name = body.lastName;
             if (body.dateOfBirth) updateData.date_of_birth = body.dateOfBirth;
-            if (body.highestQualLevel !== undefined) updateData.highest_qual_level = body.highestQualLevel;
-            if (body.verified !== undefined) updateData.verified = body.verified;
-            if (body.onBoarded !== undefined) updateData.onBoarded = body.onBoarded;
-            if (body.countSignIn !== undefined) updateData.count_sign_in = body.countSignIn;
+            if (body.highestQualLevel !== undefined)
+                updateData.highest_qual_level = body.highestQualLevel;
+            if (body.verified !== undefined)
+                updateData.verified = body.verified;
+            if (body.onBoarded !== undefined)
+                updateData.onBoarded = body.onBoarded;
+            if (body.countSignIn !== undefined)
+                updateData.count_sign_in = body.countSignIn;
 
             const updatedUser = await updateUser(uid, updateData);
 
             return NextResponse.json<APIResponse<any>>(
-                { 
-                    status: 'success', 
-                    message: 'User updated successfully', 
-                    data: updatedUser 
+                {
+                    status: 'success',
+                    message: 'User updated successfully',
+                    data: updatedUser,
                 },
                 { status: 200 }
             );
@@ -107,10 +111,10 @@ export async function POST(
             });
 
             return NextResponse.json<APIResponse<any>>(
-                { 
-                    status: 'success', 
-                    message: 'User created successfully', 
-                    data: newUser 
+                {
+                    status: 'success',
+                    message: 'User created successfully',
+                    data: newUser,
                 },
                 { status: 201 }
             );
@@ -118,7 +122,10 @@ export async function POST(
     } catch (err) {
         console.error('Database error in POST user:', err);
         return NextResponse.json<APIResponse>(
-            { status: 'error', message: 'Database error: ' + (err as Error).message },
+            {
+                status: 'error',
+                message: 'Database error: ' + (err as Error).message,
+            },
             { status: 500 }
         );
     }

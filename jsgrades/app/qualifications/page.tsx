@@ -15,9 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
-import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
+import { useProtectedRoute } from '@/hooks/useProtectedHook';
 import { doSignOut } from '@/lib/client-auth';
 import { useRouter } from 'next/navigation';
 
@@ -92,13 +90,6 @@ export default function QualificationsPage() {
 
     return (
         <>
-            <Navbar
-                user={userDetails}
-                onSignOut={signOut}
-                onProfileSettings={() =>
-                    protectedRouter.push('/profile-settings')
-                }
-            />
             <div className='min-h-screen w-full pt-[100px] pb-8'>
                 {/* Header */}
                 <div className='flex items-center justify-between'>

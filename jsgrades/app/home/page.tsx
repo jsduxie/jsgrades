@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { doSignOut } from '@/lib/client-auth';
-import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
+import { useProtectedRoute } from '@/hooks/useProtectedHook';
 
 export default function Home() {
     const router = useRouter();

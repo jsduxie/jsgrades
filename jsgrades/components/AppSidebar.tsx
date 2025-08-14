@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useSignOut } from '@/app/hooks/useSignOut';
-import { useProtectedRoute } from '@/app/hooks/useProtectedHook';
+import { useSignOut } from '@/hooks/useSignOut';
+import { useProtectedRoute } from '@/hooks/useProtectedHook';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Logo } from '@/components/ui/UI';
 import { ClientUserDetails } from '@/types';
 
 import {
@@ -17,6 +18,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarHeader,
 } from '@/components/ui/sidebar';
 
 import {
@@ -60,7 +62,10 @@ export function AppSidebar({
     }
 
     return (
-        <Sidebar className='bg-muted/40 flex h-screen flex-col justify-between border-r pt-16'>
+        <Sidebar className='bg-muted/40 flex h-screen flex-col justify-between border-r'>
+            <SidebarHeader>
+                <Logo />
+            </SidebarHeader>
             <SidebarContent className='flex-1'>
                 <SidebarGroup>
                     <SidebarGroupLabel className='text-muted-foreground text-xs font-semibold tracking-wide uppercase'>

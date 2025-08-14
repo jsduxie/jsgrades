@@ -6,7 +6,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/shadcn/DropdownMenu';
+} from '@/components/ui/dropdown-menu';
 
 type QualificationLevel = {
     value: number;
