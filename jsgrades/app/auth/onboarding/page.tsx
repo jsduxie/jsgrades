@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { QualificationDropdown } from '@/components/QualificationDropdown';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/ui/UI';
 import { useAuth } from '@/context/AuthContext';
 
@@ -190,15 +195,98 @@ const Onboarding = () => {
                                     <label className='mb-2 block text-sm font-bold text-gray-600'>
                                         Highest Education Level
                                     </label>
-                                    <QualificationDropdown
-                                        value={form.qualificationlevel}
-                                        onChange={(val: number) =>
-                                            setForm((prev) => ({
-                                                ...prev,
-                                                qualificationlevel: val,
-                                            }))
-                                        }
-                                    />
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                type='button'
+                                                className='mt-2 flex w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-gray-700 shadow-sm transition duration-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
+                                            >
+                                                {(() => {
+                                                    const levels = [
+                                                        {
+                                                            value: 2,
+                                                            label: 'GCSE',
+                                                        },
+                                                        {
+                                                            value: 3,
+                                                            label: 'A-Level',
+                                                        },
+                                                        {
+                                                            value: 6,
+                                                            label: 'Undergraduate',
+                                                        },
+                                                        {
+                                                            value: 7,
+                                                            label: 'Postgraduate',
+                                                        },
+                                                        {
+                                                            value: 0,
+                                                            label: 'Not Applicable',
+                                                        },
+                                                    ];
+                                                    const selected =
+                                                        levels.find(
+                                                            (lvl) =>
+                                                                lvl.value ===
+                                                                form.qualificationlevel
+                                                        );
+                                                    return selected
+                                                        ? selected.label
+                                                        : 'Select level...';
+                                                })()}
+                                                <svg
+                                                    className='ml-2 h-4 w-4 text-gray-400'
+                                                    fill='none'
+                                                    stroke='currentColor'
+                                                    strokeWidth={2}
+                                                    viewBox='0 0 24 24'
+                                                >
+                                                    <path
+                                                        strokeLinecap='round'
+                                                        strokeLinejoin='round'
+                                                        d='M19 9l-7 7-7-7'
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className='mt-2 min-w-[var(--radix-dropdown-menu-trigger-width)] rounded-lg border border-gray-200 bg-white shadow-lg'>
+                                            {[
+                                                { value: 2, label: 'GCSE' },
+                                                { value: 3, label: 'A-Level' },
+                                                {
+                                                    value: 6,
+                                                    label: 'Undergraduate',
+                                                },
+                                                {
+                                                    value: 7,
+                                                    label: 'Postgraduate',
+                                                },
+                                                {
+                                                    value: 0,
+                                                    label: 'Not Applicable',
+                                                },
+                                            ].map((level) => (
+                                                <DropdownMenuItem
+                                                    key={level.value}
+                                                    onSelect={() =>
+                                                        setForm((prev) => ({
+                                                            ...prev,
+                                                            qualificationlevel:
+                                                                level.value,
+                                                        }))
+                                                    }
+                                                    className={
+                                                        form.qualificationlevel ===
+                                                        level.value
+                                                            ? 'bg-indigo-100 font-bold'
+                                                            : ''
+                                                    }
+                                                >
+                                                    {level.label}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </>
                         )}

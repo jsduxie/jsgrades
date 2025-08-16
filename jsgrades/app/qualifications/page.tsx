@@ -6,42 +6,32 @@ import { Qualification, APIResponse } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import {
     Card,
-    CardAction,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useProtectedRoute } from '@/hooks/useProtectedHook';
-import { doSignOut } from '@/lib/client-auth';
 import { useRouter } from 'next/navigation';
 
 export default function QualificationsPage() {
     const auth = useAuth();
     const router = useRouter();
-    const protectedRouter = useProtectedRoute();
     const [loading, setLoading] = useState(false);
-
     const [open, setOpen] = useState(false);
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
 
-    if (!auth?.userDetails) {
-        return null;
-    }
-
     const userDetails = auth?.userDetails;
-    const userId = userDetails.id;
+    const userId = userDetails?.id;
 
     useEffect(() => {
         async function fetchQualifications() {
             if (!userId) return;
+            setLoading(true);
             try {
                 const res = await fetch(`/api/qualifications?userId=${userId}`);
                 const json: APIResponse<Qualification[]> = await res.json();
-
                 if (json.status === 'success' && json.data) {
                     setQualifications(json.data);
                 } else {
@@ -49,11 +39,11 @@ export default function QualificationsPage() {
                 }
             } catch (error) {
                 console.error('Failed to fetch qualifications', error);
+            } finally {
+                setLoading(false);
             }
         }
-        setLoading(true);
         fetchQualifications();
-        setLoading(false);
     }, [userId]);
 
     const handleAddQualification = async (newQual: Partial<Qualification>) => {
@@ -66,7 +56,6 @@ export default function QualificationsPage() {
                 body: JSON.stringify({ ...newQual, userId }),
             });
             const json: APIResponse<Qualification> = await res.json();
-
             if (json.status === 'success' && json.data) {
                 setQualifications((prev) => [...prev, json.data!]);
             } else {
@@ -79,14 +68,9 @@ export default function QualificationsPage() {
         }
     };
 
-    const signOut = async () => {
-        try {
-            await doSignOut();
-            router.push('/');
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    if (!auth?.userDetails) {
+        return null;
+    }
 
     return (
         <>

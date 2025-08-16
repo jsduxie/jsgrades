@@ -2,11 +2,20 @@ import {
     addQualification,
     getQualifications,
 } from '@/lib/server/qualifications';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { APIResponse, Qualification } from '@/types';
+import { validateAuth } from '@/lib/server/auth';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
+        const user = await validateAuth(req);
+        if (!user) {
+            return NextResponse.json<APIResponse>(
+                { status: 'error', message: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
         const body = await req.json();
         const {
             name,

@@ -1,3 +1,17 @@
+jest.mock('firebase-admin/app', () => ({
+    initializeApp: jest.fn(),
+    getApps: () => [],
+    cert: jest.fn(),
+}));
+jest.mock('firebase-admin/auth', () => {
+    const verifyIdToken = jest.fn();
+    return {
+        getAuth: () => ({ verifyIdToken }),
+        __esModule: true,
+        verifyIdToken,
+    };
+});
+
 const mockAddQualification = jest.fn();
 const mockGetQualifications = jest.fn();
 
@@ -22,6 +36,7 @@ import { POST, GET } from '@/app/api/qualifications/route';
 describe('Qualifications API Routes', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        setAuthMock();
     });
 
     describe('POST /api/qualifications', () => {
@@ -58,6 +73,10 @@ describe('Qualifications API Routes', () => {
             mockAddQualification.mockResolvedValue(mockSavedQualification);
             const mockRequest = {
                 json: jest.fn().mockResolvedValue(validRequestBody),
+                headers: {
+                    get: (h: string) =>
+                        h === 'Authorization' ? 'Bearer validtoken' : undefined,
+                },
             } as any;
 
             const response = await POST(mockRequest);
@@ -99,6 +118,10 @@ describe('Qualifications API Routes', () => {
             mockAddQualification.mockResolvedValue(mockMinimalQualification);
             const mockRequest = {
                 json: jest.fn().mockResolvedValue(minimalBody),
+                headers: {
+                    get: (h: string) =>
+                        h === 'Authorization' ? 'Bearer validtoken' : undefined,
+                },
             } as any;
 
             const response = await POST(mockRequest);
@@ -127,6 +150,10 @@ describe('Qualifications API Routes', () => {
 
             const mockRequest = {
                 json: jest.fn().mockResolvedValue(incompleteBody),
+                headers: {
+                    get: (h: string) =>
+                        h === 'Authorization' ? 'Bearer validtoken' : undefined,
+                },
             } as any;
 
             const response = await POST(mockRequest);
@@ -142,6 +169,10 @@ describe('Qualifications API Routes', () => {
             mockAddQualification.mockRejectedValue(new Error('Database error'));
             const mockRequest = {
                 json: jest.fn().mockResolvedValue(validRequestBody),
+                headers: {
+                    get: (h: string) =>
+                        h === 'Authorization' ? 'Bearer validtoken' : undefined,
+                },
             } as any;
 
             const response = await POST(mockRequest);
@@ -155,6 +186,10 @@ describe('Qualifications API Routes', () => {
         it('should handle JSON parsing errors', async () => {
             const mockRequest = {
                 json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+                headers: {
+                    get: (h: string) =>
+                        h === 'Authorization' ? 'Bearer validtoken' : undefined,
+                },
             } as any;
 
             const response = await POST(mockRequest);
@@ -280,3 +315,8 @@ describe('Qualifications API Routes', () => {
         });
     });
 });
+
+const setAuthMock = (uid = 'user123', email = 'user@example.com') => {
+    const { getAuth } = require('firebase-admin/auth');
+    getAuth().verifyIdToken.mockResolvedValue({ uid, email });
+};

@@ -20,6 +20,8 @@ export class NodeService {
         name: string;
         credits?: number;
         settings?: Partial<NodeSettings>;
+        qualificationId: string;
+        userId: string;
     }): Promise<{ node: Node; aggregate: NodeAggregate }> {
         const client = await pool.connect();
 
@@ -29,15 +31,17 @@ export class NodeService {
             const nodeResult = await client.query(
                 `
         INSERT INTO qualification_nodes (
-          parent_id, type, name, credits, 
+          qualification_id, user_id, parent_id, type, name, credits, 
           calculation_method, weighting_mode, rounding_mode, 
           rounding_precision, exclude_incomplete_from_predicted,
           inherit_settings, overrides
         ) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
       `,
                 [
+                    data.qualificationId,
+                    data.userId,
                     data.parentId,
                     data.type,
                     data.name,

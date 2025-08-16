@@ -1,92 +1,91 @@
-import {
-    CalculationMethod,
-    ConfigStatus,
-    GradeKind,
-    NodeTypeId,
-    RoundingMode,
-    WeightingMode,
-} from './qualificationEnums';
+import { APIResponse } from './api';
 
-export type NodeSettings = {
-    calculationMethod: CalculationMethod;
-    weightingMode: WeightingMode;
-    roundingMode: RoundingMode;
+export interface NodeSettings {
+    calculationMethod: 'weighted_mean' | 'sum' | 'max' | 'min';
+    weightingMode: 'percent' | 'credits' | 'ratio' | 'equal';
+    roundingMode: 'none' | 'nearest' | 'floor' | 'ceil' | 'bankers';
     roundingPrecision: number;
     excludeIncompleteFromPredicted: boolean;
     inheritSettings: boolean;
-    overrides: Partial<Record<keyof NodeSettings, boolean>>;
-};
+    overrides: Record<string, any>;
+    creditEnforcement?: 'none' | 'warn' | 'strict';
+}
 
-export type NodeEdge = {
+export interface Node {
     id: string;
-    parentId: string;
-    childId: string;
-    position: number;
-    weightValue: number | null;
-    weightOverride: boolean;
-};
+    qualificationId: string;
+    userId: string;
+    parentId?: string | null;
+    name: string;
+    type: string;
+    weight?: number | null;
+    credits?: number | null;
+    calculationMethod: 'weighted_mean' | 'sum' | 'max' | 'min';
+    weightingMode: 'percent' | 'credits' | 'ratio' | 'equal';
+    roundingMode: 'none' | 'nearest' | 'floor' | 'ceil' | 'bankers';
+    roundingPrecision: number;
+    excludeIncompleteFromPredicted: boolean;
+    inheritSettings: boolean;
+    overrides: Record<string, any>;
+    creditEnforcement: 'none' | 'warn' | 'strict';
+    configStatus: 'draft' | 'partial' | 'valid' | 'locked';
+    lockConfig: boolean;
+    currentGrade?: number | null;
+    targetGrade?: number | null;
+    predictedGrade?: number | null;
+    inProgress: boolean;
+    startDate?: Date | null;
+    endDate?: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+}
 
-export type NodeAggregate = {
+export interface NodeAggregate {
     nodeId: string;
     aggActual?: number | null;
     aggPredicted?: number | null;
     aggCompletionRatio?: number | null;
-    childCounts: {
-        total?: number;
-        complete?: number;
-        withPredicted?: number;
-    };
+    childCounts: Record<string, number>;
     effectiveSettings: NodeSettings;
     creditSumExpected?: number | null;
     creditSumActual?: number | null;
-    creditCoverage?: number | null;
-    validationCodes?: string[];
-    validationMeta?: Record<string, unknown>;
-    configStatus?: ConfigStatus;
+    configCoverage?: number | null;
+    validationCodes: string[];
+    validationMeta: Record<string, any>;
+    classificationActual?: string | null;
+    classificationPredicted?: string | null;
     lastComputedAt: Date;
-};
+}
 
-export type Node = {
-    id: string;
-    qualificationId: string;
-    parentId?: string | null;
-    type: NodeTypeId;
-    name: string;
-    credits?: number | null;
-    settings: NodeSettings;
-    targetGrade?: number | null;
-    actualGrade?: number | null;
-    predictedGrade?: number | null;
+export interface UpdateGradeInput {
+    nodeId: string;
+    kind: 'actual' | 'predicted' | 'target';
+    value?: number | null;
     completed?: boolean;
-    created: Date;
-    updated: Date;
-};
+}
 
-export type NodeSummary = {
+export interface ValidationResult {
+    issues: Array<{
+        code: string;
+        severity: 'info' | 'warning' | 'error';
+        message: string;
+        meta?: Record<string, any>;
+    }>;
+    configStatus: 'draft' | 'partial' | 'valid' | 'locked';
+    coverage?: number | null;
+}
+
+export interface WeightUpdateInput {
+    mode: 'percent' | 'ratio' | 'credits';
+    items: Array<{
+        childId: string;
+        value: number;
+    }>;
+    dryRun?: boolean;
+}
+
+export interface NodeSummary {
     node: Node;
     aggregate: NodeAggregate;
-    children?: Array<
-        Pick<Node, 'id' | 'name' | 'type'> & {
-            aggregate?: Pick<NodeAggregate, 'aggActual' | 'aggPredicted'>;
-        }
-    >;
-};
-
-export type QualificationDashboardItem = {
-    id: string;
-    name: string;
-    level: string;
-    institution: string;
-    actualGrade?: number | null;
-    predictedGrade?: number | null;
-    targetGrade?: number | null;
-    inProgress: boolean;
-    updated: Date;
-};
-
-export type UpdateGradeInput = {
-    nodeId: string;
-    kind: GradeKind;
-    value?: number | null;
-    completed: boolean;
-};
+    effectiveSettings: NodeSettings;
+}
