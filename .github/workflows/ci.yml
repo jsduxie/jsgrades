@@ -56,6 +56,7 @@ jobs:
 
       - name: Extract test summary
         if: always()
+        working-directory: jsgrades
         run: |
           node <<'EOF'
           const fs = require('fs');
@@ -77,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-summary
-          path: test-summary.txt
+          path: jsgrades/test-summary.txt
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
