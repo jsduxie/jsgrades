@@ -95,6 +95,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Fetch at least 2 commits to enable HEAD~1 comparison
 
       - name: Download test summary artifact
         uses: actions/download-artifact@v4
@@ -125,12 +127,20 @@ jobs:
       - name: Get diff stats (line changes)
         id: diff
         run: |
-          CHANGED=$(git diff --shortstat HEAD~1 HEAD || echo "No diff available")
+          if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+            CHANGED=$(git diff --shortstat HEAD~1 HEAD)
+          else
+            CHANGED=$(git show --shortstat --format= HEAD)
+          fi
+          if [ -z "$CHANGED" ]; then
+            CHANGED="No diff available"
+          fi
           echo "diff_summary=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Comment on issue
         uses: peter-evans/create-or-update-comment@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.vars.outputs.issue_number }}
           body: |
             A new push was made to branch `${{ steps.vars.outputs.branch_name }}`
