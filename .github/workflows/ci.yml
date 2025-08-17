@@ -105,7 +105,7 @@ jobs:
       - name: Read test summary
         id: test-summary
         run: |
-          SUMMARY=$(cat ./artifact/test-summary.txt)
+          SUMMARY=$(cat ./artifact/test-summary.txt | tr -d '\n' | tr -d ' ')
           echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
 
       - name: Extract issue number from branch
