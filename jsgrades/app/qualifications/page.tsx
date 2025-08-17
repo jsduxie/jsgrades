@@ -25,10 +25,18 @@ export default function QualificationsPage() {
 
     useEffect(() => {
         async function fetchQualifications() {
-            if (!userId) return;
+            if (!userId || !auth?.currentUser) return;
             setLoading(true);
             try {
-                const res = await fetch(`/api/qualifications?userId=${userId}`);
+                const token = await auth.currentUser.getIdToken();
+                const res = await fetch(
+                    `/api/qualifications?userId=${userId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 const json: APIResponse<Qualification[]> = await res.json();
                 if (json.status === 'success' && json.data) {
                     setQualifications(json.data);
@@ -42,15 +50,19 @@ export default function QualificationsPage() {
             }
         }
         fetchQualifications();
-    }, [userId]);
+    }, [userId, auth?.currentUser]);
 
     const handleAddQualification = async (newQual: Partial<Qualification>) => {
-        if (!userId) return;
+        if (!userId || !auth?.currentUser) return;
         try {
             setLoading(true);
+            const token = await auth.currentUser.getIdToken();
             const res = await fetch('/api/qualifications', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify({ ...newQual, userId }),
             });
             const json: APIResponse<Qualification> = await res.json();
@@ -110,7 +122,7 @@ export default function QualificationsPage() {
                                         </CardTitle>
                                     </div>
                                     <CardDescription className='text-muted-foreground text-sm'>
-                                        {q.level} &bull; {q.institution}
+                                        {q.institution}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className='text-muted-foreground grid gap-4 text-sm'>
