@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { NodeService } from '@/lib/server/NodeService';
 import { validateAuth } from '@/lib/server/auth';
 
 export async function POST(req: NextRequest) {
@@ -11,5 +10,6 @@ export async function POST(req: NextRequest) {
         }
     } catch (error) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        console.warn(`Error: ${error}`);
     }
 }

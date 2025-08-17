@@ -14,25 +14,15 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useProtectedRoute } from '@/hooks/useProtectedHook';
-import { doSignOut } from '@/lib/client-auth';
 import { useRouter } from 'next/navigation';
 
 export default function QualificationsPage() {
     const auth = useAuth();
     const router = useRouter();
-    const protectedRouter = useProtectedRoute();
     const [loading, setLoading] = useState(false);
 
     const [open, setOpen] = useState(false);
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
-
-    if (!auth?.userDetails) {
-        return null;
-    }
-
-    const userDetails = auth?.userDetails;
-    const userId = userDetails.id;
 
     useEffect(() => {
         async function fetchQualifications() {
@@ -55,6 +45,13 @@ export default function QualificationsPage() {
         fetchQualifications();
     }, [userId]);
 
+    if (!auth?.userDetails) {
+        return null;
+    }
+
+    const userDetails = auth?.userDetails;
+    const userId = userDetails.id;
+
     const handleAddQualification = async (newQual: Partial<Qualification>) => {
         if (!userId) return;
         try {
@@ -74,15 +71,6 @@ export default function QualificationsPage() {
             console.error('Failed to add qualification', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const signOut = async () => {
-        try {
-            await doSignOut();
-            router.push('/');
-        } catch (err) {
-            console.error(err);
         }
     };
 

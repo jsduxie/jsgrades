@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useProtectedRoute } from '@/hooks/useProtectedHook';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

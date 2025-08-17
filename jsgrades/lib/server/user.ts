@@ -1,5 +1,5 @@
 import pool from './db';
-import { ClientUserDetails } from '@/types';
+import { ClientUserDetails, DBUserDetails } from '@/types';
 
 export const getUser = async (
     uid: string
@@ -74,15 +74,7 @@ export const addUser = async ({
 
 export const updateUser = async (
     uid: string,
-    updates: Partial<{
-        first_name: string;
-        last_name: string;
-        date_of_birth: string;
-        highest_qual_level: number;
-        verified: boolean;
-        onBoarded: boolean;
-        count_sign_in: number;
-    }>
+    updates: Partial<DBUserDetails>
 ) => {
     const setClause = Object.keys(updates)
         .map((key, index) => `${key} = $${index + 2}`)

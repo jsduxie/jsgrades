@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUser, addUser, updateUser } from '@/lib/server/user';
-import { APIResponse, ClientUserDetails } from '@/types';
+import { APIResponse, ClientUserDetails, DBUserDetails } from '@/types';
 
 export async function GET(
     req: Request,
@@ -72,7 +72,7 @@ export async function POST(
 
         if (existingUser && Object.keys(existingUser).length > 0) {
             // User exists, update the user
-            const updateData: any = {};
+            const updateData: DBUserDetails = {};
 
             if (body.firstName) updateData.first_name = body.firstName;
             if (body.lastName) updateData.last_name = body.lastName;
@@ -88,7 +88,7 @@ export async function POST(
 
             const updatedUser = await updateUser(uid, updateData);
 
-            return NextResponse.json<APIResponse<any>>(
+            return NextResponse.json<APIResponse<ClientUserDetails>>(
                 {
                     status: 'success',
                     message: 'User updated successfully',
@@ -110,7 +110,7 @@ export async function POST(
                 count_sign_in: body.countSignIn || 1,
             });
 
-            return NextResponse.json<APIResponse<any>>(
+            return NextResponse.json<APIResponse<ClientUserDetails>>(
                 {
                     status: 'success',
                     message: 'User created successfully',

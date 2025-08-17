@@ -13,11 +13,9 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 export default function QualificationsPage() {
     const auth = useAuth();
-    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
