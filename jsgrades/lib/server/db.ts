@@ -1,8 +1,5 @@
 import { Pool } from 'pg';
 
-const status =
-    process.env.NODE_ENV === 'test' ? 'DEV' : process.env.STATUS || 'DEV';
-
 let connectionString = process.env.DATABASE_URL;
 
 if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) {

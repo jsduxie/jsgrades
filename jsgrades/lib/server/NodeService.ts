@@ -24,7 +24,6 @@ export class NodeService {
         userId: string;
     }): Promise<{ node: Node; aggregate: NodeAggregate }> {
         const client = await pool.connect();
-
         try {
             await client.query('BEGIN');
 

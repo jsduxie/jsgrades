@@ -1,17 +1,17 @@
-import { v4 as uuidv4 } from 'uuid';
+import { StubUtility } from '../StubUtility';
+import pool from '@/lib/server/db';
 
 const originalEnv = process.env;
 
 describe('Qualifications API Integration Tests', () => {
-    beforeAll(async () => {
-        if (!process.env.DATABASE_URL_DEV) {
-            throw new Error(
-                'DATABASE_URL_DEV not found in environment variables. Make sure .env.local is loaded.'
-            );
-        }
+    let stubUtil: StubUtility;
+    let testUserId: string;
+    let testLevelId: string;
 
+    beforeAll(async () => {
         try {
-            const pool = (await import('@/lib/server/db')).default;
+            stubUtil = await StubUtility.create();
+
             const result = await pool.query('SELECT 1 as test');
             if (result.rows[0].test !== 1) {
                 throw new Error('Database connection test failed');
@@ -22,15 +22,21 @@ describe('Qualifications API Integration Tests', () => {
         }
     });
 
+    beforeEach(async () => {
+        testUserId = await stubUtil.getTestUser({
+            id: '11111111-1111-1111-1111-111111111111',
+            uid: 'test-uid-1',
+            email: 'testuser1@example.com',
+            firstName: 'Test',
+            lastName: 'User',
+        });
+        testLevelId = await stubUtil.getQualificationLevel({
+            name: 'Bachelor',
+        });
+    });
+
     afterAll(async () => {
         process.env = originalEnv;
-
-        try {
-            const pool = (await import('@/lib/server/db')).default;
-            await pool.end();
-        } catch (error) {
-            console.warn('Error closing database connection:', error);
-        }
     });
 
     describe('Real Database Connection', () => {
@@ -73,32 +79,6 @@ describe('Qualifications API Integration Tests', () => {
             const { addQualification } = await import(
                 '@/lib/server/qualifications'
             );
-            const pool = (await import('@/lib/server/db')).default;
-            const testUserId = uuidv4();
-            await pool.query(
-                `INSERT INTO users (id, uid, email, first_name, last_name) VALUES ($1, $2, $3, $4, $5)`,
-                [
-                    testUserId,
-                    `test-${testUserId}`,
-                    `test-${testUserId}@example.com`,
-                    'Test',
-                    'User',
-                ]
-            );
-            let testLevelId: string;
-            const { getQualificationLevels } = await import(
-                '@/lib/server/qualifications'
-            );
-            const levels = await getQualificationLevels();
-            if (levels.length === 0) {
-                const levelResult = await pool.query(
-                    `INSERT INTO qualification_levels (name, level) VALUES ($1, $2) RETURNING id`,
-                    ['Bachelor', 6]
-                );
-                testLevelId = levelResult.rows[0].id;
-            } else {
-                testLevelId = levels[0].id;
-            }
             const testQualification = {
                 name: 'Integration Test Qualification',
                 institution: 'Test University',
@@ -126,39 +106,12 @@ describe('Qualifications API Integration Tests', () => {
             await pool.query('DELETE FROM qualifications WHERE id = $1', [
                 createdQualification.id,
             ]);
-            await pool.query('DELETE FROM users WHERE id = $1', [testUserId]);
         });
 
         it('should read qualifications from real database', async () => {
             const { addQualification, getQualifications } = await import(
                 '@/lib/server/qualifications'
             );
-            const pool = (await import('@/lib/server/db')).default;
-            const testUserId = uuidv4();
-            await pool.query(
-                `INSERT INTO users (id, uid, email, first_name, last_name) VALUES ($1, $2, $3, $4, $5)`,
-                [
-                    testUserId,
-                    `test-${testUserId}`,
-                    `test-${testUserId}@example.com`,
-                    'Test',
-                    'User',
-                ]
-            );
-            let testLevelId: string;
-            const { getQualificationLevels } = await import(
-                '@/lib/server/qualifications'
-            );
-            const levels = await getQualificationLevels();
-            if (levels.length === 0) {
-                const levelResult = await pool.query(
-                    `INSERT INTO qualification_levels (name, level) VALUES ($1, $2) RETURNING id`,
-                    ['Bachelor', 6]
-                );
-                testLevelId = levelResult.rows[0].id;
-            } else {
-                testLevelId = levels[0].id;
-            }
             const testQualification = {
                 name: 'Integration Test Qualification',
                 institution: 'Test University',
@@ -181,44 +134,18 @@ describe('Qualifications API Integration Tests', () => {
                 (q) => q.id === createdQualification.id
             );
             expect(qualification).toBeDefined();
+            if (!qualification) throw new Error('Qualification not found');
             expect(qualification.name).toBe('Integration Test Qualification');
             expect(qualification.institution).toBe('Test University');
             expect(qualification.userId).toBe(testUserId);
             await pool.query('DELETE FROM qualifications WHERE id = $1', [
                 createdQualification.id,
             ]);
-            await pool.query('DELETE FROM users WHERE id = $1', [testUserId]);
         });
 
         it('should update a qualification in real database', async () => {
             const { addQualification, updateQualification, getQualifications } =
                 await import('@/lib/server/qualifications');
-            const pool = (await import('@/lib/server/db')).default;
-            const testUserId = uuidv4();
-            await pool.query(
-                `INSERT INTO users (id, uid, email, first_name, last_name) VALUES ($1, $2, $3, $4, $5)`,
-                [
-                    testUserId,
-                    `test-${testUserId}`,
-                    `test-${testUserId}@example.com`,
-                    'Test',
-                    'User',
-                ]
-            );
-            let testLevelId: string;
-            const { getQualificationLevels } = await import(
-                '@/lib/server/qualifications'
-            );
-            const levels = await getQualificationLevels();
-            if (levels.length === 0) {
-                const levelResult = await pool.query(
-                    `INSERT INTO qualification_levels (name, level) VALUES ($1, $2) RETURNING id`,
-                    ['Bachelor', 6]
-                );
-                testLevelId = levelResult.rows[0].id;
-            } else {
-                testLevelId = levels[0].id;
-            }
             const testQualification = {
                 name: 'Integration Test Qualification',
                 institution: 'Test University',
@@ -255,6 +182,8 @@ describe('Qualifications API Integration Tests', () => {
             const updated = qualifications.find(
                 (q) => q.id === createdQualification.id
             );
+            expect(updated).toBeDefined();
+            if (!updated) throw new Error('Updated qualification not found');
             expect(updated?.name).toBe(
                 'Updated Integration Test Qualification'
             );
@@ -262,38 +191,11 @@ describe('Qualifications API Integration Tests', () => {
             await pool.query('DELETE FROM qualifications WHERE id = $1', [
                 createdQualification.id,
             ]);
-            await pool.query('DELETE FROM users WHERE id = $1', [testUserId]);
         });
 
         it('should delete a qualification from real database', async () => {
             const { addQualification, deleteQualification, getQualifications } =
                 await import('@/lib/server/qualifications');
-            const pool = (await import('@/lib/server/db')).default;
-            const testUserId = uuidv4();
-            await pool.query(
-                `INSERT INTO users (id, uid, email, first_name, last_name) VALUES ($1, $2, $3, $4, $5)`,
-                [
-                    testUserId,
-                    `test-${testUserId}`,
-                    `test-${testUserId}@example.com`,
-                    'Test',
-                    'User',
-                ]
-            );
-            let testLevelId: string;
-            const { getQualificationLevels } = await import(
-                '@/lib/server/qualifications'
-            );
-            const levels = await getQualificationLevels();
-            if (levels.length === 0) {
-                const levelResult = await pool.query(
-                    `INSERT INTO qualification_levels (name, level) VALUES ($1, $2) RETURNING id`,
-                    ['Bachelor', 6]
-                );
-                testLevelId = levelResult.rows[0].id;
-            } else {
-                testLevelId = levels[0].id;
-            }
             const testQualification = {
                 name: 'Integration Test Qualification',
                 institution: 'Test University',
@@ -318,7 +220,6 @@ describe('Qualifications API Integration Tests', () => {
                 (q) => q.id === createdQualification.id
             );
             expect(found).toBeUndefined();
-            await pool.query('DELETE FROM users WHERE id = $1', [testUserId]);
         });
     });
 });

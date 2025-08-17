@@ -26,6 +26,8 @@ export default {
         '<rootDir>/tests/**/*.test.{ts,tsx}',
         '<rootDir>/**/__tests__/**/*.{ts,tsx}',
     ],
+    globalSetup: '<rootDir>/tests/jest.globalSetup.ts',
+    globalTeardown: '<rootDir>/tests/jest.globalTeardown.ts',
     collectCoverage: true,
     coverageDirectory: 'coverage',
     coverageReporters: ['json', 'lcov', 'text', 'clover'],

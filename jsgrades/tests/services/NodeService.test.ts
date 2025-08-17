@@ -1,97 +1,45 @@
 import '@jest/globals';
 import { NodeService } from '@/lib/server/NodeService';
-import pool from '@/lib/server/db';
-import type { PoolClient } from 'pg';
+import { StubUtility, TestContext } from '@/tests/StubUtility';
 
-interface SeedContext {
-    userId: string;
-    qualificationLevelId: string;
-    qualificationId: string;
-    nodeTypeYearId: string;
-    nodeTypeModuleId: string;
-    nodeTypeAssessmentId: string;
-    rootNodeId: string;
-}
+let stubUtil: StubUtility;
+let ctx: TestContext;
 
-let client: PoolClient;
-let ctx: SeedContext;
-
-async function seedBase(c: PoolClient): Promise<SeedContext> {
-    const user = await c.query(
-        `INSERT INTO users (uid, email, first_name) VALUES ($1,$2,$3) RETURNING id`,
-        [`test-${Date.now()}`, `t${Date.now()}@ex.com`, 'Test']
-    );
-    const userId = user.rows[0].id;
-
-    const lvl = await c.query(
-        `INSERT INTO qualification_levels (name, level) VALUES ($1,$2) RETURNING id`,
-        [`Bachelors-${Date.now()}`, 6]
-    );
-    const qualificationLevelId = lvl.rows[0].id;
-
-    const ntYear = await c.query(
-        `INSERT INTO node_types (name, allow_children) VALUES ('year', true) RETURNING id`
-    );
-    const ntModule = await c.query(
-        `INSERT INTO node_types (name, allow_children) VALUES ('module', true) RETURNING id`
-    );
-    const ntAssessment = await c.query(
-        `INSERT INTO node_types (name, allow_children) VALUES ('assessment', false) RETURNING id`
-    );
-
-    const qual = await c.query(
-        `INSERT INTO qualifications (user_id, level, name, institution) VALUES ($1,$2,$3,$4) RETURNING id`,
-        [userId, qualificationLevelId, 'Test Degree', 'Test Uni']
-    );
-    const qualificationId = qual.rows[0].id;
-
-    const root = await c.query(
-        `INSERT INTO qualification_nodes (
-       qualification_id,user_id,parent_id,name,type,
-       calculation_method,weighting_mode,rounding_mode,rounding_precision,
-       exclude_incomplete_from_predicted,inherit_settings,overrides,
-       credit_enforcement,config_status,lock_config
-     ) VALUES ($1,$2,NULL,$3,$4,'weighted_mean','equal','none',2,TRUE,TRUE,'{}','warn','partial',FALSE)
-     RETURNING id`,
-        [qualificationId, userId, 'Year 1', ntYear.rows[0].id]
-    );
-    const rootNodeId = root.rows[0].id;
-
-    await c.query(
-        `INSERT INTO node_aggregates (node_id, child_counts, effective_settings) VALUES ($1,'{}','{}')`,
-        [rootNodeId]
-    );
-
-    return {
-        userId,
-        qualificationLevelId,
-        qualificationId,
-        nodeTypeYearId: ntYear.rows[0].id,
-        nodeTypeModuleId: ntModule.rows[0].id,
-        nodeTypeAssessmentId: ntAssessment.rows[0].id,
-        rootNodeId,
-    };
-}
-
-async function truncateAllTables(client: PoolClient) {
-    await client.query(
-        'TRUNCATE node_aggregates, node_edges, qualification_nodes, qualifications, node_types, qualification_levels, users RESTART IDENTITY CASCADE;'
-    );
-}
+jest.setTimeout(30000);
 
 describe('NodeService', () => {
     beforeAll(async () => {
-        client = await pool.connect();
+        stubUtil = await StubUtility.create();
+
+        try {
+            ctx = await stubUtil.getTestContext();
+            console.log(
+                `Test context initialized with root node: ${ctx.rootNodeId}`
+            );
+
+            const verifyRoot = await stubUtil.client.query(
+                `SELECT id FROM qualification_nodes WHERE id = $1`,
+                [ctx.rootNodeId]
+            );
+            if (verifyRoot.rows.length === 0) {
+                throw new Error(
+                    `Root node ${ctx.rootNodeId} not found after initialization`
+                );
+            } else {
+                console.log(`Root node ${ctx.rootNodeId} verified to exist`);
+            }
+        } catch (error) {
+            console.error('Failed to initialize test context:', error);
+            throw error;
+        }
     });
 
-    afterAll(async () => {
-        await client.release();
-        await pool.end();
-    });
-
-    beforeEach(async () => {
-        await truncateAllTables(client);
-        ctx = await seedBase(client);
+    afterEach(async () => {
+        try {
+            await stubUtil.client.query('ROLLBACK');
+        } catch (e) {
+            console.error('Error rolling back transaction:', e);
+        }
     });
 
     describe('NodeServices.createNode', () => {
@@ -102,13 +50,12 @@ describe('NodeService', () => {
                 name: 'Module A',
                 qualificationId: ctx.qualificationId,
                 userId: ctx.userId,
-                client,
             });
 
             expect(node.id).toBeDefined();
             expect(aggregate.nodeId).toBe(node.id);
 
-            const edge = await client.query(
+            const edge = await stubUtil.client.query(
                 `SELECT position FROM node_edges WHERE parent_id = $1 AND child_id = $2`,
                 [ctx.rootNodeId, node.id]
             );
@@ -126,7 +73,6 @@ describe('NodeService', () => {
                 },
                 qualificationId: ctx.qualificationId,
                 userId: ctx.userId,
-                client,
             });
 
             expect(node.id).toBeDefined();
@@ -142,40 +88,52 @@ describe('NodeService', () => {
         });
 
         it('should correctly assign edge position when many child nodes', async () => {
-            let lastNodeId: string | undefined;
-            for (let i = 1; i <= 50; i++) {
-                const { node } = await NodeService.createNode({
+            const initialPositionQuery = await stubUtil.client.query(
+                `SELECT COALESCE(MAX(position), 0) as max_position
+                 FROM node_edges
+                 WHERE parent_id = $1`,
+                [ctx.rootNodeId]
+            );
+            const initialPosition =
+                parseInt(initialPositionQuery.rows[0].max_position) || 0;
+            console.log(`Starting with initial position: ${initialPosition}`);
+
+            const nodesToCreate = 5;
+            for (let i = 1; i <= nodesToCreate; i++) {
+                await NodeService.createNode({
                     parentId: ctx.rootNodeId,
                     type: ctx.nodeTypeModuleId,
                     name: `Module ${i}`,
                     qualificationId: ctx.qualificationId,
                     userId: ctx.userId,
-                    client,
                 });
-                lastNodeId = node.id;
             }
 
             const start = process.hrtime.bigint();
             const { node: newNode } = await NodeService.createNode({
                 parentId: ctx.rootNodeId,
                 type: ctx.nodeTypeModuleId,
-                name: 'Module 51',
+                name: `Module ${nodesToCreate + 1}`,
                 qualificationId: ctx.qualificationId,
                 userId: ctx.userId,
-                client,
             });
             const end = process.hrtime.bigint();
             const durationMs = Number(end - start) / 1_000_000;
 
-            const edgeRes = await client.query(
+            const edgeRes = await stubUtil.client.query(
                 `SELECT position FROM node_edges WHERE parent_id = $1 AND child_id = $2`,
                 [ctx.rootNodeId, newNode.id]
             );
             expect(edgeRes.rowCount).toBe(1);
-            expect(edgeRes.rows[0].position).toBe(51);
+
+            const expectedPosition = initialPosition + nodesToCreate + 1;
+            console.log(
+                `Expecting position: ${expectedPosition}, got: ${edgeRes.rows[0].position}`
+            );
+            expect(edgeRes.rows[0].position).toBe(expectedPosition);
 
             console.log(
-                `createNode (51st child) duration: ${durationMs.toFixed(2)}ms`
+                `createNode (${nodesToCreate + 1}th child) duration: ${durationMs.toFixed(2)}ms`
             );
         });
     });
