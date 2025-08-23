@@ -1,5 +1,4 @@
 import pool from './db';
-import type { PoolClient } from 'pg';
 
 export class ValidationService {
     /**
@@ -18,10 +17,17 @@ export class ValidationService {
                 [qualificationId, userId]
             );
             const owned = result.rows.length > 0;
-            console.log('[ValidationService.validateQualificationOwnership]', { qualificationId, userId, owned });
+            console.log('[ValidationService.validateQualificationOwnership]', {
+                qualificationId,
+                userId,
+                owned,
+            });
             return owned;
         } catch (error) {
-            console.error('Error validating qualification ownership:', error, { qualificationId, userId });
+            console.error('Error validating qualification ownership:', error, {
+                qualificationId,
+                userId,
+            });
             return false;
         }
     }
@@ -58,14 +64,20 @@ export class ValidationService {
     static async validateParentOwnership(
         parentId: string,
         userId: string
-    ): Promise<{ isValid: boolean; parentType: 'qualification' | 'node' | null }> {
+    ): Promise<{
+        isValid: boolean;
+        parentType: 'qualification' | 'node' | null;
+    }> {
         try {
             const qualResult = await pool.query(
                 'SELECT id FROM qualifications WHERE id = $1 AND user_id = $2',
                 [parentId, userId]
             );
             if (qualResult.rows.length > 0) {
-                console.log('[ValidationService.validateParentOwnership] qualification parent', { parentId, userId });
+                console.log(
+                    '[ValidationService.validateParentOwnership] qualification parent',
+                    { parentId, userId }
+                );
                 return { isValid: true, parentType: 'qualification' };
             }
 
@@ -74,14 +86,23 @@ export class ValidationService {
                 [parentId, userId]
             );
             if (nodeResult.rows.length > 0) {
-                console.log('[ValidationService.validateParentOwnership] node parent', { parentId, userId });
+                console.log(
+                    '[ValidationService.validateParentOwnership] node parent',
+                    { parentId, userId }
+                );
                 return { isValid: true, parentType: 'node' };
             }
 
-            console.log('[ValidationService.validateParentOwnership] invalid parent', { parentId, userId });
+            console.log(
+                '[ValidationService.validateParentOwnership] invalid parent',
+                { parentId, userId }
+            );
             return { isValid: false, parentType: null };
         } catch (error) {
-            console.error('Error validating parent ownership:', error, { parentId, userId });
+            console.error('Error validating parent ownership:', error, {
+                parentId,
+                userId,
+            });
             return { isValid: false, parentType: null };
         }
     }
@@ -124,7 +145,9 @@ export class ValidationService {
                 ? 'SELECT id, user_id, name FROM qualifications WHERE id = $1 AND user_id = $2'
                 : 'SELECT id, user_id, name FROM qualifications WHERE id = $1';
 
-            const params = userId ? [qualificationId, userId] : [qualificationId];
+            const params = userId
+                ? [qualificationId, userId]
+                : [qualificationId];
             const result = await pool.query(query, params);
 
             if (result.rows.length === 0) {
@@ -135,7 +158,7 @@ export class ValidationService {
             return {
                 id: row.id,
                 userId: row.user_id,
-                name: row.name
+                name: row.name,
             };
         } catch (error) {
             console.error('Error getting qualification:', error);
@@ -148,7 +171,10 @@ export class ValidationService {
      * @param data The new node data
      * @returns Validation result with any error messages
      */
-    static validateNewNodeData(data: any): { isValid: boolean; errors: string[] } {
+    static validateNewNodeData(data: Partial<Node>): {
+        isValid: boolean;
+        errors: string[];
+    } {
         const errors: string[] = [];
 
         if (!data.parentId || typeof data.parentId !== 'string') {
@@ -159,7 +185,11 @@ export class ValidationService {
             errors.push('type is required and must be a string');
         }
 
-        if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+        if (
+            !data.name ||
+            typeof data.name !== 'string' ||
+            data.name.trim().length === 0
+        ) {
             errors.push('name is required and must be a non-empty string');
         }
 
@@ -176,7 +206,7 @@ export class ValidationService {
 
         return {
             isValid: errors.length === 0,
-            errors
+            errors,
         };
     }
 }

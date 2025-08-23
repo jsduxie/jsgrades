@@ -55,7 +55,6 @@ export class StubUtility {
         return this.client;
     }
 
-
     /**
      * Creates or gets a test user with consistent ID
      * @param options - Optional user properties
@@ -159,7 +158,7 @@ export class StubUtility {
             throw new Error('Client not initialised. Call initialize() first.');
         }
 
-        const name = options?.name || `Test Bachelor ${Date.now()}`;  // Make names unique to avoid conflicts
+        const name = options?.name || `Test Bachelor ${Date.now()}`; // Make names unique to avoid conflicts
         const level = options?.level || 6;
 
         const existingLevel = await this.client.query(
@@ -180,7 +179,10 @@ export class StubUtility {
             return newLevel.rows[0].id;
         } catch (error) {
             // If there's a constraint violation, try to get the existing record
-            console.warn(`Failed to create qualification level "${name}":`, error);
+            console.warn(
+                `Failed to create qualification level "${name}":`,
+                error
+            );
             const retryResult = await this.client.query(
                 'SELECT id FROM qualification_levels WHERE name = $1',
                 [name]
@@ -397,10 +399,21 @@ export class StubUtility {
 
             // Final verification that all data was created successfully
             const verifications = await Promise.all([
-                this.client.query('SELECT id FROM users WHERE id = $1', [userId]),
-                this.client.query('SELECT id FROM qualification_levels WHERE id = $1', [qualificationLevelId]),
-                this.client.query('SELECT id FROM qualifications WHERE id = $1', [qualificationId]),
-                this.client.query('SELECT id FROM qualification_nodes WHERE id = $1', [rootNodeId])
+                this.client.query('SELECT id FROM users WHERE id = $1', [
+                    userId,
+                ]),
+                this.client.query(
+                    'SELECT id FROM qualification_levels WHERE id = $1',
+                    [qualificationLevelId]
+                ),
+                this.client.query(
+                    'SELECT id FROM qualifications WHERE id = $1',
+                    [qualificationId]
+                ),
+                this.client.query(
+                    'SELECT id FROM qualification_nodes WHERE id = $1',
+                    [rootNodeId]
+                ),
             ]);
 
             const [userCheck, levelCheck, qualCheck, nodeCheck] = verifications;
@@ -409,10 +422,14 @@ export class StubUtility {
                 throw new Error(`Failed to verify user: ${userId}`);
             }
             if (levelCheck.rows.length === 0) {
-                throw new Error(`Failed to verify qualification level: ${qualificationLevelId}`);
+                throw new Error(
+                    `Failed to verify qualification level: ${qualificationLevelId}`
+                );
             }
             if (qualCheck.rows.length === 0) {
-                throw new Error(`Failed to verify qualification: ${qualificationId}`);
+                throw new Error(
+                    `Failed to verify qualification: ${qualificationId}`
+                );
             }
             if (nodeCheck.rows.length === 0) {
                 throw new Error(`Failed to verify root node: ${rootNodeId}`);

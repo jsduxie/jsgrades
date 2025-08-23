@@ -10,7 +10,10 @@ export async function POST(req: NextRequest) {
     try {
         console.log('[POST /api/nodes] Incoming request');
         const user = await validateAuth(req);
-        console.log('[POST /api/nodes] Auth result:', user ? user.id : 'unauthenticated');
+        console.log(
+            '[POST /api/nodes] Auth result:',
+            user ? user.id : 'unauthenticated'
+        );
 
         if (!user) {
             return NextResponse.json<APIResponse>(
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest) {
                 {
                     status: 'error',
                     message: 'Invalid input data',
-                    data: validation.errors
+                    data: validation.errors,
                 },
                 { status: 400 }
             );
@@ -63,13 +66,23 @@ export async function POST(req: NextRequest) {
         }
 
         if (!qualificationRow || qualificationRow.user_id !== user.id) {
-            console.log('[POST /api/nodes] Qualification ownership check failed', { qualificationRow, expectedUser: user.id });
+            console.log(
+                '[POST /api/nodes] Qualification ownership check failed',
+                { qualificationRow, expectedUser: user.id }
+            );
             return NextResponse.json<APIResponse>(
-                { status: 'error', message: 'Qualification not found or access denied' },
+                {
+                    status: 'error',
+                    message: 'Qualification not found or access denied',
+                },
                 { status: 404 }
             );
         } else {
-            console.log('[POST /api/nodes] Qualification ownership confirmed', { qualificationId: qualificationRow.id, owner: qualificationRow.user_id, user: user.id });
+            console.log('[POST /api/nodes] Qualification ownership confirmed', {
+                qualificationId: qualificationRow.id,
+                owner: qualificationRow.user_id,
+                user: user.id,
+            });
         }
 
         // 2. Resolve parent
@@ -84,12 +97,18 @@ export async function POST(req: NextRequest) {
                 if (rootRes.rows.length === 0) {
                     console.log('[POST /api/nodes] Root node missing -> 404');
                     return NextResponse.json<APIResponse>(
-                        { status: 'error', message: 'Parent not found or access denied' },
+                        {
+                            status: 'error',
+                            message: 'Parent not found or access denied',
+                        },
                         { status: 404 }
                     );
                 }
                 parentNodeId = rootRes.rows[0].id;
-                console.log('[POST /api/nodes] Using qualification root as parent', parentNodeId);
+                console.log(
+                    '[POST /api/nodes] Using qualification root as parent',
+                    parentNodeId
+                );
             } catch (e) {
                 console.error('[POST /api/nodes] Error fetching root node:', e);
                 return NextResponse.json<APIResponse>(
@@ -105,31 +124,59 @@ export async function POST(req: NextRequest) {
                     [body.parentId]
                 );
                 if (pres.rows.length === 0) {
-                    console.log('[POST /api/nodes] Parent node not found -> 404', { parentId: body.parentId });
+                    console.log(
+                        '[POST /api/nodes] Parent node not found -> 404',
+                        { parentId: body.parentId }
+                    );
                     return NextResponse.json<APIResponse>(
-                        { status: 'error', message: 'Parent not found or access denied' },
+                        {
+                            status: 'error',
+                            message: 'Parent not found or access denied',
+                        },
                         { status: 404 }
                     );
                 }
                 const prow = pres.rows[0];
                 if (prow.user_id !== user.id) {
-                    console.log('[POST /api/nodes] Parent node owned by different user -> 404', { parentId: prow.id, owner: prow.user_id, expected: user.id });
+                    console.log(
+                        '[POST /api/nodes] Parent node owned by different user -> 404',
+                        {
+                            parentId: prow.id,
+                            owner: prow.user_id,
+                            expected: user.id,
+                        }
+                    );
                     return NextResponse.json<APIResponse>(
-                        { status: 'error', message: 'Parent not found or access denied' },
+                        {
+                            status: 'error',
+                            message: 'Parent not found or access denied',
+                        },
                         { status: 404 }
                     );
                 }
                 if (prow.lock_config) {
-                    console.log('[POST /api/nodes] Parent node locked -> 403', prow.id);
+                    console.log(
+                        '[POST /api/nodes] Parent node locked -> 403',
+                        prow.id
+                    );
                     return NextResponse.json<APIResponse>(
-                        { status: 'error', message: 'Parent node configuration is locked' },
+                        {
+                            status: 'error',
+                            message: 'Parent node configuration is locked',
+                        },
                         { status: 403 }
                     );
                 }
                 parentNodeId = prow.id;
-                console.log('[POST /api/nodes] Using node as parent', { parentNodeId, owner: prow.user_id });
+                console.log('[POST /api/nodes] Using node as parent', {
+                    parentNodeId,
+                    owner: prow.user_id,
+                });
             } catch (e) {
-                console.error('[POST /api/nodes] Error validating parent node:', e);
+                console.error(
+                    '[POST /api/nodes] Error validating parent node:',
+                    e
+                );
                 return NextResponse.json<APIResponse>(
                     { status: 'error', message: 'Internal server error' },
                     { status: 500 }
@@ -147,13 +194,13 @@ export async function POST(req: NextRequest) {
                 credits: body.credits,
                 settings: body.settings,
                 qualificationId: body.qualificationId,
-                userId: user.id
+                userId: user.id,
             });
             console.log('[POST /api/nodes] Node created successfully:', {
                 nodeId: result.node.id,
                 parentId: result.node.parentId,
                 type: result.node.type,
-                name: result.node.name
+                name: result.node.name,
             });
         } catch (error) {
             console.error('Error creating node (threw):', error);
@@ -163,14 +210,21 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        return NextResponse.json<APIResponse<{ node: Node; aggregate: NodeAggregate }>>({
-            status: 'success',
-            message: 'Node created successfully',
-            data: result
-        }, { status: 201 });
-
+        return NextResponse.json<
+            APIResponse<{ node: Node; aggregate: NodeAggregate }>
+        >(
+            {
+                status: 'success',
+                message: 'Node created successfully',
+                data: result,
+            },
+            { status: 201 }
+        );
     } catch (error) {
-        console.error('Unexpected error in POST /api/nodes (outer catch):', error);
+        console.error(
+            'Unexpected error in POST /api/nodes (outer catch):',
+            error
+        );
         return NextResponse.json<APIResponse>(
             { status: 'error', message: 'Internal server error' },
             { status: 500 }

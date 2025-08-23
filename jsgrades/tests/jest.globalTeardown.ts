@@ -37,10 +37,16 @@ export default async function globalTeardown() {
             console.log('Global database cleanup successful');
         } catch (truncateError) {
             await client.query('ROLLBACK');
-            console.error('Error during global database cleanup:', truncateError);
+            console.error(
+                'Error during global database cleanup:',
+                truncateError
+            );
         }
     } catch (connErr) {
-        console.error('Failed to connect to test database for cleanup:', connErr);
+        console.error(
+            'Failed to connect to test database for cleanup:',
+            connErr
+        );
     } finally {
         try {
             if (client) client.release();

@@ -36,18 +36,17 @@ describe('POST /api/nodes', () => {
         testContext = await stubUtil.getTestContext({
             userId: '11111111-1111-1111-1111-111111111111',
             userName: 'testuser1',
-            qualificationName: 'Computer Science BSc'
+            qualificationName: 'Computer Science BSc',
         });
 
         anotherUserContext = await stubUtil.getTestContext({
             userId: '22222222-2222-2222-2222-222222222222',
             userName: 'testuser2',
-            qualificationName: 'Mathematics BSc'
+            qualificationName: 'Mathematics BSc',
         });
     });
 
     beforeEach(async () => {
-
         // Reset mocks
         jest.clearAllMocks();
     });
@@ -57,12 +56,14 @@ describe('POST /api/nodes', () => {
     });
 
     // Helper function to create mock request
-    const createMockRequest = (body: any) => ({
-        json: jest.fn().mockResolvedValue(body),
-        headers: {
-            get: (h: string) => h === 'Authorization' ? 'Bearer validtoken' : undefined,
-        },
-    } as any);
+    const createMockRequest = (body: any) =>
+        ({
+            json: jest.fn().mockResolvedValue(body),
+            headers: {
+                get: (h: string) =>
+                    h === 'Authorization' ? 'Bearer validtoken' : undefined,
+            },
+        }) as any;
 
     describe('Authentication', () => {
         it('should return 401 when user is not authenticated', async () => {
@@ -72,7 +73,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -90,7 +91,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -104,7 +105,7 @@ describe('POST /api/nodes', () => {
             mockValidateAuth.mockResolvedValue({
                 id: testContext.userId,
                 email: 'test@example.com',
-                uid: 'test-uid'
+                uid: 'test-uid',
             });
         });
 
@@ -112,7 +113,7 @@ describe('POST /api/nodes', () => {
             const req = createMockRequest({
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -121,14 +122,16 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('parentId is required and must be a string');
+            expect(data.data).toContain(
+                'parentId is required and must be a string'
+            );
         });
 
         it('should return 400 when type is missing', async () => {
             const req = createMockRequest({
                 parentId: testContext.qualificationId,
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -137,14 +140,16 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('type is required and must be a string');
+            expect(data.data).toContain(
+                'type is required and must be a string'
+            );
         });
 
         it('should return 400 when name is missing', async () => {
             const req = createMockRequest({
                 parentId: testContext.qualificationId,
                 type: 'year',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -153,7 +158,9 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('name is required and must be a non-empty string');
+            expect(data.data).toContain(
+                'name is required and must be a non-empty string'
+            );
         });
 
         it('should return 400 when name is empty string', async () => {
@@ -161,7 +168,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.qualificationId,
                 type: 'year',
                 name: '   ',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -170,14 +177,16 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('name is required and must be a non-empty string');
+            expect(data.data).toContain(
+                'name is required and must be a non-empty string'
+            );
         });
 
         it('should return 400 when qualificationId is missing', async () => {
             const req = createMockRequest({
                 parentId: testContext.qualificationId,
                 type: 'year',
-                name: 'Year 1'
+                name: 'Year 1',
             });
 
             const response = await POST(req);
@@ -186,7 +195,9 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('qualificationId is required and must be a string');
+            expect(data.data).toContain(
+                'qualificationId is required and must be a string'
+            );
         });
 
         it('should return 400 when credits is negative', async () => {
@@ -195,7 +206,7 @@ describe('POST /api/nodes', () => {
                 type: 'year',
                 name: 'Year 1',
                 credits: -10,
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -204,7 +215,9 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('credits must be a non-negative number');
+            expect(data.data).toContain(
+                'credits must be a non-negative number'
+            );
         });
 
         it('should return 400 when credits is not a number', async () => {
@@ -213,7 +226,7 @@ describe('POST /api/nodes', () => {
                 type: 'year',
                 name: 'Year 1',
                 credits: 'invalid',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -222,7 +235,9 @@ describe('POST /api/nodes', () => {
             expect(response.status).toBe(400);
             expect(data.status).toBe('error');
             expect(data.message).toBe('Invalid input data');
-            expect(data.data).toContain('credits must be a non-negative number');
+            expect(data.data).toContain(
+                'credits must be a non-negative number'
+            );
         });
 
         it('should accept valid credits of 0', async () => {
@@ -231,7 +246,7 @@ describe('POST /api/nodes', () => {
                 type: 'year',
                 name: 'Year 1',
                 credits: 0,
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -241,20 +256,22 @@ describe('POST /api/nodes', () => {
 
         it('should handle multiple validation errors', async () => {
             const req = createMockRequest({
-                credits: -5
+                credits: -5,
             });
 
             const response = await POST(req);
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.data).toEqual(expect.arrayContaining([
-                'parentId is required and must be a string',
-                'type is required and must be a string',
-                'name is required and must be a non-empty string',
-                'qualificationId is required and must be a string',
-                'credits must be a non-negative number'
-            ]));
+            expect(data.data).toEqual(
+                expect.arrayContaining([
+                    'parentId is required and must be a string',
+                    'type is required and must be a string',
+                    'name is required and must be a non-empty string',
+                    'qualificationId is required and must be a string',
+                    'credits must be a non-negative number',
+                ])
+            );
         });
     });
 
@@ -263,7 +280,7 @@ describe('POST /api/nodes', () => {
             mockValidateAuth.mockResolvedValue({
                 id: testContext.userId,
                 email: 'test@example.com',
-                uid: 'test-uid'
+                uid: 'test-uid',
             });
         });
 
@@ -272,7 +289,7 @@ describe('POST /api/nodes', () => {
                 parentId: anotherUserContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: anotherUserContext.qualificationId
+                qualificationId: anotherUserContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -280,7 +297,9 @@ describe('POST /api/nodes', () => {
 
             expect(response.status).toBe(404);
             expect(data.status).toBe('error');
-            expect(data.message).toBe('Qualification not found or access denied');
+            expect(data.message).toBe(
+                'Qualification not found or access denied'
+            );
         });
 
         it('should return 404 when qualification does not exist', async () => {
@@ -288,14 +307,16 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: '99999999-9999-9999-9999-999999999999'
+                qualificationId: '99999999-9999-9999-9999-999999999999',
             });
 
             const response = await POST(req);
             const data = await response.json();
 
             expect(response.status).toBe(404);
-            expect(data.message).toBe('Qualification not found or access denied');
+            expect(data.message).toBe(
+                'Qualification not found or access denied'
+            );
         });
     });
 
@@ -304,7 +325,7 @@ describe('POST /api/nodes', () => {
             mockValidateAuth.mockResolvedValue({
                 id: testContext.userId,
                 email: 'test@example.com',
-                uid: 'test-uid'
+                uid: 'test-uid',
             });
         });
 
@@ -313,7 +334,7 @@ describe('POST /api/nodes', () => {
                 parentId: anotherUserContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -328,7 +349,7 @@ describe('POST /api/nodes', () => {
                 parentId: anotherUserContext.rootNodeId,
                 type: 'module',
                 name: 'Computer Programming',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -343,7 +364,7 @@ describe('POST /api/nodes', () => {
                 parentId: '99999999-9999-9999-9999-999999999999',
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -359,7 +380,7 @@ describe('POST /api/nodes', () => {
             mockValidateAuth.mockResolvedValue({
                 id: testContext.userId,
                 email: 'test@example.com',
-                uid: 'test-uid'
+                uid: 'test-uid',
             });
         });
 
@@ -376,7 +397,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.rootNodeId,
                 type: 'module',
                 name: 'Computer Programming',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -398,7 +419,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -412,7 +433,7 @@ describe('POST /api/nodes', () => {
             mockValidateAuth.mockResolvedValue({
                 id: testContext.userId,
                 email: 'test@example.com',
-                uid: 'test-uid'
+                uid: 'test-uid',
             });
         });
 
@@ -421,7 +442,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.qualificationId,
                 type: 'year',
                 name: 'Year 1',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -435,7 +456,9 @@ describe('POST /api/nodes', () => {
             expect(data.data.node.name).toBe('Year 1');
             expect(data.data.node.type).toBe('year');
             expect(data.data.node.userId).toBe(testContext.userId);
-            expect(data.data.node.qualificationId).toBe(testContext.qualificationId);
+            expect(data.data.node.qualificationId).toBe(
+                testContext.qualificationId
+            );
         });
 
         it('should successfully create a node with another node as parent', async () => {
@@ -443,7 +466,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.rootNodeId,
                 type: 'module',
                 name: 'Computer Programming',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -462,7 +485,7 @@ describe('POST /api/nodes', () => {
                 type: 'module',
                 name: 'Advanced Mathematics',
                 credits: 120,
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -480,7 +503,7 @@ describe('POST /api/nodes', () => {
                 roundingPrecision: 1,
                 excludeIncompleteFromPredicted: false,
                 inheritSettings: false,
-                overrides: { calculationMethod: true }
+                overrides: { calculationMethod: true },
             };
 
             const req = createMockRequest({
@@ -488,7 +511,7 @@ describe('POST /api/nodes', () => {
                 type: 'module',
                 name: 'Statistics',
                 settings: customSettings,
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -508,7 +531,7 @@ describe('POST /api/nodes', () => {
                 parentId: testContext.rootNodeId,
                 type: 'module',
                 name: 'Data Structures',
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -527,7 +550,7 @@ describe('POST /api/nodes', () => {
                 type: 'module',
                 name: 'Optional Module',
                 credits: null,
-                qualificationId: testContext.qualificationId
+                qualificationId: testContext.qualificationId,
             });
 
             const response = await POST(req);
@@ -543,16 +566,16 @@ describe('POST /api/nodes', () => {
             mockValidateAuth.mockResolvedValue({
                 id: testContext.userId,
                 email: 'test@example.com',
-                uid: 'test-uid'
+                uid: 'test-uid',
             });
         });
-
 
         it('should handle invalid JSON in request body', async () => {
             const req = {
                 json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
                 headers: {
-                    get: (h: string) => h === 'Authorization' ? 'Bearer validtoken' : undefined,
+                    get: (h: string) =>
+                        h === 'Authorization' ? 'Bearer validtoken' : undefined,
                 },
             } as any;
 

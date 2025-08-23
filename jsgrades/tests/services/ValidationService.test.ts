@@ -19,37 +19,41 @@ describe('ValidationService', () => {
 
     describe('validateQualificationOwnership', () => {
         it('should return true when qualification belongs to user', async () => {
-            const result = await ValidationService.validateQualificationOwnership(
-                ctx.qualificationId,
-                ctx.userId
-            );
+            const result =
+                await ValidationService.validateQualificationOwnership(
+                    ctx.qualificationId,
+                    ctx.userId
+                );
             expect(result).toBe(true);
         });
 
         it('should return false when qualification does not belong to user', async () => {
             const otherUserId = '22222222-2222-2222-2222-222222222222';
-            const result = await ValidationService.validateQualificationOwnership(
-                ctx.qualificationId,
-                otherUserId
-            );
+            const result =
+                await ValidationService.validateQualificationOwnership(
+                    ctx.qualificationId,
+                    otherUserId
+                );
             expect(result).toBe(false);
         });
 
         it('should return false when qualification does not exist', async () => {
             const nonExistentId = '99999999-9999-9999-9999-999999999999';
-            const result = await ValidationService.validateQualificationOwnership(
-                nonExistentId,
-                ctx.userId
-            );
+            const result =
+                await ValidationService.validateQualificationOwnership(
+                    nonExistentId,
+                    ctx.userId
+                );
             expect(result).toBe(false);
         });
 
         it('should handle database errors gracefully', async () => {
             // Test with malformed UUID to trigger database error
-            const result = await ValidationService.validateQualificationOwnership(
-                'invalid-uuid',
-                ctx.userId
-            );
+            const result =
+                await ValidationService.validateQualificationOwnership(
+                    'invalid-uuid',
+                    ctx.userId
+                );
             expect(result).toBe(false);
         });
     });
@@ -141,18 +145,22 @@ describe('ValidationService', () => {
 
     describe('validateNodeNotLocked', () => {
         it('should return true when node is not locked', async () => {
-            const result = await ValidationService.validateNodeNotLocked(ctx.rootNodeId);
+            const result = await ValidationService.validateNodeNotLocked(
+                ctx.rootNodeId
+            );
             expect(result).toBe(true);
         });
 
         it('should return false when node does not exist', async () => {
             const nonExistentId = '99999999-9999-9999-9999-999999999999';
-            const result = await ValidationService.validateNodeNotLocked(nonExistentId);
+            const result =
+                await ValidationService.validateNodeNotLocked(nonExistentId);
             expect(result).toBe(false);
         });
 
         it('should handle database errors gracefully', async () => {
-            const result = await ValidationService.validateNodeNotLocked('invalid-uuid');
+            const result =
+                await ValidationService.validateNodeNotLocked('invalid-uuid');
             expect(result).toBe(false);
         });
 
@@ -167,16 +175,25 @@ describe('ValidationService', () => {
                 ) VALUES ($1, $2, $3, 'Locked Node', $4, 'weighted_mean', 'equal', 'none', 2, 
                     TRUE, TRUE, '{}', 'warn', 'partial', TRUE)
                 RETURNING id`,
-                [ctx.qualificationId, ctx.userId, ctx.rootNodeId, ctx.nodeTypeModuleId]
+                [
+                    ctx.qualificationId,
+                    ctx.userId,
+                    ctx.rootNodeId,
+                    ctx.nodeTypeModuleId,
+                ]
             );
 
             const lockedNodeId = lockedNodeResult.rows[0].id;
 
-            const result = await ValidationService.validateNodeNotLocked(lockedNodeId);
+            const result =
+                await ValidationService.validateNodeNotLocked(lockedNodeId);
             expect(result).toBe(false);
 
             // Clean up
-            await stubUtil.dbClient.query('DELETE FROM qualification_nodes WHERE id = $1', [lockedNodeId]);
+            await stubUtil.dbClient.query(
+                'DELETE FROM qualification_nodes WHERE id = $1',
+                [lockedNodeId]
+            );
         });
     });
 
@@ -211,14 +228,19 @@ describe('ValidationService', () => {
         });
 
         it('should return qualification details when no userId provided (admin check)', async () => {
-            const result = await ValidationService.getQualificationIfOwned(ctx.qualificationId);
+            const result = await ValidationService.getQualificationIfOwned(
+                ctx.qualificationId
+            );
             expect(result).not.toBeNull();
             expect(result!.id).toBe(ctx.qualificationId);
             expect(result!.userId).toBe(ctx.userId);
         });
 
         it('should handle database errors gracefully', async () => {
-            const result = await ValidationService.getQualificationIfOwned('invalid-uuid', ctx.userId);
+            const result = await ValidationService.getQualificationIfOwned(
+                'invalid-uuid',
+                ctx.userId
+            );
             expect(result).toBeNull();
         });
     });
@@ -230,7 +252,7 @@ describe('ValidationService', () => {
                 type: 'module',
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
-                credits: 120
+                credits: 120,
             };
 
             const result = ValidationService.validateNewNodeData(validData);
@@ -242,70 +264,82 @@ describe('ValidationService', () => {
             const invalidData = {
                 type: 'module',
                 name: 'Test Module',
-                qualificationId: ctx.qualificationId
+                qualificationId: ctx.qualificationId,
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('parentId is required and must be a string');
+            expect(result.errors).toContain(
+                'parentId is required and must be a string'
+            );
         });
 
         it('should fail validation when type is missing', () => {
             const invalidData = {
                 parentId: ctx.rootNodeId,
                 name: 'Test Module',
-                qualificationId: ctx.qualificationId
+                qualificationId: ctx.qualificationId,
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('type is required and must be a string');
+            expect(result.errors).toContain(
+                'type is required and must be a string'
+            );
         });
 
         it('should fail validation when name is missing or empty', () => {
             const invalidData1 = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
-                qualificationId: ctx.qualificationId
+                qualificationId: ctx.qualificationId,
             };
 
             const invalidData2 = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
                 name: '',
-                qualificationId: ctx.qualificationId
+                qualificationId: ctx.qualificationId,
             };
 
             const invalidData3 = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
                 name: '   ',
-                qualificationId: ctx.qualificationId
+                qualificationId: ctx.qualificationId,
             };
 
             const result1 = ValidationService.validateNewNodeData(invalidData1);
             expect(result1.isValid).toBe(false);
-            expect(result1.errors).toContain('name is required and must be a non-empty string');
+            expect(result1.errors).toContain(
+                'name is required and must be a non-empty string'
+            );
 
             const result2 = ValidationService.validateNewNodeData(invalidData2);
             expect(result2.isValid).toBe(false);
-            expect(result2.errors).toContain('name is required and must be a non-empty string');
+            expect(result2.errors).toContain(
+                'name is required and must be a non-empty string'
+            );
 
             const result3 = ValidationService.validateNewNodeData(invalidData3);
             expect(result3.isValid).toBe(false);
-            expect(result3.errors).toContain('name is required and must be a non-empty string');
+            expect(result3.errors).toContain(
+                'name is required and must be a non-empty string'
+            );
         });
 
         it('should fail validation when qualificationId is missing', () => {
             const invalidData = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
-                name: 'Test Module'
+                name: 'Test Module',
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('qualificationId is required and must be a string');
+            expect(result.errors).toContain(
+                'qualificationId is required and must be a string'
+            );
         });
 
         it('should fail validation when credits is negative', () => {
@@ -314,12 +348,14 @@ describe('ValidationService', () => {
                 type: 'module',
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
-                credits: -10
+                credits: -10,
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('credits must be a non-negative number');
+            expect(result.errors).toContain(
+                'credits must be a non-negative number'
+            );
         });
 
         it('should fail validation when credits is not a number', () => {
@@ -328,12 +364,14 @@ describe('ValidationService', () => {
                 type: 'module',
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
-                credits: 'not-a-number'
+                credits: 'not-a-number',
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('credits must be a non-negative number');
+            expect(result.errors).toContain(
+                'credits must be a non-negative number'
+            );
         });
 
         it('should pass validation with credits as 0', () => {
@@ -342,7 +380,7 @@ describe('ValidationService', () => {
                 type: 'module',
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
-                credits: 0
+                credits: 0,
             };
 
             const result = ValidationService.validateNewNodeData(validData);
@@ -356,7 +394,7 @@ describe('ValidationService', () => {
                 type: 'module',
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
-                credits: null
+                credits: null,
             };
 
             const validData2 = {
@@ -364,7 +402,7 @@ describe('ValidationService', () => {
                 type: 'module',
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
-                credits: undefined
+                credits: undefined,
             };
 
             const result1 = ValidationService.validateNewNodeData(validData1);
@@ -378,19 +416,29 @@ describe('ValidationService', () => {
 
         it('should collect multiple validation errors', () => {
             const invalidData = {
-                type: 123,  // Should be string
-                credits: -50  // Should be non-negative
+                type: 123, // Should be string
+                credits: -50, // Should be non-negative
                 // Missing parentId, name, and qualificationId
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
             expect(result.errors.length).toBeGreaterThanOrEqual(4);
-            expect(result.errors).toContain('parentId is required and must be a string');
-            expect(result.errors).toContain('type is required and must be a string');
-            expect(result.errors).toContain('name is required and must be a non-empty string');
-            expect(result.errors).toContain('qualificationId is required and must be a string');
-            expect(result.errors).toContain('credits must be a non-negative number');
+            expect(result.errors).toContain(
+                'parentId is required and must be a string'
+            );
+            expect(result.errors).toContain(
+                'type is required and must be a string'
+            );
+            expect(result.errors).toContain(
+                'name is required and must be a non-empty string'
+            );
+            expect(result.errors).toContain(
+                'qualificationId is required and must be a string'
+            );
+            expect(result.errors).toContain(
+                'credits must be a non-negative number'
+            );
         });
     });
 });
