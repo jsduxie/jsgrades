@@ -17,7 +17,7 @@ describe('NodeService', () => {
                 `Test context initialized with root node: ${ctx.rootNodeId}`
             );
 
-            const verifyRoot = await stubUtil.client.query(
+            const verifyRoot = await stubUtil.dbClient.query(
                 `SELECT id FROM qualification_nodes WHERE id = $1`,
                 [ctx.rootNodeId]
             );
@@ -34,19 +34,15 @@ describe('NodeService', () => {
         }
     });
 
-    afterEach(async () => {
-        try {
-            await stubUtil.client.query('ROLLBACK');
-        } catch (e) {
-            console.error('Error rolling back transaction:', e);
-        }
+    afterAll(async () => {
+        await stubUtil.cleanup();
     });
 
     describe('NodeServices.createNode', () => {
         it('creates node + aggregate + edge', async () => {
             const { node, aggregate } = await NodeService.createNode({
                 parentId: ctx.rootNodeId,
-                type: ctx.nodeTypeModuleId,
+                type: 'module', // Use type name instead of UUID
                 name: 'Module A',
                 qualificationId: ctx.qualificationId,
                 userId: ctx.userId,
@@ -55,7 +51,7 @@ describe('NodeService', () => {
             expect(node.id).toBeDefined();
             expect(aggregate.nodeId).toBe(node.id);
 
-            const edge = await stubUtil.client.query(
+            const edge = await stubUtil.dbClient.query(
                 `SELECT position FROM node_edges WHERE parent_id = $1 AND child_id = $2`,
                 [ctx.rootNodeId, node.id]
             );
@@ -65,7 +61,7 @@ describe('NodeService', () => {
         it('supports explicit settings override', async () => {
             const { node, aggregate } = await NodeService.createNode({
                 parentId: ctx.rootNodeId,
-                type: ctx.nodeTypeModuleId,
+                type: 'module', // Use type name instead of UUID
                 name: 'Advanced Computer Vision',
                 settings: {
                     calculationMethod: 'sum',
@@ -80,61 +76,49 @@ describe('NodeService', () => {
 
             expect(node.calculationMethod).toBe('sum');
             expect(node.roundingPrecision).toBe(7);
-
             expect(node.weightingMode).toBe('equal');
             expect(node.roundingMode).toBe('none');
             expect(node.excludeIncompleteFromPredicted).toBe(true);
             expect(node.inheritSettings).toBe(true);
+            expect(node.overrides).toEqual({});
+
+            expect(aggregate.effectiveSettings).toBeDefined();
         });
 
         it('should correctly assign edge position when many child nodes', async () => {
-            const initialPositionQuery = await stubUtil.client.query(
-                `SELECT COALESCE(MAX(position), 0) as max_position
-                 FROM node_edges
-                 WHERE parent_id = $1`,
+            // First check how many edges already exist for this parent
+            const initialEdges = await stubUtil.dbClient.query(
+                `SELECT COUNT(*) as count FROM node_edges WHERE parent_id = $1`,
                 [ctx.rootNodeId]
             );
-            const initialPosition =
-                parseInt(initialPositionQuery.rows[0].max_position) || 0;
-            console.log(`Starting with initial position: ${initialPosition}`);
+            const initialCount = parseInt(initialEdges.rows[0].count);
 
-            const nodesToCreate = 5;
-            for (let i = 1; i <= nodesToCreate; i++) {
-                await NodeService.createNode({
+            // Create multiple child nodes
+            const children = [];
+            for (let i = 0; i < 5; i++) {
+                const { node } = await NodeService.createNode({
                     parentId: ctx.rootNodeId,
-                    type: ctx.nodeTypeModuleId,
-                    name: `Module ${i}`,
+                    type: 'module', // Use type name instead of UUID
+                    name: `Module ${i + 1}`,
                     qualificationId: ctx.qualificationId,
                     userId: ctx.userId,
                 });
+                children.push(node);
             }
 
-            const start = process.hrtime.bigint();
-            const { node: newNode } = await NodeService.createNode({
-                parentId: ctx.rootNodeId,
-                type: ctx.nodeTypeModuleId,
-                name: `Module ${nodesToCreate + 1}`,
-                qualificationId: ctx.qualificationId,
-                userId: ctx.userId,
-            });
-            const end = process.hrtime.bigint();
-            const durationMs = Number(end - start) / 1_000_000;
-
-            const edgeRes = await stubUtil.client.query(
-                `SELECT position FROM node_edges WHERE parent_id = $1 AND child_id = $2`,
-                [ctx.rootNodeId, newNode.id]
+            // Verify positions are assigned correctly (based on initial count + new positions)
+            const edges = await stubUtil.dbClient.query(
+                `SELECT position FROM node_edges WHERE parent_id = $1 ORDER BY position`,
+                [ctx.rootNodeId]
             );
-            expect(edgeRes.rowCount).toBe(1);
 
-            const expectedPosition = initialPosition + nodesToCreate + 1;
-            console.log(
-                `Expecting position: ${expectedPosition}, got: ${edgeRes.rows[0].position}`
-            );
-            expect(edgeRes.rows[0].position).toBe(expectedPosition);
+            expect(edges.rows.length).toBe(initialCount + 5);
 
-            console.log(
-                `createNode (${nodesToCreate + 1}th child) duration: ${durationMs.toFixed(2)}ms`
-            );
+            // Check that the new nodes have positions starting from initialCount + 1
+            const newEdgePositions = edges.rows.slice(-5); // Get the last 5 positions
+            for (let i = 0; i < 5; i++) {
+                expect(newEdgePositions[i].position).toBe(initialCount + i + 1);
+            }
         });
     });
 });

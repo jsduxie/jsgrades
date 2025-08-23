@@ -15,6 +15,13 @@ const pool = new Pool({
     ssl: {
         rejectUnauthorized: false,
     },
+    // Connection pool configuration for better test performance
+    max: 20, // Maximum number of connections in the pool
+    min: 2, // Minimum number of connections in the pool
+    idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+    connectionTimeoutMillis: 5000, // Timeout after 5 seconds if connection cannot be established
+    query_timeout: 30000, // Query timeout after 30 seconds
+    statement_timeout: 30000, // Statement timeout after 30 seconds
 });
 
 export default pool;

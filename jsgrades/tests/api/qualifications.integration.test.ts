@@ -36,6 +36,9 @@ describe('Qualifications API Integration Tests', () => {
     });
 
     afterAll(async () => {
+        // Clean up StubUtility and close database connections to avoid hanging handles
+        await stubUtil.cleanup();
+        // Restore original environment variables
         process.env = originalEnv;
     });
 

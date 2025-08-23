@@ -46,34 +46,15 @@ export class StubUtility {
     }
 
     /**
-     * Truncate all tables to clean test database
+     * Get the database client for direct database operations in tests
      */
-    async truncateAllTables(): Promise<void> {
+    get dbClient(): PoolClient {
         if (!this.client) {
             throw new Error('Client not initialised. Call initialize() first.');
         }
-
-        try {
-            await this.client.query('BEGIN');
-
-            await this.client.query('SET statement_timeout = 10000');
-
-            await this.client.query(`
-                TRUNCATE TABLE 
-                qualification_nodes, node_edges, node_aggregates, tasks, 
-                qualifications, users, qualification_levels, 
-                classification_bands, classification_schemes 
-                RESTART IDENTITY CASCADE;
-            `);
-
-            await this.client.query('COMMIT');
-            console.log('Database truncated successfully');
-        } catch (error) {
-            await this.client.query('ROLLBACK');
-            console.error('Error truncating tables:', error);
-            throw error;
-        }
+        return this.client;
     }
+
 
     /**
      * Creates or gets a test user with consistent ID
@@ -167,7 +148,7 @@ export class StubUtility {
 
     /**
      * Creates or gets a qualification level
-     * @param options - Optional level properties
+     * @param options Level options
      * @returns The level ID
      */
     async getQualificationLevel(options?: {
@@ -178,7 +159,7 @@ export class StubUtility {
             throw new Error('Client not initialised. Call initialize() first.');
         }
 
-        const name = options?.name || 'Test Bachelor';
+        const name = options?.name || `Test Bachelor ${Date.now()}`;  // Make names unique to avoid conflicts
         const level = options?.level || 6;
 
         const existingLevel = await this.client.query(
@@ -190,12 +171,27 @@ export class StubUtility {
             return existingLevel.rows[0].id;
         }
 
-        const newLevel = await this.client.query(
-            'INSERT INTO qualification_levels (name, level) VALUES ($1, $2) RETURNING id',
-            [name, level]
-        );
+        try {
+            const newLevel = await this.client.query(
+                'INSERT INTO qualification_levels (name, level) VALUES ($1, $2) RETURNING id',
+                [name, level]
+            );
 
-        return newLevel.rows[0].id;
+            return newLevel.rows[0].id;
+        } catch (error) {
+            // If there's a constraint violation, try to get the existing record
+            console.warn(`Failed to create qualification level "${name}":`, error);
+            const retryResult = await this.client.query(
+                'SELECT id FROM qualification_levels WHERE name = $1',
+                [name]
+            );
+
+            if (retryResult.rows.length > 0) {
+                return retryResult.rows[0].id;
+            }
+
+            throw error;
+        }
     }
 
     /**
@@ -254,7 +250,6 @@ export class StubUtility {
             assessmentId = assessment.rows[0].id;
         }
 
-        // At this point, all IDs should be strings (not null)
         return {
             yearId: yearId!,
             moduleId: moduleId!,
@@ -375,9 +370,9 @@ export class StubUtility {
         }
 
         try {
-            await this.client.query('BEGIN');
-
+            // Don't start a transaction here - let each method handle its own transaction if needed
             const userId = await this.getTestUser({
+                id: options?.userId,
                 uid: options?.userName,
                 firstName: options?.userName,
             });
@@ -385,16 +380,6 @@ export class StubUtility {
             const qualificationLevelId = await this.getQualificationLevel({
                 name: options?.levelName || 'Test Bachelor',
             });
-
-            const verifyLevel = await this.client.query(
-                'SELECT id FROM qualification_levels WHERE id = $1',
-                [qualificationLevelId]
-            );
-            if (verifyLevel.rows.length === 0) {
-                throw new Error(
-                    `Failed to create qualification level: ${qualificationLevelId}`
-                );
-            }
 
             const nodeTypes = await this.getNodeTypes();
 
@@ -404,42 +389,33 @@ export class StubUtility {
                 { name: options?.qualificationName }
             );
 
-            const verifyQual = await this.client.query(
-                'SELECT id FROM qualifications WHERE id = $1',
-                [qualificationId]
-            );
-            if (verifyQual.rows.length === 0) {
-                throw new Error(
-                    `Failed to create qualification: ${qualificationId}`
-                );
-            }
-
             const rootNodeId = await this.getRootNode(
                 qualificationId,
                 userId,
                 nodeTypes.yearId
             );
 
-            const verifyRoot = await this.client.query(
-                `SELECT id FROM qualification_nodes WHERE id = $1`,
-                [rootNodeId]
-            );
+            // Final verification that all data was created successfully
+            const verifications = await Promise.all([
+                this.client.query('SELECT id FROM users WHERE id = $1', [userId]),
+                this.client.query('SELECT id FROM qualification_levels WHERE id = $1', [qualificationLevelId]),
+                this.client.query('SELECT id FROM qualifications WHERE id = $1', [qualificationId]),
+                this.client.query('SELECT id FROM qualification_nodes WHERE id = $1', [rootNodeId])
+            ]);
 
-            if (verifyRoot.rows.length === 0) {
-                throw new Error(`Failed to create root node: ${rootNodeId}`);
+            const [userCheck, levelCheck, qualCheck, nodeCheck] = verifications;
+
+            if (userCheck.rows.length === 0) {
+                throw new Error(`Failed to verify user: ${userId}`);
             }
-
-            await this.client.query('COMMIT');
-
-            const finalCheck = await this.client.query(
-                `SELECT id FROM qualification_nodes WHERE id = $1`,
-                [rootNodeId]
-            );
-
-            if (finalCheck.rows.length === 0) {
-                throw new Error(
-                    `Root node ${rootNodeId} not found after commit`
-                );
+            if (levelCheck.rows.length === 0) {
+                throw new Error(`Failed to verify qualification level: ${qualificationLevelId}`);
+            }
+            if (qualCheck.rows.length === 0) {
+                throw new Error(`Failed to verify qualification: ${qualificationId}`);
+            }
+            if (nodeCheck.rows.length === 0) {
+                throw new Error(`Failed to verify root node: ${rootNodeId}`);
             }
 
             return {
@@ -452,9 +428,6 @@ export class StubUtility {
                 rootNodeId,
             };
         } catch (error) {
-            if (this.client) {
-                await this.client.query('ROLLBACK');
-            }
             console.error('Error setting up test context:', error);
             throw error;
         }
@@ -466,15 +439,6 @@ export class StubUtility {
      */
     static async create(): Promise<StubUtility> {
         const client = await pool.connect();
-
-        process.on('beforeExit', () => {
-            try {
-                client.release();
-            } catch (e) {
-                console.warn('Error releasing client on exit:', e);
-            }
-        });
-
         return new StubUtility(client);
     }
 

@@ -89,3 +89,12 @@ export interface NodeSummary {
     aggregate: NodeAggregate;
     effectiveSettings: NodeSettings;
 }
+
+export interface NewNode {
+    parentId: string;
+    type: string;
+    name: string;
+    credits?: number;
+    settings?: Partial<NodeSettings>;
+    qualificationId: string;
+}

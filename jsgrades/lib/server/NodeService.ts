@@ -10,15 +10,196 @@ import type {
 
 export class NodeService {
     /**
+     * Resolves a node type name to its UUID, or validates a UUID and returns it
+     * @param typeInput The type name (e.g., 'year', 'module') or UUID
+     * @param client Database client to use
+     * @returns The UUID of the node type
+     */
+    private static async resolveNodeType(typeInput: string, client: PoolClient): Promise<string> {
+        // Check if the input is already a UUID (36 chars with hyphens)
+        if (typeInput.length === 36 && typeInput.includes('-')) {
+            // Validate that this UUID exists in node_types
+            const result = await client.query(
+                'SELECT id FROM node_types WHERE id = $1',
+                [typeInput]
+            );
+
+            if (result.rows.length === 0) {
+                throw new Error(`Node type UUID '${typeInput}' not found`);
+            }
+
+            return typeInput;
+        }
+
+        // Otherwise, treat as a name and look up the UUID
+        const result = await client.query(
+            'SELECT id FROM node_types WHERE name = $1::node_type_enum',
+            [typeInput]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error(`Node type '${typeInput}' not found`);
+        }
+
+        return result.rows[0].id;
+    }
+
+    /**
+     * Merges default node settings with provided overrides
+     */
+    private static mergeNodeSettings(settings?: Partial<NodeSettings>): NodeSettings {
+        return {
+            calculationMethod: settings?.calculationMethod || 'weighted_mean',
+            weightingMode: settings?.weightingMode || 'equal',
+            roundingMode: settings?.roundingMode || 'none',
+            roundingPrecision: settings?.roundingPrecision ?? 2,
+            excludeIncompleteFromPredicted: settings?.excludeIncompleteFromPredicted ?? true,
+            inheritSettings: settings?.inheritSettings ?? true,
+            overrides: settings?.overrides || {},
+        };
+    }
+
+    /**
+     * Gets the next position for an edge under a parent
+     */
+    private static async getNextEdgePosition(parentId: string, client: PoolClient): Promise<number> {
+        const result = await client.query(
+            'SELECT COALESCE(MAX(position), 0) + 1 as next_position FROM node_edges WHERE parent_id = $1',
+            [parentId]
+        );
+        return result.rows[0].next_position;
+    }
+
+    /**
+     * Calculates child counts for a node
+     */
+    private static async calculateChildCounts(nodeId: string, client: PoolClient): Promise<Record<string, number>> {
+        const result = await client.query(
+            `SELECT nt.name, COUNT(*) as count
+             FROM node_edges ne
+             JOIN qualification_nodes qn ON ne.child_id = qn.id
+             JOIN node_types nt ON qn.type = nt.id
+             WHERE ne.parent_id = $1
+             GROUP BY nt.name`,
+            [nodeId]
+        );
+
+        const counts: Record<string, number> = {};
+        for (const row of result.rows) {
+            counts[row.name] = parseInt(row.count);
+        }
+        return counts;
+    }
+
+    /**
+     * Resolves effective settings for a node by traversing hierarchy
+     */
+    private static async resolveEffectiveSettings(nodeId: string, client: PoolClient): Promise<NodeSettings> {
+        const result = await client.query(
+            `SELECT calculation_method, weighting_mode, rounding_mode, rounding_precision,
+                    exclude_incomplete_from_predicted, inherit_settings, overrides
+             FROM qualification_nodes WHERE id = $1`,
+            [nodeId]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error('Node not found for settings resolution');
+        }
+
+        const row = result.rows[0];
+
+        // Handle overrides - could be a JSON string or already parsed object
+        let overrides = {};
+        if (row.overrides) {
+            if (typeof row.overrides === 'string') {
+                try {
+                    overrides = JSON.parse(row.overrides);
+                } catch (e) {
+                    console.warn('Failed to parse overrides JSON:', row.overrides);
+                    overrides = {};
+                }
+            } else if (typeof row.overrides === 'object') {
+                overrides = row.overrides;
+            }
+        }
+
+        return {
+            calculationMethod: row.calculation_method || 'weighted_mean',
+            weightingMode: row.weighting_mode || 'equal',
+            roundingMode: row.rounding_mode || 'none',
+            roundingPrecision: row.rounding_precision ?? 2,
+            excludeIncompleteFromPredicted: row.exclude_incomplete_from_predicted ?? true,
+            inheritSettings: row.inherit_settings ?? true,
+            overrides: overrides,
+        };
+    }
+
+    /**
+     * Maps a database row to a Node object with resolved type name
+     */
+    private static async _mapNodeFromDbWithTypeName(row: Record<string, unknown>, client: PoolClient): Promise<Node> {
+        // Resolve the type UUID to type name
+        const typeName = await this.resolveNodeTypeName(row.type as string, client);
+
+        return {
+            id: row.id as string,
+            qualificationId: row.qualification_id as string,
+            userId: row.user_id as string,
+            parentId: row.parent_id as string | null,
+            name: row.name as string,
+            type: typeName, // Use resolved type name instead of UUID
+            weight: row.weight !== null ? Number(row.weight) : null,
+            credits: row.credits !== null ? Number(row.credits) : null,
+            calculationMethod: row.calculation_method as Node['calculationMethod'],
+            weightingMode: row.weighting_mode as Node['weightingMode'],
+            roundingMode: row.rounding_mode as Node['roundingMode'],
+            roundingPrecision: row.rounding_precision !== null ? Number(row.rounding_precision) : 2,
+            excludeIncompleteFromPredicted: row.exclude_incomplete_from_predicted !== null ? Boolean(row.exclude_incomplete_from_predicted) : true,
+            inheritSettings: row.inherit_settings !== null ? Boolean(row.inherit_settings) : true,
+            overrides: row.overrides ? (typeof row.overrides === 'string' ? JSON.parse(row.overrides) : row.overrides) : {},
+            creditEnforcement: (row.credit_enforcement as Node['creditEnforcement']) || 'none',
+            configStatus: (row.config_status as Node['configStatus']) || 'draft',
+            lockConfig: row.lock_config !== null ? Boolean(row.lock_config) : false,
+            currentGrade: row.current_grade !== null ? Number(row.current_grade) : null,
+            targetGrade: row.target_grade !== null ? Number(row.target_grade) : null,
+            predictedGrade: row.predicted_grade !== null ? Number(row.predicted_grade) : null,
+            inProgress: row.in_progress !== null ? Boolean(row.in_progress) : false,
+            startDate: row.start_date ? new Date(row.start_date as string) : null,
+            endDate: row.end_date ? new Date(row.end_date as string) : null,
+            createdAt: row.created_at ? new Date(row.created_at as string) : new Date(),
+            updatedAt: row.updated_at ? new Date(row.updated_at as string) : new Date(),
+        };
+    }
+
+    /**
+     * Resolves a node type UUID back to its name
+     * @param typeId The type UUID
+     * @param client Database client to use
+     * @returns The name of the node type
+     */
+    private static async resolveNodeTypeName(typeId: string, client: PoolClient): Promise<string> {
+        const result = await client.query(
+            'SELECT name FROM node_types WHERE id = $1',
+            [typeId]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error(`Node type UUID '${typeId}' not found`);
+        }
+
+        return result.rows[0].name;
+    }
+
+    /**
      * Creates a new node and its associated aggregate, and links it to its parent.
      * @param data Node creation data including parentId, type, name, credits, and optional settings.
      * @returns The created node and its aggregate.
      */
     static async createNode(data: {
-        parentId: string;
+        parentId: string | null; // allow null when parent is qualification
         type: string;
         name: string;
-        credits?: number;
+        credits?: number | null;
         settings?: Partial<NodeSettings>;
         qualificationId: string;
         userId: string;
@@ -26,65 +207,110 @@ export class NodeService {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
+            console.log('[NodeService.createNode] Begin create with data:', {
+                parentId: data.parentId,
+                type: data.type,
+                name: data.name,
+                qualificationId: data.qualificationId,
+                userId: data.userId,
+                credits: data.credits
+            });
+
+            const typeUuid = await this.resolveNodeType(
+                data.type,
+                client
+            );
+            console.log('[NodeService.createNode] Resolved node type UUID:', typeUuid);
+
+            const effectiveSettings = this.mergeNodeSettings(
+                data.settings
+            );
+            console.log('[NodeService.createNode] Effective settings:', effectiveSettings);
 
             const nodeResult = await client.query(
-                `
-        INSERT INTO qualification_nodes (
-          qualification_id, user_id, parent_id, type, name, credits, 
-          calculation_method, weighting_mode, rounding_mode, 
-          rounding_precision, exclude_incomplete_from_predicted,
-          inherit_settings, overrides
-        ) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING *
-      `,
+                `INSERT INTO qualification_nodes (
+                    qualification_id, user_id, parent_id, name, type,
+                    calculation_method, weighting_mode, rounding_mode, rounding_precision,
+                    exclude_incomplete_from_predicted, inherit_settings, overrides,
+                    credit_enforcement, config_status, lock_config, credits
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                RETURNING *`,
                 [
                     data.qualificationId,
                     data.userId,
-                    data.parentId,
-                    data.type,
+                    data.parentId, // may be null
                     data.name,
-                    data.credits || null,
-                    data.settings?.calculationMethod || 'weighted_mean',
-                    data.settings?.weightingMode || 'equal',
-                    data.settings?.roundingMode || 'none',
-                    data.settings?.roundingPrecision || 2,
-                    data.settings?.excludeIncompleteFromPredicted ?? true,
-                    data.settings?.inheritSettings ?? true,
-                    JSON.stringify(data.settings?.overrides || {}),
+                    typeUuid,
+                    effectiveSettings.calculationMethod,
+                    effectiveSettings.weightingMode,
+                    effectiveSettings.roundingMode,
+                    effectiveSettings.roundingPrecision,
+                    effectiveSettings.excludeIncompleteFromPredicted,
+                    effectiveSettings.inheritSettings,
+                    JSON.stringify(effectiveSettings.overrides),
+                    'none',  // credit_enforcement - default
+                    'draft', // config_status - default
+                    false,   // lock_config - default
+                    data.credits !== undefined ? data.credits : null
                 ]
             );
 
-            const node = this._mapNodeFromDb(nodeResult.rows[0]);
+            const newNodeData = nodeResult.rows[0];
+            console.log('[NodeService.createNode] Inserted qualification_nodes row id:', newNodeData.id);
 
-            await client.query(
-                `
-        INSERT INTO node_edges (parent_id, child_id, position)
-        VALUES ($1, $2, (
-          SELECT COALESCE(MAX(position), 0) + 1 
-          FROM node_edges 
-          WHERE parent_id = $1
-        ))
-      `,
-                [data.parentId, node.id]
+            if (data.parentId) {
+                const nextPosition = await this.getNextEdgePosition(
+                    data.parentId,
+                    client
+                );
+                console.log('[NodeService.createNode] Next edge position:', nextPosition);
+
+                await client.query(
+                    'INSERT INTO node_edges (parent_id, child_id, position) VALUES ($1, $2, $3)',
+                    [data.parentId, newNodeData.id, nextPosition]
+                );
+                console.log('[NodeService.createNode] Inserted node_edges record');
+            } else {
+                console.log('[NodeService.createNode] Skipping node_edges insertion (root-level node)');
+            }
+
+            const childCounts = await this.calculateChildCounts(
+                newNodeData.id,
+                client
             );
+            console.log('[NodeService.createNode] Child counts calculated:', childCounts);
 
-            await client.query(
-                `
-        INSERT INTO node_aggregates (node_id, child_counts, effective_settings)
-        VALUES ($1, '{}'::jsonb, '{}'::jsonb)
-      `,
-                [node.id]
+            const effectiveSettingsForAggregate = await this.resolveEffectiveSettings(
+                newNodeData.id,
+                client
             );
+            console.log('[NodeService.createNode] Effective settings for aggregate resolved');
 
-            await this._propagateRecalculation(client, data.parentId);
-
-            const aggregate = await this._getNodeAggregate(client, node.id);
+            const aggregateResult = await client.query(
+                'INSERT INTO node_aggregates (node_id, child_counts, effective_settings) VALUES ($1, $2, $3) RETURNING *',
+                [
+                    newNodeData.id,
+                    JSON.stringify(childCounts),
+                    JSON.stringify(effectiveSettingsForAggregate)
+                ]
+            );
+            console.log('[NodeService.createNode] Inserted node_aggregates row');
 
             await client.query('COMMIT');
-            return { node, aggregate };
+            console.log('[NodeService.createNode] Commit successful');
+
+            // Convert the database row to a proper Node object with type name resolved
+            const nodeWithTypeName = await this._mapNodeFromDbWithTypeName(newNodeData, client);
+            const aggregate = this._mapAggregateFromDb(aggregateResult.rows[0]);
+
+            return {
+                node: nodeWithTypeName,
+                aggregate: aggregate
+            };
+
         } catch (error) {
             await client.query('ROLLBACK');
+            console.error('[NodeService.createNode] Error, rolled back:', error);
             throw error;
         } finally {
             client.release();
