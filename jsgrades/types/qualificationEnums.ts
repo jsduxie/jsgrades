@@ -39,3 +39,9 @@ export enum ConfigStatus {
     valid,
     locked,
 }
+
+export enum CreditEnforcement {
+    none,
+    warn,
+    strict,
+}
