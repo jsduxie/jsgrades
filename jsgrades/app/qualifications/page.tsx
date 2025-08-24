@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AddQualification from '@/components/AddQualification';
-import { Qualification, APIResponse } from '@/types';
+import { APIResponse, Qualification } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import {
     Card,
@@ -38,6 +38,7 @@ export default function QualificationsPage() {
                     }
                 );
                 const json: APIResponse<Qualification[]> = await res.json();
+
                 if (json.status === 'success' && json.data) {
                     setQualifications(json.data);
                 } else {
@@ -66,6 +67,7 @@ export default function QualificationsPage() {
                 body: JSON.stringify({ ...newQual, userId }),
             });
             const json: APIResponse<Qualification> = await res.json();
+
             if (json.status === 'success' && json.data) {
                 setQualifications((prev) => [...prev, json.data!]);
             } else {
