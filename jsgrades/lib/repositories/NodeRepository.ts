@@ -1,8 +1,8 @@
 import { PoolClient } from 'pg';
 import { CreateNodeInput } from '@/types/NodeRepository';
-import { Converter } from '@/lib/Converter';
+import Converter from '@/lib/Converter';
 
-class NodeRepository {
+export default class NodeRepository {
     private dbClient: PoolClient;
 
     constructor(dbClient: PoolClient) {

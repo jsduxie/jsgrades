@@ -1,8 +1,8 @@
-import type { Qualification} from '@/types/qualification'
+import type { Qualification } from '@/types/qualification';
 import { PoolClient } from 'pg';
 import Converter from '@/lib/Converter';
 
-export class QualificationRepository {
+export default class QualificationRepository {
     private dbClient: PoolClient;
 
     constructor(dbClient: PoolClient) {
@@ -23,7 +23,9 @@ export class QualificationRepository {
         return result.rows;
     }
 
-    async createQualification(input: Partial<Qualification>): Promise<Qualification> {
+    async createQualification(
+        input: Partial<Qualification>
+    ): Promise<Qualification> {
         const query = `
             INSERT INTO qualifications (user_id, level, name, institution, start_date, end_date, current_grade,
                                         target_grade, predicted_grade, in_progress)
@@ -48,7 +50,10 @@ export class QualificationRepository {
         return result.rows[0];
     }
 
-    async updateQualification(id: string, updates: Partial<Qualification>): Promise<Qualification> {
+    async updateQualification(
+        id: string,
+        updates: Partial<Qualification>
+    ): Promise<Qualification> {
         const keys = Object.keys(updates) as (keyof Qualification)[];
 
         if (keys.length === 0) {
