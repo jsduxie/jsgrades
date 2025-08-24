@@ -6,4 +6,4 @@ include:
   - name: CheckDependencyLicenses
   - name: Eslint
 bootstrap: |
-  npm install
+  cd jsgrades && npm install
