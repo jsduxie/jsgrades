@@ -74,5 +74,10 @@
         "typescript": "^5",
         "util": "^0.12.5",
         "uuid": "^11.1.0"
+    },
+    "eslintConfig": {
+        "extends": [
+            "./eslint.config.mjs"
+        ]
     }
 }
