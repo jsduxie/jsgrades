@@ -1,24 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import AddQualification from '@/components/AddQualification';
-import { APIResponse, Qualification } from '@/types';
-import { useAuth } from '@/context/AuthContext';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import {APIResponse, Qualification} from '@/types';
+import {useAuth} from '@/context/AuthContext';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Loader2} from 'lucide-react';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '@/components/ui/select';
+import {Input} from '@/components/ui/input';
 
 export default function QualificationsPage() {
     const auth = useAuth();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
+    const [sortBy, setSortBy] = useState('name');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const userDetails = auth?.userDetails;
     const userId = userDetails?.id;
@@ -80,110 +79,240 @@ export default function QualificationsPage() {
         }
     };
 
+    // Filtering and sorting
+    const filteredQualifications = useMemo(() => {
+        return qualifications
+            .filter((q) => {
+                if (searchQuery) {
+                    const query = searchQuery.toLowerCase();
+                    return (
+                        q.name.toLowerCase().includes(query) ||
+                        q.institution.toLowerCase().includes(query)
+                    );
+                }
+
+                const now = new Date();
+                switch (filterStatus) {
+                    case 'current':
+                        return (
+                            new Date(q.startDate) <= now &&
+                            (!q.endDate || new Date(q.endDate) >= now)
+                        );
+                    case 'completed':
+                        return q.endDate && new Date(q.endDate) < now;
+                    case 'upcoming':
+                        return new Date(q.startDate) > now;
+                    default:
+                        return true;
+                }
+            })
+            .sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'institution':
+                        return a.institution.localeCompare(b.institution);
+                    case 'startDate':
+                        return (
+                            new Date(a.startDate).getTime() -
+                            new Date(b.startDate).getTime()
+                        );
+                    case 'endDate':
+                        if (!a.endDate) return 1;
+                        if (!b.endDate) return -1;
+                        return (
+                            new Date(a.endDate).getTime() -
+                            new Date(b.endDate).getTime()
+                        );
+                    default:
+                        return 0;
+                }
+            });
+    }, [qualifications, sortBy, filterStatus, searchQuery]);
+
     if (!auth?.userDetails) {
         return null;
     }
 
     return (
         <>
-            <div className='min-h-screen w-full pt-[100px] pb-8'>
-                {/* Header */}
-                <div className='flex items-center justify-between'>
-                    <h1 className='text-3xl font-bold'>My Qualifications</h1>
-                    <Button onClick={() => setOpen(true)}>
-                        Add Qualification
-                    </Button>
-                </div>
+            <div className='min-h-screen w-full pb-8'>
+                <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+                    {/* Header Card */}
+                    <div className='bg-card mb-6 w-full rounded-xl'>
+                        <div className='flex flex-col space-y-6 p-6'>
+                            <div className='flex flex-col items-start space-y-6 md:flex-row md:items-center md:justify-between md:space-y-0'>
+                                <h1 className='text-3xl font-bold tracking-tight'>
+                                    My Qualifications
+                                </h1>
+                                <Button
+                                    variant='outline'
+                                    size='lg'
+                                    onClick={() => setOpen(true)}
+                                    disabled={open}
+                                    className='w-full md:w-auto'
+                                >
+                                    Add Qualification
+                                </Button>
+                            </div>
 
-                {/* Loading Spinner */}
-                {loading && (
-                    <div className='flex justify-center'>
-                        <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
-                    </div>
-                )}
-
-                {/* Empty State */}
-                {!loading && qualifications.length === 0 && (
-                    <p className='text-muted-foreground'>
-                        No qualifications added yet.
-                    </p>
-                )}
-
-                {/* Qualifications Grid */}
-                {!loading && qualifications.length > 0 && (
-                    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-                        {qualifications.map((q) => (
-                            <Card
-                                key={q.id}
-                                className='bg-muted rounded-2xl border shadow-sm transition hover:shadow-md'
-                            >
-                                <CardHeader>
-                                    <div className='flex items-center justify-between'>
-                                        <CardTitle className='text-foreground text-base font-semibold'>
-                                            {q.name}
-                                        </CardTitle>
-                                    </div>
-                                    <CardDescription className='text-muted-foreground text-sm'>
-                                        {q.institution}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className='text-muted-foreground grid gap-4 text-sm'>
-                                    <div className='grid grid-cols-2 gap-4'>
-                                        <div>
-                                            <p className='text-muted-foreground text-xs font-medium'>
-                                                Predicted
-                                            </p>
-                                            <p className='text-foreground'>
-                                                {q.predictedGrade ?? '—'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className='text-muted-foreground text-xs font-medium'>
-                                                Target
-                                            </p>
-                                            <p className='text-foreground'>
-                                                {q.targetGrade ?? '—'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className='text-muted-foreground text-xs font-medium'>
+                            {/* Filter Controls */}
+                            {qualifications.length > 0 && (
+                                <div className='grid w-full gap-4 md:grid-cols-[160px_160px_1fr]'>
+                                    <Select
+                                        onValueChange={setSortBy}
+                                        defaultValue='name'
+                                    >
+                                        <SelectTrigger className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2'>
+                                            <SelectValue placeholder='Sort by' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='name'>
+                                                Sort by Name
+                                            </SelectItem>
+                                            <SelectItem value='institution'>
+                                                Sort by Institution
+                                            </SelectItem>
+                                            <SelectItem value='startDate'>
+                                                Sort by Start Date
+                                            </SelectItem>
+                                            <SelectItem value='endDate'>
+                                                Sort by End Date
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Select
+                                        onValueChange={setFilterStatus}
+                                        defaultValue='all'
+                                    >
+                                        <SelectTrigger className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2'>
+                                            <SelectValue placeholder='Filter by status' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='all'>
+                                                All Qualifications
+                                            </SelectItem>
+                                            <SelectItem value='current'>
                                                 Current
-                                            </p>
-                                            <p className='text-foreground'>
-                                                {q.currentGrade ?? '—'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className='text-muted-foreground text-xs font-medium'>
-                                                Dates
-                                            </p>
-                                            <p className='text-foreground'>
-                                                {q.startDate
-                                                    ? new Date(
-                                                          q.startDate
-                                                      ).toLocaleDateString()
-                                                    : '—'}{' '}
-                                                –{' '}
-                                                {q.endDate
-                                                    ? new Date(
-                                                          q.endDate
-                                                      ).toLocaleDateString()
-                                                    : '—'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                            </SelectItem>
+                                            <SelectItem value='completed'>
+                                                Completed
+                                            </SelectItem>
+                                            <SelectItem value='upcoming'>
+                                                Upcoming
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Input
+                                        type='text'
+                                        placeholder='Search qualifications...'
+                                        value={searchQuery}
+                                        onChange={(e) =>
+                                            setSearchQuery(e.target.value)
+                                        }
+                                        className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
 
-                {/* Modal */}
-                <AddQualification
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    onSave={handleAddQualification}
-                />
+                    {/* Content Area */}
+                    <div className='bg-muted/30 rounded-xl p-6'>
+                        {/* Loading Spinner */}
+                        {loading && (
+                            <div className='flex justify-center py-12'>
+                                <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+                            </div>
+                        )}
+
+                        {/* Empty State */}
+                        {!loading && qualifications.length === 0 && (
+                            <div className='flex justify-center py-12'>
+                                <p className='text-muted-foreground'>
+                                    No qualifications added yet.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Qualifications Grid */}
+                        {!loading && filteredQualifications.length > 0 && (
+                            <div className='flex flex-wrap gap-6'>
+                                {filteredQualifications.map((q) => (
+                                    <Card
+                                        key={q.id}
+                                        className='flex w-[300px] flex-col rounded-xl border shadow-sm transition hover:shadow-md'
+                                    >
+                                        <CardHeader>
+                                            <div className='flex items-center justify-between'>
+                                                <CardTitle className='text-foreground text-base font-semibold'>
+                                                    {q.name}
+                                                </CardTitle>
+                                            </div>
+                                            <CardDescription className='text-muted-foreground text-sm'>
+                                                {q.institution}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className='text-muted-foreground grid flex-grow gap-4 text-sm'>
+                                            <div className='grid grid-cols-2 gap-4'>
+                                                <div>
+                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                        Predicted
+                                                    </p>
+                                                    <p className='text-foreground'>
+                                                        {q.predictedGrade ??
+                                                            '—'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                        Target
+                                                    </p>
+                                                    <p className='text-foreground'>
+                                                        {q.targetGrade ?? '—'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                        Current
+                                                    </p>
+                                                    <p className='text-foreground'>
+                                                        {q.currentGrade ?? '—'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                        Dates
+                                                    </p>
+                                                    <p className='text-foreground'>
+                                                        {q.startDate
+                                                            ? new Date(
+                                                                  q.startDate
+                                                              ).toLocaleDateString()
+                                                            : '—'}{' '}
+                                                        –{' '}
+                                                        {q.endDate
+                                                            ? new Date(
+                                                                  q.endDate
+                                                              ).toLocaleDateString()
+                                                            : '—'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Modal */}
+                    <AddQualification
+                        open={open}
+                        onClose={() => setOpen(false)}
+                        onSave={handleAddQualification}
+                    />
+                </div>
             </div>
         </>
     );
