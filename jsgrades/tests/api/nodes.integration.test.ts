@@ -3,28 +3,29 @@ import { jest } from '@jest/globals';
 import * as authModule from '@/lib/server/auth';
 import { Node } from '@/types/qualificationNode';
 import { NextRequest } from 'next/server';
-import { POST } from '@/app/api/nodes/route';
 
 jest.mock('@/lib/server/auth');
+jest.mock('next/server', () => ({
+    NextResponse: {
+        json: jest.fn((data: unknown, init?: { status?: number }) => ({
+            json: async () => data,
+            status: init?.status || 200,
+        })),
+    },
+}));
 
 const mockValidateAuth = jest.mocked(authModule.validateAuth);
-
-const mockNextResponse = {
-    json: jest.fn((data: unknown, init?: { status?: number }) => ({
-        json: async () => data,
-        status: init?.status || 200,
-    })),
-};
-
-jest.mock('next/server', () => ({
-    NextResponse: mockNextResponse,
-}));
 
 describe('POST /api/nodes', () => {
     let stubUtil: StubUtility;
     let testContext: TestContext;
+    let POST: any;
 
     beforeAll(async () => {
+        // Import the route handler after Jest setup is complete
+        const routeModule = await import('@/app/api/nodes/route');
+        POST = routeModule.POST;
+
         stubUtil = await StubUtility.create();
         testContext = await stubUtil.getTestContext({
             userId: '11111111-1111-1111-1111-111111111111',

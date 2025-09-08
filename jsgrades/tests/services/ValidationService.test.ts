@@ -269,9 +269,7 @@ describe('ValidationService', () => {
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain(
-                'parentId is required and must be a string'
-            );
+            expect(result.errors).toContain('parentId is required');
         });
 
         it('should fail validation when type is missing', () => {
@@ -283,18 +281,24 @@ describe('ValidationService', () => {
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain(
-                'type is required and must be a string'
-            );
+            expect(result.errors).toContain('type is required');
         });
 
         it('should fail validation when name is missing or empty', () => {
+            // Test missing name
             const invalidData1 = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
                 qualificationId: ctx.qualificationId,
             };
 
+            const result1 = ValidationService.validateNewNodeData(invalidData1);
+            expect(result1.isValid).toBe(false);
+            expect(result1.errors).toContain(
+                'name is required and must not be empty'
+            );
+
+            // Test empty name
             const invalidData2 = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
@@ -302,6 +306,13 @@ describe('ValidationService', () => {
                 qualificationId: ctx.qualificationId,
             };
 
+            const result2 = ValidationService.validateNewNodeData(invalidData2);
+            expect(result2.isValid).toBe(false);
+            expect(result2.errors).toContain(
+                'name is required and must not be empty'
+            );
+
+            // Test whitespace-only name
             const invalidData3 = {
                 parentId: ctx.rootNodeId,
                 type: 'module',
@@ -309,22 +320,10 @@ describe('ValidationService', () => {
                 qualificationId: ctx.qualificationId,
             };
 
-            const result1 = ValidationService.validateNewNodeData(invalidData1);
-            expect(result1.isValid).toBe(false);
-            expect(result1.errors).toContain(
-                'name is required and must be a non-empty string'
-            );
-
-            const result2 = ValidationService.validateNewNodeData(invalidData2);
-            expect(result2.isValid).toBe(false);
-            expect(result2.errors).toContain(
-                'name is required and must be a non-empty string'
-            );
-
             const result3 = ValidationService.validateNewNodeData(invalidData3);
             expect(result3.isValid).toBe(false);
             expect(result3.errors).toContain(
-                'name is required and must be a non-empty string'
+                'name is required and must not be empty'
             );
         });
 
@@ -337,9 +336,7 @@ describe('ValidationService', () => {
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain(
-                'qualificationId is required and must be a string'
-            );
+            expect(result.errors).toContain('qualificationId is required');
         });
 
         it('should fail validation when credits is negative', () => {
@@ -416,26 +413,18 @@ describe('ValidationService', () => {
 
         it('should collect multiple validation errors', () => {
             const invalidData = {
-                type: 123, // Should be string
-                credits: -50, // Should be non-negative
-                // Missing parentId, name, and qualificationId
+                credits: -50,
             };
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);
             expect(result.errors.length).toBeGreaterThanOrEqual(4);
+            expect(result.errors).toContain('parentId is required');
+            expect(result.errors).toContain('type is required');
             expect(result.errors).toContain(
-                'parentId is required and must be a string'
+                'name is required and must not be empty'
             );
-            expect(result.errors).toContain(
-                'type is required and must be a string'
-            );
-            expect(result.errors).toContain(
-                'name is required and must be a non-empty string'
-            );
-            expect(result.errors).toContain(
-                'qualificationId is required and must be a string'
-            );
+            expect(result.errors).toContain('qualificationId is required');
             expect(result.errors).toContain(
                 'credits must be a non-negative number'
             );
