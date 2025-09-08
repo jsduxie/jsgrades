@@ -7,3 +7,4 @@ include:
   - name: Eslint
 bootstrap: |
   cd jsgrades && npm install
+  
