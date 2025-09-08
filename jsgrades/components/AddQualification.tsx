@@ -11,15 +11,15 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {
-    QualificationLevel,
-    QualificationFormData,
     AddQualificationProps,
+    QualificationFormData,
+    QualificationLevel,
 } from '@/types';
 
 export default function AddQualification({
     open,
-    onClose,
-    onSave,
+    onCloseAction,
+    onSaveAction,
 }: AddQualificationProps) {
     const [levels, setLevels] = useState<QualificationLevel[]>([]);
     const [isLoadingLevels, setIsLoadingLevels] = useState(false);
@@ -78,8 +78,8 @@ export default function AddQualification({
             endDate: formData.endDate ? new Date(formData.endDate) : undefined,
         };
 
-        await onSave(payload);
-        onClose();
+        await onSaveAction(payload);
+        onCloseAction();
         setFormData({
             name: '',
             institution: '',
@@ -107,7 +107,7 @@ export default function AddQualification({
                 <CardContent>
                     {isLoadingLevels ? (
                         <div className='flex flex-col items-center justify-center space-y-4 py-8'>
-                            <div className='border-primary h-8 w-8 animate-spin rounded-full border-b-2'></div>
+                            <div className='h-8 w-8 animate-spin rounded-full border-b-2 border-primary'></div>
                             <p className='text-muted-foreground text-sm'>
                                 Loading qualification levels...
                             </p>
@@ -117,7 +117,7 @@ export default function AddQualification({
                             <div className='space-y-2'>
                                 <label
                                     htmlFor='name'
-                                    className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                    className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                 >
                                     Name *
                                 </label>
@@ -134,7 +134,7 @@ export default function AddQualification({
                             <div className='space-y-2'>
                                 <label
                                     htmlFor='institution'
-                                    className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                    className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                 >
                                     Institution *
                                 </label>
@@ -151,7 +151,7 @@ export default function AddQualification({
                             <div className='space-y-2'>
                                 <label
                                     htmlFor='level'
-                                    className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                    className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                 >
                                     Level *
                                 </label>
@@ -161,7 +161,7 @@ export default function AddQualification({
                                     value={formData.level}
                                     onChange={handleChange}
                                     required
-                                    className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                                    className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
                                 >
                                     <option value=''>Select a level...</option>
                                     {levels.map((l) => (
@@ -176,7 +176,7 @@ export default function AddQualification({
                                 <div className='space-y-2'>
                                     <label
                                         htmlFor='startDate'
-                                        className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                     >
                                         Start Date
                                     </label>
@@ -192,7 +192,7 @@ export default function AddQualification({
                                 <div className='space-y-2'>
                                     <label
                                         htmlFor='endDate'
-                                        className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                     >
                                         End Date
                                     </label>
@@ -211,7 +211,7 @@ export default function AddQualification({
                                 <div className='space-y-2'>
                                     <label
                                         htmlFor='currentGrade'
-                                        className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                     >
                                         Current Grade
                                     </label>
@@ -227,7 +227,7 @@ export default function AddQualification({
                                 <div className='space-y-2'>
                                     <label
                                         htmlFor='targetGrade'
-                                        className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                     >
                                         Target Grade
                                     </label>
@@ -243,7 +243,7 @@ export default function AddQualification({
                                 <div className='space-y-2'>
                                     <label
                                         htmlFor='predictedGrade'
-                                        className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                     >
                                         Predicted Grade
                                     </label>
@@ -264,11 +264,11 @@ export default function AddQualification({
                                     type='checkbox'
                                     checked={formData.inProgress}
                                     onChange={handleChange}
-                                    className='text-primary focus:ring-primary h-4 w-4 rounded border-gray-300 focus:ring-2'
+                                    className='h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary'
                                 />
                                 <label
                                     htmlFor='inProgress'
-                                    className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                                    className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                                 >
                                     In Progress
                                 </label>
@@ -278,7 +278,7 @@ export default function AddQualification({
                                 <Button
                                     type='button'
                                     variant='outline'
-                                    onClick={onClose}
+                                    onClick={onCloseAction}
                                 >
                                     Cancel
                                 </Button>

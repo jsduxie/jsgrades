@@ -1,4 +1,5 @@
 import pool from './db';
+import { Node } from '@/types/qualificationNode';
 
 export class ValidationService {
     /**
@@ -177,24 +178,20 @@ export class ValidationService {
     } {
         const errors: string[] = [];
 
-        if (!data.parentId || typeof data.parentId !== 'string') {
-            errors.push('parentId is required and must be a string');
+        if (!data.parentId) {
+            errors.push('parentId is required');
         }
 
-        if (!data.type || typeof data.type !== 'string') {
-            errors.push('type is required and must be a string');
+        if (!data.type) {
+            errors.push('type is required');
         }
 
-        if (
-            !data.name ||
-            typeof data.name !== 'string' ||
-            data.name.trim().length === 0
-        ) {
-            errors.push('name is required and must be a non-empty string');
+        if (!data.name || data.name.trim().length === 0) {
+            errors.push('name is required and must not be empty');
         }
 
-        if (!data.qualificationId || typeof data.qualificationId !== 'string') {
-            errors.push('qualificationId is required and must be a string');
+        if (!data.qualificationId) {
+            errors.push('qualificationId is required');
         }
 
         if (data.credits !== undefined && data.credits !== null) {

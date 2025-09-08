@@ -2,9 +2,11 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Logo, LoadingIcon, Button } from '@/components/ui/UI';
+import React, { useEffect } from 'react';
+import { Logo } from '@/components/ui/logo';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
     const { userLoggedIn, loading } = useAuth() || {};
@@ -17,7 +19,9 @@ export default function Home() {
     }, [userLoggedIn, loading, router]);
 
     if (loading) {
-        return <LoadingIcon colour='primary' size='lg' />;
+        return (
+            <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+        );
     }
 
     return (
@@ -40,7 +44,7 @@ export default function Home() {
 
                     <div className='flex flex-col gap-4 sm:flex-row'>
                         <Link href='/auth/register'>
-                            <Button variant='primary' size='lg'>
+                            <Button variant='default' size='lg'>
                                 Get Started
                             </Button>
                         </Link>

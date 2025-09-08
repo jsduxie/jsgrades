@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useProtectedRoute } from '@/hooks/useProtectedHook';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Logo } from '@/components/ui/UI';
+import { Logo } from '@/components/ui/logo';
 import { ClientUserDetails } from '@/types';
 
 import {
@@ -14,19 +14,19 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
+    SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarHeader,
 } from '@/components/ui/sidebar';
 
 import {
-    Home,
-    GraduationCap,
     ClipboardList,
+    GraduationCap,
+    Home,
     LineChart,
-    Settings,
     LogOut,
+    Settings,
     User,
 } from 'lucide-react';
 
@@ -67,7 +67,7 @@ export function AppSidebar({
             </SidebarHeader>
             <SidebarContent className='flex-1'>
                 <SidebarGroup>
-                    <SidebarGroupLabel className='text-muted-foreground text-xs font-semibold tracking-wide uppercase'>
+                    <SidebarGroupLabel className='text-muted-foreground text-xs font-semibold uppercase tracking-wide'>
                         JSGrades
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -116,7 +116,7 @@ export function AppSidebar({
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className='text-left'>
-                                    <p className='text-sm leading-none font-medium'>
+                                    <p className='text-sm font-medium leading-none'>
                                         {user?.firstName} {user?.lastName}
                                     </p>
                                     <p className='text-muted-foreground max-w-[150px] truncate text-xs'>

@@ -20,7 +20,7 @@ export interface CreateNodeInput {
     excludeIncompleteFromPredicted?: boolean;
     inheritSettings?: boolean;
     overrides?: Record<string, any>;
-    creditEnforcement?: CreditEnf;
+    creditEnforcement?: string;
     configStatus?: ConfigStatus;
     lockConfig?: boolean;
     currentGrade?: number;

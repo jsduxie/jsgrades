@@ -1,14 +1,26 @@
 'use client';
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AddQualification from '@/components/AddQualification';
-import {APIResponse, Qualification} from '@/types';
-import {useAuth} from '@/context/AuthContext';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {Loader2} from 'lucide-react';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '@/components/ui/select';
-import {Input} from '@/components/ui/input';
+import { APIResponse, Qualification } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 export default function QualificationsPage() {
     const auth = useAuth();
@@ -23,6 +35,8 @@ export default function QualificationsPage() {
     const userId = userDetails?.id;
 
     useEffect(() => {
+        let mounted = true;
+
         async function fetchQualifications() {
             if (!userId || !auth?.currentUser) return;
             setLoading(true);
@@ -38,7 +52,7 @@ export default function QualificationsPage() {
                 );
                 const json: APIResponse<Qualification[]> = await res.json();
 
-                if (json.status === 'success' && json.data) {
+                if (json.status === 'success' && json.data && mounted) {
                     setQualifications(json.data);
                 } else {
                     console.error(json.message);
@@ -46,10 +60,22 @@ export default function QualificationsPage() {
             } catch (error) {
                 console.error('Failed to fetch qualifications', error);
             } finally {
-                setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                }
             }
         }
-        fetchQualifications();
+
+        fetchQualifications().catch((error) => {
+            console.error('Failed to fetch qualifications:', error);
+            if (mounted) {
+                setLoading(false);
+            }
+        });
+
+        return () => {
+            mounted = false;
+        };
     }, [userId, auth?.currentUser]);
 
     const handleAddQualification = async (newQual: Partial<Qualification>) => {
@@ -92,16 +118,21 @@ export default function QualificationsPage() {
                 }
 
                 const now = new Date();
+
+                const startDate = q.startDate ? new Date(q.startDate) : null;
+                const endDate = q.endDate ? new Date(q.endDate) : null;
+
                 switch (filterStatus) {
                     case 'current':
                         return (
-                            new Date(q.startDate) <= now &&
-                            (!q.endDate || new Date(q.endDate) >= now)
+                            startDate &&
+                            startDate <= now &&
+                            (!endDate || endDate >= now)
                         );
                     case 'completed':
-                        return q.endDate && new Date(q.endDate) < now;
+                        return endDate && endDate < now;
                     case 'upcoming':
-                        return new Date(q.startDate) > now;
+                        return startDate && startDate > now;
                     default:
                         return true;
                 }
@@ -113,13 +144,16 @@ export default function QualificationsPage() {
                     case 'institution':
                         return a.institution.localeCompare(b.institution);
                     case 'startDate':
+                        // Safe date comparison, handling undefined/null cases
+                        if (!a.startDate) return 1; // Move items without start date to end
+                        if (!b.startDate) return -1; // Move items without start date to end
                         return (
                             new Date(a.startDate).getTime() -
                             new Date(b.startDate).getTime()
                         );
                     case 'endDate':
-                        if (!a.endDate) return 1;
-                        if (!b.endDate) return -1;
+                        if (!a.endDate) return 1; // Move items without end date to end
+                        if (!b.endDate) return -1; // Move items without end date to end
                         return (
                             new Date(a.endDate).getTime() -
                             new Date(b.endDate).getTime()
@@ -309,8 +343,8 @@ export default function QualificationsPage() {
                     {/* Modal */}
                     <AddQualification
                         open={open}
-                        onClose={() => setOpen(false)}
-                        onSave={handleAddQualification}
+                        onCloseAction={() => setOpen(false)}
+                        onSaveAction={handleAddQualification}
                     />
                 </div>
             </div>

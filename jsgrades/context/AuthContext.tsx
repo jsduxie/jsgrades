@@ -4,10 +4,10 @@
 
 import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
-import { LoadingIcon } from '@/components/ui/UI';
 import { auth } from '@/lib/Firebase';
 import { useRouter } from 'next/navigation';
 import { APIResponse, AuthContextType, ClientUserDetails } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
@@ -74,7 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={value}>
-            {loading ? <LoadingIcon colour='primary' size='lg' /> : children}
+            {loading ? (
+                <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+            ) : (
+                children
+            )}
         </AuthContext.Provider>
     );
 }

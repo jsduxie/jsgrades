@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, Roboto } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
-import { CustomThemeProvider } from '@/components/ui/CustomThemeProvider';
 import React from 'react';
 
-const geistSans = Geist({
-    variable: '--font-geist-sans',
+const roboto = Roboto({
+    variable: '--font-roboto',
     subsets: ['latin'],
 });
 
@@ -28,11 +27,9 @@ export default function RootLayout({
     return (
         <html lang='en'>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${roboto.variable} ${geistMono.variable} antialiased`}
             >
-                <CustomThemeProvider>
-                    <AuthProvider>{children}</AuthProvider>
-                </CustomThemeProvider>
+                <AuthProvider>{children}</AuthProvider>
             </body>
         </html>
     );

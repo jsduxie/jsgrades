@@ -15,7 +15,7 @@ export default function HomeLayout({
         <SidebarProvider>
             <AppSidebar user={auth?.userDetails} />
             <SidebarTrigger />
-            <div className='pt-16'>{children}</div>
+            <div className='p-10'>{children}</div>
         </SidebarProvider>
     );
 }

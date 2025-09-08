@@ -16,8 +16,8 @@ export type Qualification = {
 
 export type AddQualificationProps = {
     open: boolean;
-    onClose: () => void;
-    onSave: (q: Partial<Qualification>) => void;
+    onCloseAction: () => void;
+    onSaveAction: (q: Partial<Qualification>) => void;
 };
 
 export type QualificationLevel = {

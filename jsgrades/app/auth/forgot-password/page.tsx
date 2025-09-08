@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Logo } from '@/components/ui/UI';
+import { Logo } from '@/components/ui/logo';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -72,7 +72,7 @@ const ForgotPassword = () => {
                                 onChange={(e) => {
                                     setEmail(e.target.value);
                                 }}
-                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                             />
                         </div>
 

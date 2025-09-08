@@ -2,10 +2,10 @@
 
 // Register page - allows user to create an account
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Logo } from '@/components/ui/UI';
+import { Logo } from '@/components/ui/logo';
 import { useAuth } from '@/context/AuthContext';
 import { doCreateUserWithEmailAndPassword } from '@/lib/client-auth';
 
@@ -53,7 +53,7 @@ const Register = () => {
     return (
         <>
             <main className='flex h-screen w-full place-content-center place-items-center self-center'>
-                <div className='align-center absolute top-[50px] left-[50px] flex justify-center'>
+                <div className='align-center absolute left-[50px] top-[50px] flex justify-center'>
                     <Logo height={75} />
                 </div>
 
@@ -81,7 +81,7 @@ const Register = () => {
                                 onChange={(e) => {
                                     setEmail(e.target.value);
                                 }}
-                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                             />
                         </div>
 
@@ -98,7 +98,7 @@ const Register = () => {
                                 onChange={(e) => {
                                     setPassword(e.target.value);
                                 }}
-                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                             />
                         </div>
 
@@ -115,7 +115,7 @@ const Register = () => {
                                 onChange={(e) => {
                                     setconfirmPassword(e.target.value);
                                 }}
-                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                             />
                         </div>
 

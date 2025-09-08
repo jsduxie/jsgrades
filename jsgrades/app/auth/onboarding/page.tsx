@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     DropdownMenu,
@@ -8,7 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Logo } from '@/components/ui/UI';
+import { Logo } from '@/components/ui/logo';
 import { useAuth } from '@/context/AuthContext';
 
 const Onboarding = () => {
@@ -106,7 +106,7 @@ const Onboarding = () => {
     return (
         <>
             <main className='flex h-screen w-full place-content-center place-items-center self-center'>
-                <div className='align-center absolute top-[50px] left-[50px] flex justify-center'>
+                <div className='align-center absolute left-[50px] top-[50px] flex justify-center'>
                     <Logo height={75} />
                 </div>
 
@@ -137,7 +137,7 @@ const Onboarding = () => {
                                         required
                                         value={form.firstName}
                                         onChange={handleChange}
-                                        className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                        className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                                     />
                                 </div>
                                 <div>
@@ -151,7 +151,7 @@ const Onboarding = () => {
                                         required
                                         value={form.lastName}
                                         onChange={handleChange}
-                                        className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                        className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                                     />
                                 </div>
                                 <div>
@@ -165,7 +165,7 @@ const Onboarding = () => {
                                         required
                                         value={form.email}
                                         onChange={handleChange}
-                                        className={`focus:indigo-600 mt-2 w-full rounded-lg border px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none ${
+                                        className={`focus:indigo-600 mt-2 w-full rounded-lg border px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300 ${
                                             currentUser?.email
                                                 ? 'bg-gray-100'
                                                 : 'bg-white'
@@ -188,7 +188,7 @@ const Onboarding = () => {
                                         required
                                         value={form.dateOfBirth}
                                         onChange={handleChange}
-                                        className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm transition duration-300 outline-none'
+                                        className='focus:indigo-600 mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-gray-500 shadow-sm outline-none transition duration-300'
                                     />
                                 </div>
                                 <div>
@@ -199,7 +199,7 @@ const Onboarding = () => {
                                         <DropdownMenuTrigger asChild>
                                             <button
                                                 type='button'
-                                                className='mt-2 flex w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-gray-700 shadow-sm transition duration-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
+                                                className='mt-2 flex w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-gray-700 shadow-sm transition duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500'
                                             >
                                                 {(() => {
                                                     const levels = [
