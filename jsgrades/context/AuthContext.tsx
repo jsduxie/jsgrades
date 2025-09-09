@@ -2,12 +2,12 @@
 
 // Allows for authentication to be tracked across components
 
-import { onAuthStateChanged, User } from 'firebase/auth';
-import React, { ReactNode, useContext, useEffect, useState } from 'react';
-import { auth } from '@/lib/Firebase';
-import { useRouter } from 'next/navigation';
-import { APIResponse, AuthContextType, ClientUserDetails } from '@/types';
-import { Loader2 } from 'lucide-react';
+import {onAuthStateChanged, User} from 'firebase/auth';
+import React, {ReactNode, useContext, useEffect, useState} from 'react';
+import {auth} from '@/lib/Firebase';
+import {useRouter} from 'next/navigation';
+import {APIResponse, AuthContextType, ClientUserDetails} from '@/types';
+import {Loader2} from 'lucide-react';
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
@@ -75,7 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
         <AuthContext.Provider value={value}>
             {loading ? (
-                <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+                <div className='fixed inset-0 z-50 flex items-center justify-center bg-background'>
+                    <Loader2 className='h-12 w-12 animate-spin text-accent' />
+                </div>
             ) : (
                 children
             )}
