@@ -1,6 +1,10 @@
 'use client';
 
-import { SidebarInset, SidebarProvider, SidebarTrigger, } from '@/components/ui/sidebar';
+import {
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/context/AuthContext';
 

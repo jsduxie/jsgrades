@@ -61,13 +61,13 @@ export function AppSidebar({
     }
 
     return (
-        <Sidebar className='bg-muted/40 flex h-screen flex-col justify-between border-r'>
+        <Sidebar className='flex h-screen flex-col justify-between border-r bg-muted/40'>
             <SidebarHeader>
                 <Logo />
             </SidebarHeader>
             <SidebarContent className='flex-1'>
                 <SidebarGroup>
-                    <SidebarGroupLabel className='text-muted-foreground text-xs font-semibold uppercase tracking-wide'>
+                    <SidebarGroupLabel className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>
                         JSGrades
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -81,8 +81,8 @@ export function AppSidebar({
                                                 href={item.url}
                                                 className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                                                     isActive
-                                                        ? 'bg-accent text-accent-foreground font-semibold'
-                                                        : 'hover:bg-muted text-muted-foreground'
+                                                        ? 'bg-accent font-semibold text-accent-foreground'
+                                                        : 'text-muted-foreground hover:bg-muted'
                                                 }`}
                                             >
                                                 <item.icon className='h-4 w-4' />
@@ -98,10 +98,10 @@ export function AppSidebar({
             </SidebarContent>
 
             {/* Profile section */}
-            <div className='border-border border-t px-4 py-3'>
+            <div className='border-t border-border px-4 py-3'>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className='hover:bg-muted flex w-full items-center justify-between rounded-md px-2 py-1.5 transition'>
+                        <button className='flex w-full items-center justify-between rounded-md px-2 py-1.5 transition hover:bg-muted'>
                             <div className='flex items-center gap-3'>
                                 <Avatar className='h-8 w-8'>
                                     <AvatarImage
@@ -119,12 +119,12 @@ export function AppSidebar({
                                     <p className='text-sm font-medium leading-none'>
                                         {user?.firstName} {user?.lastName}
                                     </p>
-                                    <p className='text-muted-foreground max-w-[150px] truncate text-xs'>
+                                    <p className='max-w-[150px] truncate text-xs text-muted-foreground'>
                                         {user?.email}
                                     </p>
                                 </div>
                             </div>
-                            <User className='text-muted-foreground h-4 w-4' />
+                            <User className='h-4 w-4 text-muted-foreground' />
                         </button>
                     </DropdownMenuTrigger>
 

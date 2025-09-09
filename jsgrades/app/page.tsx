@@ -20,7 +20,7 @@ export default function Home() {
 
     if (loading) {
         return (
-            <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+            <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
         );
     }
 

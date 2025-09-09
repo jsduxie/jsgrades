@@ -2,12 +2,12 @@
 
 // Allows for authentication to be tracked across components
 
-import {onAuthStateChanged, User} from 'firebase/auth';
-import React, {ReactNode, useContext, useEffect, useState} from 'react';
-import {auth} from '@/lib/Firebase';
-import {useRouter} from 'next/navigation';
-import {APIResponse, AuthContextType, ClientUserDetails} from '@/types';
-import {Loader2} from 'lucide-react';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import React, { ReactNode, useContext, useEffect, useState } from 'react';
+import { auth } from '@/lib/Firebase';
+import { useRouter } from 'next/navigation';
+import { APIResponse, AuthContextType, ClientUserDetails } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
