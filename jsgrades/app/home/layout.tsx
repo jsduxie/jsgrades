@@ -15,8 +15,8 @@ export default function HomeLayout({
         <SidebarProvider>
             <AppSidebar user={auth?.userDetails} />
             <SidebarInset>
-                <header className='group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear'>
-                    <div className='flex items-center gap-2 px-4'>
+                <header className='group-has-data-[collapsible=icon]/sidebar-wrapper:h-8 relative z-50 flex h-12 shrink-0 items-center gap-2 bg-background/95 backdrop-blur transition-[width,height] ease-linear supports-[backdrop-filter]:bg-background/60'>
+                    <div className='flex items-center px-3'>
                         <SidebarTrigger className='-ml-1' />
                     </div>
                 </header>

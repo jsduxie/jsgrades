@@ -159,10 +159,10 @@ export default function QualificationsPage() {
     return (
         <>
             <div className='min-h-screen w-full pb-8'>
-                {/* Backdrop blur overlay */}
-                <div className='absolute inset-0 bg-background/80 backdrop-blur-sm' />
+                {/* Backdrop blur overlay - positioned below header */}
+                <div className='absolute inset-0 top-12 bg-background/80 backdrop-blur-sm' />
 
-                <div className='relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+                <div className='relative mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8'>
                     {/* Header Card */}
                     <div className='mb-6 w-full rounded-xl bg-card'>
                         <div className='flex flex-col space-y-6 p-6'>
