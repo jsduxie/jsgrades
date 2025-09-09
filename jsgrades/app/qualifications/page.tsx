@@ -4,22 +4,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AddQualification from '@/components/AddQualification';
 import { APIResponse, Qualification } from '@/types';
 import { useAuth } from '@/context/AuthContext';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
 export default function QualificationsPage() {
@@ -171,9 +159,12 @@ export default function QualificationsPage() {
     return (
         <>
             <div className='min-h-screen w-full pb-8'>
-                <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+                {/* Backdrop blur overlay */}
+                <div className='absolute inset-0 bg-background/80 backdrop-blur-sm' />
+
+                <div className='relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
                     {/* Header Card */}
-                    <div className='bg-card mb-6 w-full rounded-xl'>
+                    <div className='mb-6 w-full rounded-xl bg-card'>
                         <div className='flex flex-col space-y-6 p-6'>
                             <div className='flex flex-col items-start space-y-6 md:flex-row md:items-center md:justify-between md:space-y-0'>
                                 <h1 className='text-3xl font-bold tracking-tight'>
@@ -197,7 +188,7 @@ export default function QualificationsPage() {
                                         onValueChange={setSortBy}
                                         defaultValue='name'
                                     >
-                                        <SelectTrigger className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2'>
+                                        <SelectTrigger className='h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
                                             <SelectValue placeholder='Sort by' />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -219,7 +210,7 @@ export default function QualificationsPage() {
                                         onValueChange={setFilterStatus}
                                         defaultValue='all'
                                     >
-                                        <SelectTrigger className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2'>
+                                        <SelectTrigger className='h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
                                             <SelectValue placeholder='Filter by status' />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -244,7 +235,7 @@ export default function QualificationsPage() {
                                         onChange={(e) =>
                                             setSearchQuery(e.target.value)
                                         }
-                                        className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
+                                        className='h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
                                     />
                                 </div>
                             )}
@@ -252,11 +243,11 @@ export default function QualificationsPage() {
                     </div>
 
                     {/* Content Area */}
-                    <div className='bg-muted/30 rounded-xl p-6'>
+                    <div className='rounded-xl bg-muted/30 p-6'>
                         {/* Loading Spinner */}
                         {loading && (
                             <div className='flex justify-center py-12'>
-                                <Loader2 className='text-muted-foreground h-6 w-6 animate-spin' />
+                                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
                             </div>
                         )}
 
@@ -279,18 +270,18 @@ export default function QualificationsPage() {
                                     >
                                         <CardHeader>
                                             <div className='flex items-center justify-between'>
-                                                <CardTitle className='text-foreground text-base font-semibold'>
+                                                <CardTitle className='text-base font-semibold text-foreground'>
                                                     {q.name}
                                                 </CardTitle>
                                             </div>
-                                            <CardDescription className='text-muted-foreground text-sm'>
+                                            <CardDescription className='text-sm text-muted-foreground'>
                                                 {q.institution}
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent className='text-muted-foreground grid flex-grow gap-4 text-sm'>
+                                        <CardContent className='grid flex-grow gap-4 text-sm text-muted-foreground'>
                                             <div className='grid grid-cols-2 gap-4'>
                                                 <div>
-                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                    <p className='text-xs font-medium text-muted-foreground'>
                                                         Predicted
                                                     </p>
                                                     <p className='text-foreground'>
@@ -299,7 +290,7 @@ export default function QualificationsPage() {
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                    <p className='text-xs font-medium text-muted-foreground'>
                                                         Target
                                                     </p>
                                                     <p className='text-foreground'>
@@ -307,7 +298,7 @@ export default function QualificationsPage() {
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                    <p className='text-xs font-medium text-muted-foreground'>
                                                         Current
                                                     </p>
                                                     <p className='text-foreground'>
@@ -315,7 +306,7 @@ export default function QualificationsPage() {
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className='text-muted-foreground text-xs font-medium'>
+                                                    <p className='text-xs font-medium text-muted-foreground'>
                                                         Dates
                                                     </p>
                                                     <p className='text-foreground'>
