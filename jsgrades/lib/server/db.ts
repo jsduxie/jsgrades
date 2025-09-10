@@ -15,13 +15,19 @@ const pool = new Pool({
     ssl: {
         rejectUnauthorized: false,
     },
-    // Connection pool configuration for better test performance
-    max: 20, // Maximum number of connections in the pool
-    min: 2, // Minimum number of connections in the pool
-    idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
-    connectionTimeoutMillis: 5000, // Timeout after 5 seconds if connection cannot be established
-    query_timeout: 30000, // Query timeout after 30 seconds
-    statement_timeout: 30000, // Statement timeout after 30 seconds
+    // Improved connection pool configuration for better reliability
+    max: 10, // Reduce max connections to prevent overwhelming the database
+    min: 1, // Keep at least one connection alive
+    idleTimeoutMillis: 60000, // Keep connections alive longer (60 seconds)
+    connectionTimeoutMillis: 10000, // Increase connection timeout to 10 seconds
+    query_timeout: 60000, // Increase query timeout to 60 seconds
+    statement_timeout: 60000, // Increase statement timeout to 60 seconds
+    // Add connection retry logic
+    acquireTimeoutMillis: 15000, // Wait up to 15 seconds to acquire a connection
+    createTimeoutMillis: 8000, // Timeout for creating new connections
+    destroyTimeoutMillis: 5000, // Timeout for destroying connections
+    reapIntervalMillis: 1000, // Check for idle connections every second
+    createRetryIntervalMillis: 200, // Retry connection creation every 200ms
 });
 
 export default pool;

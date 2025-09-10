@@ -2,12 +2,12 @@
 
 // Allows for authentication to be tracked across components
 
-import { onAuthStateChanged, User } from 'firebase/auth';
-import React, { ReactNode, useContext, useEffect, useState } from 'react';
-import { auth } from '@/lib/Firebase';
-import { useRouter } from 'next/navigation';
-import { APIResponse, AuthContextType, ClientUserDetails } from '@/types';
-import { Loader2 } from 'lucide-react';
+import {onAuthStateChanged, User} from 'firebase/auth';
+import React, {ReactNode, useContext, useEffect, useState} from 'react';
+import {auth} from '@/lib/Firebase';
+import {useRouter} from 'next/navigation';
+import {APIResponse, AuthContextType, ClientUserDetails} from '@/types';
+import {Loader2} from 'lucide-react';
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (initializing) {
         return (
             <div className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-center'>
-                <Loader2 className='mb-5 h-12 w-12 animate-spin text-accent' />
+                <Loader2 className='mb-5 h-12 w-12 animate-spin text-muted-foreground' />
                 <p className='text-lg font-medium'>
                     Checking authentication...
                 </p>
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         <AuthContext.Provider value={value}>
             {loading ? (
                 <div className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-center'>
-                    <Loader2 className='mb-5 h-12 w-12 animate-spin text-accent' />
+                    <Loader2 className='mb-5 h-12 w-12 animate-spin text-muted-foreground' />
                     <p className='text-lg font-medium'>
                         Loading your profile...
                     </p>

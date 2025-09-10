@@ -1,12 +1,6 @@
 import pool from '@/lib/server/db';
-import type { PoolClient } from 'pg';
-import type {
-    Node,
-    NodeAggregate,
-    UpdateGradeInput,
-    NodeSettings,
-    NodeSummary,
-} from '@/types/qualificationNode';
+import type {PoolClient} from 'pg';
+import type {Node, NodeAggregate, NodeSettings, NodeSummary, UpdateGradeInput,} from '@/types/qualificationNode';
 
 export class NodeService {
     /**
@@ -798,20 +792,125 @@ export class NodeService {
                 row.config_coverage !== null
                     ? Number(row.config_coverage)
                     : null,
-            validationCodes: Array.isArray(row.validation_codes)
-                ? (row.validation_codes as string[])
-                : [],
-            validationMeta:
-                typeof row.validation_meta === 'string'
-                    ? JSON.parse(row.validation_meta)
-                    : (row.validation_meta as Record<string, unknown>) || {},
-            classificationActual: row.classification_actual as string | null,
-            classificationPredicted: row.classification_predicted as
-                | string
-                | null,
             lastComputedAt: row.last_computed_at
                 ? new Date(row.last_computed_at as string)
                 : new Date(),
         };
+    }
+
+    /**
+     * Retrieves all nodes for a specific qualification.
+     * @param qualificationId The qualification ID to fetch nodes for.
+     * @returns Array of all nodes belonging to the qualification.
+     */
+    static async getNodesByQualification(
+        qualificationId: string
+    ): Promise<Node[]> {
+        let client;
+        try {
+            console.log(
+                '[NodeService.getNodesByQualification] Attempting to connect to database for qualification:',
+                qualificationId
+            );
+
+            // Add timeout handling for connection
+            client = await Promise.race([
+                pool.connect(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(
+                        () =>
+                            reject(
+                                new Error(
+                                    'Database connection timeout after 10 seconds'
+                                )
+                            ),
+                        10000
+                    )
+                ),
+            ]);
+
+            console.log(
+                '[NodeService.getNodesByQualification] Database connection established'
+            );
+
+            const result = await client.query(
+                'SELECT * FROM qualification_nodes WHERE qualification_id = $1 ORDER BY created_at ASC',
+                [qualificationId]
+            );
+
+            console.log(
+                '[NodeService.getNodesByQualification] Found rows:',
+                result.rows.length
+            );
+
+            if (result.rows.length === 0) {
+                console.log(
+                    '[NodeService.getNodesByQualification] No nodes found for qualification'
+                );
+                return [];
+            }
+
+            const nodes: Node[] = [];
+            for (const row of result.rows) {
+                try {
+                    const node = await this._mapNodeFromDbWithTypeName(
+                        row,
+                        client
+                    );
+                    nodes.push(node);
+                } catch (nodeError) {
+                    console.error(
+                        '[NodeService.getNodesByQualification] Error mapping node:',
+                        row.id,
+                        nodeError
+                    );
+                    // Skip this node and continue with others
+                    continue;
+                }
+            }
+
+            console.log(
+                '[NodeService.getNodesByQualification] Successfully mapped nodes:',
+                nodes.length
+            );
+            return nodes;
+        } catch (error) {
+            console.error(
+                '[NodeService.getNodesByQualification] Error:',
+                error
+            );
+
+            // Provide more specific error information
+            if (error instanceof Error) {
+                if (
+                    error.message.includes('timeout') ||
+                    error.code === 'ERR_SOCKET_CONNECTION_TIMEOUT'
+                ) {
+                    throw new Error(
+                        'Database connection timeout - please try again'
+                    );
+                } else if (error.message.includes('connection')) {
+                    throw new Error(
+                        'Database connection failed - please check your connection'
+                    );
+                }
+            }
+
+            throw error;
+        } finally {
+            if (client) {
+                try {
+                    client.release();
+                    console.log(
+                        '[NodeService.getNodesByQualification] Database connection released'
+                    );
+                } catch (releaseError) {
+                    console.error(
+                        '[NodeService.getNodesByQualification] Error releasing connection:',
+                        releaseError
+                    );
+                }
+            }
+        }
     }
 }

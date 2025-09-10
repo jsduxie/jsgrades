@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Loader2 } from 'lucide-react';
+import React, {useEffect} from 'react';
+import {useAuth} from '@/context/AuthContext';
+import {Loader2} from 'lucide-react';
 import QualificationOverview from '@/components/qualifications/QualificationOverview';
 import QualificationSummary from '@/components/qualifications/QualificationSummary';
-import { useQualification } from '@/context/QualificationContext';
+import {useQualification} from '@/context/QualificationContext';
 
 export default function QualificationsPage() {
     const auth = useAuth();
@@ -42,6 +42,10 @@ export default function QualificationsPage() {
 
     const handleQualificationSelect = (qualificationId: string) => {
         setCurrentQualification(qualificationId);
+    };
+
+    const handleBackToOverview = () => {
+        setCurrentQualification('');
     };
 
     // Show loading only if auth is still loading or if we don't have user details yet
@@ -85,7 +89,9 @@ export default function QualificationsPage() {
             );
 
         case 'QUALIFICATION_SUMMARY':
-            return <QualificationSummary />;
+            return (
+                <QualificationSummary onBackToOverview={handleBackToOverview} />
+            );
 
         case 'NODE_SUMMARY':
             // TODO: Create NodeSummary component

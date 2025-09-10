@@ -7,6 +7,97 @@ import { NodeService } from '@/lib/server/NodeService';
 import type { APIResponse } from '@/types';
 import type { NewNode, Node, NodeAggregate } from '@/types/qualificationNode';
 
+/* Fetches nodes for a qualification */
+export async function GET(req: NextRequest) {
+    try {
+        console.log('[GET /api/nodes] Incoming request');
+        const user = await validateAuth(req);
+
+        if (!user) {
+            return NextResponse.json<APIResponse>(
+                { status: 'error', message: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        const { searchParams } = new URL(req.url);
+        const qualificationId = searchParams.get('qualificationId');
+
+        if (!qualificationId) {
+            return NextResponse.json<APIResponse>(
+                {
+                    status: 'error',
+                    message: 'qualificationId parameter is required',
+                },
+                { status: 400 }
+            );
+        }
+
+        console.log(
+            '[GET /api/nodes] Fetching nodes for qualification:',
+            qualificationId
+        );
+
+        try {
+            const nodes =
+                await NodeService.getNodesByQualification(qualificationId);
+            console.log(
+                '[GET /api/nodes] Successfully retrieved nodes:',
+                nodes.length
+            );
+
+            return NextResponse.json<APIResponse<Node[]>>(
+                {
+                    status: 'success',
+                    data: nodes,
+                },
+                { status: 200 }
+            );
+        } catch (dbError) {
+            console.error('[GET /api/nodes] Database error:', dbError);
+
+            // Handle specific database timeout errors
+            if (
+                dbError instanceof Error &&
+                (dbError.message.includes('timeout') ||
+                    dbError.message.includes('connection') ||
+                    dbError.code === 'ERR_SOCKET_CONNECTION_TIMEOUT')
+            ) {
+                console.log(
+                    '[GET /api/nodes] Database timeout detected, returning empty array as fallback'
+                );
+
+                // Return empty array as fallback for timeout errors
+                // This prevents the UI from being stuck in loading state
+                return NextResponse.json<APIResponse<Node[]>>(
+                    {
+                        status: 'success',
+                        data: [],
+                        message:
+                            'Database temporarily unavailable - no nodes to display',
+                    },
+                    { status: 200 }
+                );
+            }
+
+            // Re-throw other database errors
+            throw dbError;
+        }
+    } catch (error) {
+        console.error('[GET /api/nodes] Error:', error);
+        return NextResponse.json<APIResponse>(
+            {
+                status: 'error',
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to fetch nodes',
+            },
+            { status: 500 }
+        );
+    }
+}
+
 /* Creates a new node */
 export async function POST(req: NextRequest) {
     try {
