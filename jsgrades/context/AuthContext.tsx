@@ -22,48 +22,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [userDetails, setUserDetails] = useState<ClientUserDetails | null>(
         null
     );
+    const [initializing, setInitializing] = useState(true);
 
     const router = useRouter();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                setCurrentUser(user);
-                setUserLoggedIn(true);
+            try {
+                if (user) {
+                    setCurrentUser(user);
+                    setUserLoggedIn(true);
 
-                try {
-                    const res = await fetch(`/api/user/${user.uid}`);
-                    const json: APIResponse<Partial<ClientUserDetails>> =
-                        await res.json();
+                    try {
+                        const res = await fetch(`/api/user/${user.uid}`);
+                        const json: APIResponse<Partial<ClientUserDetails>> =
+                            await res.json();
 
-                    if (json.status === 'success' && json.data) {
-                        if (!json.data.onBoarded) {
-                            setUserDetails(null);
-                            router.push('/auth/onboarding');
+                        if (json.status === 'success' && json.data) {
+                            if (!json.data.onBoarded) {
+                                setUserDetails(null);
+                                if (
+                                    !window.location.pathname.includes(
+                                        '/auth/onboarding'
+                                    )
+                                ) {
+                                    router.push('/auth/onboarding');
+                                }
+                            } else {
+                                setUserDetails(json.data as ClientUserDetails);
+                            }
                         } else {
-                            setUserDetails(json.data as ClientUserDetails);
+                            setUserDetails(null);
+                            if (
+                                !window.location.pathname.includes(
+                                    '/auth/onboarding'
+                                )
+                            ) {
+                                router.push('/auth/onboarding');
+                            }
                         }
-                    } else {
+                    } catch (err) {
+                        console.error('Error fetching user details:', err);
                         setUserDetails(null);
-                        router.push('/auth/onboarding');
+                        if (
+                            !window.location.pathname.includes(
+                                '/auth/onboarding'
+                            )
+                        ) {
+                            router.push('/auth/onboarding');
+                        }
                     }
-                } catch (err) {
-                    console.error('Error fetching user details:', err);
+                } else {
+                    setCurrentUser(null);
+                    setUserLoggedIn(false);
                     setUserDetails(null);
-                    router.push('/auth/onboarding');
+                    // Only redirect to login if not already on an auth page
+                    const isAuthPage =
+                        window.location.pathname.startsWith('/auth') ||
+                        window.location.pathname === '/';
+                    if (!isAuthPage) {
+                        router.push('/');
+                    }
                 }
-            } else {
-                setCurrentUser(null);
-                setUserLoggedIn(false);
-                setUserDetails(null);
-                router.push('/');
+            } finally {
+                setLoading(false);
+                setInitializing(false);
             }
-
-            setLoading(false);
         });
 
         return () => unsubscribe();
     }, [router]);
+
+    // Don't render anything during initial auth check
+    if (initializing) {
+        return (
+            <div className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-center'>
+                <Loader2 className='mb-5 h-12 w-12 animate-spin text-accent' />
+                <p className='text-lg font-medium'>
+                    Checking authentication...
+                </p>
+                <p className='mt-2 text-sm text-muted-foreground'>
+                    Please wait while we verify your login status
+                </p>
+            </div>
+        );
+    }
 
     const value = {
         currentUser,
@@ -75,8 +118,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
         <AuthContext.Provider value={value}>
             {loading ? (
-                <div className='fixed inset-0 z-50 flex items-center justify-center bg-background'>
-                    <Loader2 className='h-12 w-12 animate-spin text-accent' />
+                <div className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-center'>
+                    <Loader2 className='mb-5 h-12 w-12 animate-spin text-accent' />
+                    <p className='text-lg font-medium'>
+                        Loading your profile...
+                    </p>
+                    <p className='mt-2 text-sm text-muted-foreground'>
+                        Fetching user details and preferences
+                    </p>
                 </div>
             ) : (
                 children

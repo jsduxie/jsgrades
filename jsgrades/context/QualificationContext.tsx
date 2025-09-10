@@ -1,12 +1,6 @@
 'use client';
 
-import React, {
-    ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
-} from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect, useState, } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import type {
     APIResponse,
@@ -492,14 +486,27 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         [getAuthToken]
     );
 
-    // Load initial data when user is authenticated
+    // Load initial data when user is authenticated and cleanup on logout
     useEffect(() => {
-        if (auth?.userDetails?.id) {
+        if (auth?.userDetails?.id && !auth.loading) {
             refreshQualifications();
             fetchQualificationLevels();
+        } else if (!auth?.userLoggedIn) {
+            // Cleanup when user logs out
+            setQualifications([]);
+            setCurrentQualificationId(null);
+            setQualificationLevels([]);
+            setCurrentNodeId(null);
+            setNavigation([]);
+            setNodeHierarchy([]);
+            setCurrentNodeSummary(null);
+            setLoading(false);
+            setLoadingNodes(false);
         }
     }, [
         auth?.userDetails?.id,
+        auth?.loading,
+        auth?.userLoggedIn,
         refreshQualifications,
         fetchQualificationLevels,
     ]);

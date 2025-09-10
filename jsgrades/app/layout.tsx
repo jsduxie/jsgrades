@@ -3,6 +3,8 @@ import { Geist_Mono, Roboto } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { QualificationProvider } from '@/context/QualificationContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import ChunkErrorHandler from '@/components/ChunkErrorHandler';
 import React from 'react';
 
 const roboto = Roboto({
@@ -30,9 +32,14 @@ export default function RootLayout({
             <body
                 className={`${roboto.variable} ${geistMono.variable} antialiased`}
             >
-                <AuthProvider>
-                    <QualificationProvider>{children}</QualificationProvider>
-                </AuthProvider>
+                <ErrorBoundary>
+                    <ChunkErrorHandler />
+                    <AuthProvider>
+                        <QualificationProvider>
+                            {children}
+                        </QualificationProvider>
+                    </AuthProvider>
+                </ErrorBoundary>
             </body>
         </html>
     );
