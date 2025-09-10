@@ -1,23 +1,8 @@
 import React from 'react';
 import { useQualification } from '@/context/QualificationContext';
 import { Button } from '@/components/ui/button';
-import {
-    ArrowLeft,
-    BookOpen,
-    Calendar,
-    CheckCircle,
-    Clock,
-    GraduationCap,
-    Target,
-    TrendingUp,
-} from 'lucide-react';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle, Clock, GraduationCap, Target, TrendingUp, } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 
 interface QualificationSummaryProps {
     onBackToOverview: () => void;
@@ -35,23 +20,19 @@ export default function QualificationSummary({
         navigateToNode,
     } = useQualification();
 
-    // Find the current qualification
     const currentQualification = qualifications.find(
         (q) => q.id === currentQualificationId
     );
 
-    // Find the qualification level using the level string (not levelId)
     const qualificationLevel = qualificationLevels.find(
         (level) => level.id === currentQualification?.level
     );
 
-    // Get root nodes for this qualification
     const rootNodes = nodeHierarchy.filter(
         (node) =>
             !node.parentId && node.qualificationId === currentQualificationId
     );
 
-    // Status badge component
     const StatusBadge = ({ inProgress }: { inProgress: boolean }) => {
         const isCompleted = !inProgress;
 
