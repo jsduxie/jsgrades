@@ -1,7 +1,7 @@
 import '@jest/globals';
-import {ValidationService} from '@/lib/server/ValidationService';
-import {StubUtility, TestContext} from '@/tests/StubUtility';
-import {Node} from '@/types';
+import { ValidationService } from '@/lib/server/ValidationService';
+import { StubUtility, TestContext } from '@/tests/StubUtility';
+import { Node } from '@/types';
 
 let stubUtil: StubUtility;
 let ctx: TestContext;

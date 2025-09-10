@@ -1,4 +1,9 @@
-import { CalculationMethod, ConfigStatus, RoundingMode, WeightingMode, } from './qualificationEnums';
+import {
+    CalculationMethod,
+    ConfigStatus,
+    RoundingMode,
+    WeightingMode,
+} from './qualificationEnums';
 
 export interface CreateNodeInput {
     qualificationId: string;
