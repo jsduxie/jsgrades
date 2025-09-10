@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist_Mono, Roboto } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { QualificationProvider } from '@/context/QualificationContext';
 import React from 'react';
 
 const roboto = Roboto({
@@ -29,7 +30,9 @@ export default function RootLayout({
             <body
                 className={`${roboto.variable} ${geistMono.variable} antialiased`}
             >
-                <AuthProvider>{children}</AuthProvider>
+                <AuthProvider>
+                    <QualificationProvider>{children}</QualificationProvider>
+                </AuthProvider>
             </body>
         </html>
     );
