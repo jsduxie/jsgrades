@@ -1,8 +1,23 @@
 import React from 'react';
 import { useQualification } from '@/context/QualificationContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Calendar, CheckCircle, Clock, GraduationCap, Target, TrendingUp, } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
+import {
+    ArrowLeft,
+    BookOpen,
+    Calendar,
+    CheckCircle,
+    Clock,
+    GraduationCap,
+    Target,
+    TrendingUp,
+} from 'lucide-react';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 
 interface QualificationSummaryProps {
     onBackToOverview: () => void;
