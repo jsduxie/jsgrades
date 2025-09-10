@@ -1,9 +1,4 @@
-import {
-    CalculationMethod,
-    ConfigStatus,
-    RoundingMode,
-    WeightingMode,
-} from './qualificationEnums';
+import { CalculationMethod, ConfigStatus, RoundingMode, WeightingMode, } from './qualificationEnums';
 
 export interface CreateNodeInput {
     qualificationId: string;
@@ -19,7 +14,7 @@ export interface CreateNodeInput {
     roundingPrecision?: number;
     excludeIncompleteFromPredicted?: boolean;
     inheritSettings?: boolean;
-    overrides?: Record<string, any>;
+    overrides?: Record<string, unknown>;
     creditEnforcement?: string;
     configStatus?: ConfigStatus;
     lockConfig?: boolean;

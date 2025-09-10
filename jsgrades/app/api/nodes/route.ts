@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/server/auth';
 import { ValidationService } from '@/lib/server/ValidationService';

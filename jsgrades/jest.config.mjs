@@ -3,7 +3,7 @@ import path from 'path';
 
 config({ path: path.resolve(process.cwd(), '.env.local'), debug: false });
 
-export default {
+const jestConfig = {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
@@ -28,23 +28,21 @@ export default {
     ],
     globalSetup: '<rootDir>/tests/jest.globalSetup.ts',
     globalTeardown: '<rootDir>/tests/jest.globalTeardown.ts',
-    collectCoverage: true,
+    testTimeout: 30000,
+    collectCoverage: false,
     coverageDirectory: 'coverage',
-    coverageReporters: ['json', 'lcov', 'text', 'clover'],
-    coveragePathIgnorePatterns: ['/node_modules/', '/.next/', '/coverage/'],
+    coverageReporters: ['text', 'lcov', 'html'],
     collectCoverageFrom: [
-        'app/api/**/*.{ts,tsx}',
-        'lib/server/**/*.{ts,tsx}',
-        'lib/auth*.ts',
-        'lib/utils.ts',
-        '!context/**/*.{ts,tsx}',
-        '!components/**/*.{ts,tsx}',
-        '!app/**/page.tsx',
+        'app/**/*.{ts,tsx}',
+        'lib/**/*.{ts,tsx}',
+        'components/**/*.{ts,tsx}',
+        'context/**/*.{ts,tsx}',
+        'hooks/**/*.{ts,tsx}',
         '!**/*.d.ts',
-        '!**/index.ts',
-        '!**/*.config.{js,ts,mjs}',
         '!**/node_modules/**',
         '!**/coverage/**',
         '!**/.next/**',
     ],
 };
+
+export default jestConfig;

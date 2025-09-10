@@ -1,6 +1,7 @@
 import '@jest/globals';
-import { ValidationService } from '@/lib/server/ValidationService';
-import { StubUtility, TestContext } from '@/tests/StubUtility';
+import {ValidationService} from '@/lib/server/ValidationService';
+import {StubUtility, TestContext} from '@/tests/StubUtility';
+import {Node} from '@/types';
 
 let stubUtil: StubUtility;
 let ctx: TestContext;
@@ -362,7 +363,7 @@ describe('ValidationService', () => {
                 name: 'Test Module',
                 qualificationId: ctx.qualificationId,
                 credits: 'not-a-number',
-            };
+            } as unknown as Partial<Node>;
 
             const result = ValidationService.validateNewNodeData(invalidData);
             expect(result.isValid).toBe(false);

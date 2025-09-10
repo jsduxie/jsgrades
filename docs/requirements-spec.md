@@ -5,15 +5,15 @@ JSGrades is a full-stack web application to allow users to primarily calculate o
 In addition, JSGrades will provide assessment tracking to allow users to stay organised, in addition to visualisation tools to track grade trajectory.
 
 ## Key Features
-| Feature | Description |
-|------|------|
-| Authentication | Firebase user authentication to allow signup, login, logout with an email, password or social accounts |
-| Qualification Tracks | Generalisable hierarchy of assessments (qualification/year/module/assessment), for example |
-| Grade Calculation | Weighted averages of grades based on overall assessment/year weightings, customisable settings |
-| Visualisations | Charts to for users to visualise progress over time, and identify their skillsets |
-| Persistence | Cloud-based database |
-| Task Management | Track assessments by due date, and add optional tasks for organisation |
-| Export | Ability to export qualification details in multiple formats |
+| Feature              | Description                                                                                            |
+|----------------------|--------------------------------------------------------------------------------------------------------|
+| Authentication       | Firebase user authentication to allow signup, login, logout with an email, password or social accounts |
+| Qualification Tracks | Generalisable hierarchy of assessments (qualification/year/module/assessment), for example             |
+| Grade Calculation    | Weighted averages of grades based on overall assessment/year weightings, customisable settings         |
+| Visualisations       | Charts to for users to visualise progress over time, and identify their skillsets                      |
+| Persistence          | Cloud-based database                                                                                   |
+| Task Management      | Track assessments by due date, and add optional tasks for organisation                                 |
+| Export               | Ability to export qualification details in multiple formats                                            |
 
 ## Functional Requirements
 
@@ -49,22 +49,22 @@ FR6.3: Optional saving of data to CSV or PDF
 FR6.4: Users can share read-only links to their qualifications
 
 ## Non-Functional Requirements
-| Category | Requirement |
-|------|------|
-| Usability | Intuitive, clean, responsive user inferface (UI) throughout |
-| Security | Authentication required, with scoped user data access |
-| Reliability | Persistent storage in a cloud-based database |
-| Performance | <2s load time, <500ms API latency |
-| Maintainability | Modular, clean codebase with reusable components |
-| Availability | Deployment to scalable hosting solutions |
-| Compatability | Compatable with most mainstream browsers on desktop and mobile |
+| Category        | Requirement                                                    |
+|-----------------|----------------------------------------------------------------|
+| Usability       | Intuitive, clean, responsive user interface (UI) throughout    |
+| Security        | Authentication required, with scoped user data access          |
+| Reliability     | Persistent storage in a cloud-based database                   |
+| Performance     | <2s load time, <500ms API latency                              |
+| Maintainability | Modular, clean codebase with reusable components               |
+| Availability    | Deployment to scalable hosting solutions                       |
+| Compatibility   | Compatible with most mainstream browsers on desktop and mobile |
 
 ## UI / UX Requirements
 - Home Page
 - Login / Register / Forgot Password forms
 - Dashboard - ability to view statistics, and switch between qualification / assessment tracking / visualisation views
 - Qualification view - nested structure, clean and intuitive
-- Assessent tracking - variety of views (list/calender)
+- Assessment tracking - variety of views (list/calendar)
 - Visualisations - grade charts and trends
 
 Addiitonal components:
@@ -74,14 +74,14 @@ Addiitonal components:
 - Breadcrumb navigation
 
 ## Tech Stack
-| Component | Technology |
-|------|------|
-| Frontend | React + Tailwind |
-| Visualisations | Recharts / Chart.js |
-| Auth | Firebase Auth |
-| Backend | Node.js (Express) |
-| Database | Postgres |
-| Hosting | Vercel (frontend), Render (backend) |
-| CI/CD | GitHub Actions |
-| State | Context API |
-| API |REST |
+| Component      | Technology                          |
+|----------------|-------------------------------------|
+| Frontend       | React + Tailwind                    |
+| Visualisations | Recharts / Chart.js                 |
+| Auth           | Firebase Auth                       |
+| Backend        | Node.js (Express)                   |
+| Database       | Postgres                            |
+| Hosting        | Vercel (frontend), Render (backend) |
+| CI/CD          | GitHub Actions                      |
+| State          | Context API                         |
+| API            | REST                                |

@@ -2,7 +2,7 @@ export enum NodeTypeId {
     qualification,
     year,
     module,
-    assesment,
+    assessment,
 }
 
 export enum WeightingMode {

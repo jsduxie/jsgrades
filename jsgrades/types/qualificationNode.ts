@@ -1,5 +1,3 @@
-import { APIResponse } from './api';
-
 export interface NodeSettings {
     calculationMethod: 'weighted_mean' | 'sum' | 'max' | 'min';
     weightingMode: 'percent' | 'credits' | 'ratio' | 'equal';
@@ -7,7 +5,7 @@ export interface NodeSettings {
     roundingPrecision: number;
     excludeIncompleteFromPredicted: boolean;
     inheritSettings: boolean;
-    overrides: Record<string, any>;
+    overrides: Record<string, unknown>;
     creditEnforcement?: 'none' | 'warn' | 'strict';
 }
 
@@ -26,7 +24,7 @@ export interface Node {
     roundingPrecision: number;
     excludeIncompleteFromPredicted: boolean;
     inheritSettings: boolean;
-    overrides: Record<string, any>;
+    overrides: Record<string, unknown>;
     creditEnforcement: 'none' | 'warn' | 'strict';
     configStatus: 'draft' | 'partial' | 'valid' | 'locked';
     lockConfig: boolean;
@@ -51,7 +49,7 @@ export interface NodeAggregate {
     creditSumActual?: number | null;
     configCoverage?: number | null;
     validationCodes: string[];
-    validationMeta: Record<string, any>;
+    validationMeta: Record<string, unknown>;
     classificationActual?: string | null;
     classificationPredicted?: string | null;
     lastComputedAt: Date;
@@ -69,7 +67,7 @@ export interface ValidationResult {
         code: string;
         severity: 'info' | 'warning' | 'error';
         message: string;
-        meta?: Record<string, any>;
+        meta?: Record<string, unknown>;
     }>;
     configStatus: 'draft' | 'partial' | 'valid' | 'locked';
     coverage?: number | null;
