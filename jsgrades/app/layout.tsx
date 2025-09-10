@@ -10,6 +10,7 @@ import React from 'react';
 const roboto = Roboto({
     variable: '--font-roboto',
     subsets: ['latin'],
+    weight: ['300', '400', '500', '700'],
 });
 
 const geistMono = Geist_Mono({

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
     experimental: {
         optimizePackageImports: ['lucide-react'],
     },
-    webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
+    webpack: (config: any, { isServer }: { isServer: boolean }) => {
         if (!isServer) {
             config.optimization = {
                 ...config.optimization,

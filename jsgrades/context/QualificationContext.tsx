@@ -1,6 +1,12 @@
 'use client';
 
-import React, { ReactNode, useCallback, useContext, useEffect, useState, } from 'react';
+import React, {
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+} from 'react';
 import { useAuth } from '@/context/AuthContext';
 import type {
     APIResponse,
