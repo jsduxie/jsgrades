@@ -12,8 +12,10 @@ declare global {
     var Headers: typeof Headers;
 }
 
-(global as typeof globalThis).TextEncoder = TextEncoder;
-(global as typeof globalThis).TextDecoder = TextDecoder;
+(global as unknown as { TextEncoder: typeof TextEncoder }).TextEncoder =
+    TextEncoder;
+(global as unknown as { TextDecoder: typeof TextDecoder }).TextDecoder =
+    TextDecoder;
 
 // Set longer timeout for integration tests that involve database operations
 jest.setTimeout(15000);
@@ -29,7 +31,7 @@ afterEach(() => {
 });
 
 // Mock Web API globals that NextRequest depends on
-global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
-global.Request = jest.fn() as jest.MockedFunction<typeof Request>;
-global.Response = jest.fn() as jest.MockedFunction<typeof Response>;
-global.Headers = jest.fn() as jest.MockedFunction<typeof Headers>;
+global.fetch = jest.fn() as unknown as typeof fetch;
+global.Request = jest.fn() as unknown as typeof Request;
+global.Response = jest.fn() as unknown as typeof Response;
+global.Headers = jest.fn() as unknown as typeof Headers;
