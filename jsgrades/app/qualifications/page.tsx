@@ -1,11 +1,11 @@
 'use client';
 
-import React, {useEffect} from 'react';
-import {useAuth} from '@/context/AuthContext';
-import {Loader2} from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 import QualificationOverview from '@/components/qualifications/QualificationOverview';
 import QualificationSummary from '@/components/qualifications/QualificationSummary';
-import {useQualification} from '@/context/QualificationContext';
+import { useQualification } from '@/context/QualificationContext';
 
 export default function QualificationsPage() {
     const auth = useAuth();

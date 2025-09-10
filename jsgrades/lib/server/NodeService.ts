@@ -1,6 +1,12 @@
 import pool from '@/lib/server/db';
-import type {PoolClient} from 'pg';
-import type {Node, NodeAggregate, NodeSettings, NodeSummary, UpdateGradeInput,} from '@/types/qualificationNode';
+import type { PoolClient } from 'pg';
+import type {
+    Node,
+    NodeAggregate,
+    NodeSettings,
+    NodeSummary,
+    UpdateGradeInput,
+} from '@/types/qualificationNode';
 
 export class NodeService {
     /**
