@@ -1,23 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQualification } from '@/context/QualificationContext';
 import { Button } from '@/components/ui/button';
-import {
-    ArrowLeft,
-    BookOpen,
-    Calendar,
-    CheckCircle,
-    Clock,
-    GraduationCap,
-    Target,
-    TrendingUp,
-} from 'lucide-react';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle, Clock, GraduationCap, Target, TrendingUp, } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
+import EditQualification from '@/components/qualifications/EditQualification';
 
 interface QualificationSummaryProps {
     onBackToOverview: () => void;
@@ -34,6 +20,8 @@ export default function QualificationSummary({
         loadingNodes,
         navigateToNode,
     } = useQualification();
+
+    const [showEditModal, setShowEditModal] = useState(false);
 
     const currentQualification = qualifications.find(
         (q) => q.id === currentQualificationId
@@ -95,8 +83,8 @@ export default function QualificationSummary({
             <div className='absolute inset-0 top-12 bg-background/80 backdrop-blur-sm' />
 
             <div className='relative mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8'>
-                {/* Header with back button */}
-                <div className='mb-6 flex items-center gap-4'>
+                {/* Header */}
+                <div className='mb-6 flex items-center justify-between gap-4 align-middle'>
                     <div>
                         <div className='mb-1 flex items-center gap-3'>
                             <h1 className='text-3xl font-bold tracking-tight'>
@@ -111,6 +99,13 @@ export default function QualificationSummary({
                             />
                         </p>
                     </div>
+                    <Button
+                        variant='outline'
+                        className='mt-4'
+                        onClick={() => setShowEditModal(true)}
+                    >
+                        Edit Qualification
+                    </Button>
                 </div>
 
                 {/* Qualification details */}
@@ -334,6 +329,11 @@ export default function QualificationSummary({
                     </CardContent>
                 </Card>
             </div>
+            <EditQualification
+                open={showEditModal}
+                onCloseAction={() => setShowEditModal(false)}
+                onSaveAction={() => {}}
+            />
         </div>
     );
 }
