@@ -8,19 +8,23 @@ export default class QualificationRepository {
     constructor(dbClient: PoolClient) {
         this.dbClient = dbClient;
     }
+
     async getQualificationById(id: string): Promise<Qualification | null> {
         const query = 'SELECT * FROM qualifications WHERE id = $1';
         const result = await this.dbClient.query(query, [id]);
         if (result.rows.length === 0) {
             return null;
         }
-        return result.rows[0];
+        return Converter.objectSnakeToCamel<Qualification>(result.rows[0]);
     }
 
     async getAllUserQualifications(userId: string): Promise<Qualification[]> {
-        const query = 'SELECT * FROM qualifications WHERE user_id = $1';
+        const query =
+            'SELECT * FROM qualifications WHERE user_id = $1 ORDER BY start_date DESC';
         const result = await this.dbClient.query(query, [userId]);
-        return result.rows;
+        return result.rows.map((row) =>
+            Converter.objectSnakeToCamel<Qualification>(row)
+        );
     }
 
     async createQualification(
@@ -47,41 +51,46 @@ export default class QualificationRepository {
         ];
 
         const result = await this.dbClient.query(query, values);
-        return result.rows[0];
+        return Converter.objectSnakeToCamel<Qualification>(result.rows[0]);
     }
 
     async updateQualification(
         id: string,
         updates: Partial<Qualification>
     ): Promise<Qualification> {
-        const keys = Object.keys(updates) as (keyof Qualification)[];
+        const setParts: string[] = [];
+        const values: unknown[] = [];
+        let paramIndex = 1;
 
-        if (keys.length === 0) {
-            throw new Error('No updates provided');
+        for (const [key, value] of Object.entries(updates)) {
+            if (value !== undefined) {
+                const snakeKey = Converter.camelToSnake(key);
+                setParts.push(`${snakeKey} = $${paramIndex++}`);
+                values.push(value);
+            }
         }
 
-        const setClauses = keys.map(
-            (key, idx) => `${Converter.camelToSnake(key)} = $${idx + 1}`
-        );
+        setParts.push(`updated_at = CURRENT_TIMESTAMP`);
 
-        const values = keys.map((key) =>
-            updates[key] === undefined ? null : updates[key]
-        );
+        if (setParts.length === 1) {
+            throw new Error('No fields to update');
+        }
 
         const query = `
-            UPDATE qualifications
-            SET ${setClauses.join(', ')}
-            WHERE id = $${keys.length + 1}
+            UPDATE qualifications 
+            SET ${setParts.join(', ')}
+            WHERE id = $${paramIndex}
             RETURNING *;
         `;
+        values.push(id);
 
-        const result = await this.dbClient.query(query, [...values, id]);
+        const result = await this.dbClient.query(query, values);
 
         if (result.rows.length === 0) {
-            throw new Error(`Qualification with id ${id} not found`);
+            throw new Error('Qualification not found');
         }
 
-        return result.rows[0] as Qualification;
+        return Converter.objectSnakeToCamel<Qualification>(result.rows[0]);
     }
 
     async deleteQualification(id: string): Promise<void> {

@@ -1,18 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
-import { AddQualificationProps, QualificationFormData, QualificationLevel, } from '@/types';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { AddQualificationProps, QualificationFormData } from '@/types';
+import { useQualification } from '@/context/QualificationContext';
+import {
+    convertQualificationToFormData,
+    detectQualificationChanges,
+} from '@/lib/client/qualifications/qualificationTypeConversions';
 
 export default function EditQualification({
     open,
     onCloseAction,
     onSaveAction,
 }: AddQualificationProps) {
-    const [levels, setLevels] = useState<QualificationLevel[]>([]);
-    const [isLoadingLevels, setIsLoadingLevels] = useState(false);
+    const [isLoadingLevels] = useState(false);
+
+    const qualContext = useQualification();
+
+    const currentQualification = qualContext.qualifications.find(
+        (qual) => qual.id === qualContext.currentQualificationId
+    );
+
     const [formData, setFormData] = useState<QualificationFormData>({
         name: '',
         institution: '',
@@ -26,24 +43,13 @@ export default function EditQualification({
     });
 
     useEffect(() => {
-        if (!open) return;
-        const fetchLevels = async () => {
-            setIsLoadingLevels(true);
-            try {
-                const res = await fetch('/api/qualifications/levels');
-                const json = await res.json();
-                if (json.status === 'success') setLevels(json.data);
-            } catch (error) {
-                console.error('Failed to fetch qualification levels:', error);
-            } finally {
-                setIsLoadingLevels(false);
-            }
-        };
-        fetchLevels();
-    }, [open]);
+        if (open && currentQualification) {
+            setFormData(convertQualificationToFormData(currentQualification));
+        }
+    }, [open, currentQualification]);
 
     const handleChange = (
-        e: React.ChangeEvent<
+        e: ChangeEvent<
             HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
         >
     ) => {
@@ -55,32 +61,26 @@ export default function EditQualification({
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const payload = {
-            ...formData,
-            currentGrade: parseFloat(formData.currentGrade) || undefined,
-            targetGrade: parseFloat(formData.targetGrade) || undefined,
-            predictedGrade: parseFloat(formData.predictedGrade) || undefined,
-            startDate: formData.startDate
-                ? new Date(formData.startDate)
-                : undefined,
-            endDate: formData.endDate ? new Date(formData.endDate) : undefined,
-        };
 
-        await onSaveAction(payload);
+        if (!currentQualification) {
+            return onCloseAction();
+        }
+
+        const updates = detectQualificationChanges(
+            currentQualification,
+            formData
+        );
+
+        if (Object.keys(updates).length === 0) {
+            console.log('No changes detected, closing modal');
+            return onCloseAction();
+        }
+
+        console.log('Detected changes:', updates);
+        onSaveAction(updates);
         onCloseAction();
-        setFormData({
-            name: '',
-            institution: '',
-            level: '',
-            startDate: '',
-            endDate: '',
-            currentGrade: '',
-            targetGrade: '',
-            predictedGrade: '',
-            inProgress: true,
-        });
     };
 
     if (!open) return null;
@@ -89,9 +89,10 @@ export default function EditQualification({
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
             <Card className='mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto'>
                 <CardHeader>
-                    <CardTitle>Add Qualification</CardTitle>
+                    <CardTitle>Edit Qualification</CardTitle>
                     <CardDescription>
-                        Add a new qualification to track your progress
+                        Make changes to your qualification details. Only
+                        modified fields will be updated.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -154,11 +155,13 @@ export default function EditQualification({
                                     className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
                                 >
                                     <option value=''>Select a level...</option>
-                                    {levels.map((l) => (
-                                        <option key={l.id} value={l.id}>
-                                            {l.name} (Level {l.level})
-                                        </option>
-                                    ))}
+                                    {qualContext.qualificationLevels.map(
+                                        (l) => (
+                                            <option key={l.id} value={l.id}>
+                                                {l.name} (Level {l.level})
+                                            </option>
+                                        )
+                                    )}
                                 </select>
                             </div>
 
@@ -281,7 +284,7 @@ export default function EditQualification({
                                         !formData.level
                                     }
                                 >
-                                    Save
+                                    Save Changes
                                 </Button>
                             </div>
                         </form>

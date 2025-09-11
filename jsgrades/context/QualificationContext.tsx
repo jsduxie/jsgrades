@@ -41,8 +41,8 @@ interface QualificationContextType {
     setCurrentNode: (nodeId: string) => void;
     addQualification: (qualification: Partial<Qualification>) => Promise<void>;
     updateQualification: (
-        id: string,
-        updates: Partial<Qualification>
+        updates: Partial<Qualification>,
+        id?: string
     ) => Promise<void>;
     deleteQualification: (id: string) => Promise<void>;
 
@@ -286,9 +286,15 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     );
 
     const updateQualification = useCallback(
-        async (id: string, updates: Partial<Qualification>) => {
+        async (updates: Partial<Qualification>, qualificationId?: string) => {
             try {
                 const token = await getAuthToken();
+                const id = qualificationId || currentQualificationId;
+
+                if (!id) {
+                    throw new Error('No qualification ID provided');
+                }
+
                 const res = await fetch(`/api/qualifications/${id}`, {
                     method: 'PUT',
                     headers: {
@@ -297,11 +303,20 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
                     },
                     body: JSON.stringify(updates),
                 });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
                 const json: APIResponse<Qualification> = await res.json();
 
                 if (json.status === 'success' && json.data) {
                     setQualifications((prev) =>
                         prev.map((q) => (q.id === id ? json.data! : q))
+                    );
+                } else {
+                    throw new Error(
+                        json.message || 'Failed to update qualification'
                     );
                 }
             } catch (error) {
@@ -309,7 +324,7 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
                 throw error;
             }
         },
-        [getAuthToken]
+        [getAuthToken, currentQualificationId]
     );
 
     const deleteQualification = useCallback(

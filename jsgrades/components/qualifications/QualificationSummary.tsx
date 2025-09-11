@@ -1,8 +1,23 @@
 import React, { useState } from 'react';
 import { useQualification } from '@/context/QualificationContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Calendar, CheckCircle, Clock, GraduationCap, Target, TrendingUp, } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
+import {
+    ArrowLeft,
+    BookOpen,
+    Calendar,
+    CheckCircle,
+    Clock,
+    GraduationCap,
+    Target,
+    TrendingUp,
+} from 'lucide-react';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import EditQualification from '@/components/qualifications/EditQualification';
 
 interface QualificationSummaryProps {
@@ -16,6 +31,7 @@ export default function QualificationSummary({
         qualifications,
         currentQualificationId,
         qualificationLevels,
+        updateQualification,
         nodeHierarchy,
         loadingNodes,
         navigateToNode,
@@ -332,7 +348,7 @@ export default function QualificationSummary({
             <EditQualification
                 open={showEditModal}
                 onCloseAction={() => setShowEditModal(false)}
-                onSaveAction={() => {}}
+                onSaveAction={(updates) => updateQualification(updates)}
             />
         </div>
     );
