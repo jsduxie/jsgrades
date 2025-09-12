@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,19 +10,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    AddQualificationProps,
-    QualificationFormData,
-    QualificationLevel,
-} from '@/types';
+import { useQualification } from '@/context/QualificationContext';
+import { AddQualificationProps, QualificationFormData } from '@/types';
 
 export default function AddQualification({
     open,
     onCloseAction,
     onSaveAction,
 }: AddQualificationProps) {
-    const [levels, setLevels] = useState<QualificationLevel[]>([]);
-    const [isLoadingLevels, setIsLoadingLevels] = useState(false);
+    const [isLoadingLevels] = useState(false);
     const [formData, setFormData] = useState<QualificationFormData>({
         name: '',
         institution: '',
@@ -35,22 +31,7 @@ export default function AddQualification({
         inProgress: true,
     });
 
-    useEffect(() => {
-        if (!open) return;
-        const fetchLevels = async () => {
-            setIsLoadingLevels(true);
-            try {
-                const res = await fetch('/api/qualifications/levels');
-                const json = await res.json();
-                if (json.status === 'success') setLevels(json.data);
-            } catch (error) {
-                console.error('Failed to fetch qualification levels:', error);
-            } finally {
-                setIsLoadingLevels(false);
-            }
-        };
-        fetchLevels();
-    }, [open]);
+    const qualContext = useQualification();
 
     const handleChange = (
         e: React.ChangeEvent<
@@ -164,11 +145,13 @@ export default function AddQualification({
                                     className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
                                 >
                                     <option value=''>Select a level...</option>
-                                    {levels.map((l) => (
-                                        <option key={l.id} value={l.id}>
-                                            {l.name} (Level {l.level})
-                                        </option>
-                                    ))}
+                                    {qualContext.qualificationLevels.map(
+                                        (l) => (
+                                            <option key={l.id} value={l.id}>
+                                                {l.name} (Level {l.level})
+                                            </option>
+                                        )
+                                    )}
                                 </select>
                             </div>
 
