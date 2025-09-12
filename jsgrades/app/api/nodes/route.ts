@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json<APIResponse<Node[]>>(
                 {
                     status: 'success',
+                    message: `Fetched ${nodes.length} nodes`,
                     data: nodes,
                 },
                 { status: 200 }
@@ -60,8 +61,7 @@ export async function GET(req: NextRequest) {
             if (
                 dbError instanceof Error &&
                 (dbError.message.includes('timeout') ||
-                    dbError.message.includes('connection') ||
-                    dbError.code === 'ERR_SOCKET_CONNECTION_TIMEOUT')
+                    dbError.message.includes('connection'))
             ) {
                 console.log(
                     '[GET /api/nodes] Database timeout detected, returning empty array as fallback'

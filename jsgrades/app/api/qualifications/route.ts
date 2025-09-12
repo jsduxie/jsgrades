@@ -42,8 +42,12 @@ export async function POST(req: NextRequest) {
             level,
             name,
             institution,
-            startDate: startDate ? new Date(startDate) : null,
-            endDate: inProgress ? null : endDate ? new Date(endDate) : null,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: inProgress
+                ? undefined
+                : endDate
+                  ? new Date(endDate)
+                  : undefined,
             currentGrade,
             targetGrade,
             predictedGrade,

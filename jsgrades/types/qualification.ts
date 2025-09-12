@@ -31,11 +31,11 @@ export type NewQualification = {
     level: string;
     name: string;
     institution: string;
-    startDate?: Date | null;
-    endDate?: Date | null;
-    currentGrade?: number | null;
-    targetGrade?: number | null;
-    predictedGrade?: number | null;
+    startDate?: Date | undefined;
+    endDate?: Date | undefined;
+    currentGrade?: number | undefined;
+    targetGrade?: number | undefined;
+    predictedGrade?: number | undefined;
     inProgress?: boolean;
 };
 

@@ -798,6 +798,14 @@ export class NodeService {
                 row.config_coverage !== null
                     ? Number(row.config_coverage)
                     : null,
+            validationCodes:
+                typeof row.validation_codes === 'string'
+                    ? JSON.parse(row.validation_codes)
+                    : (row.validation_codes as string[]) || [],
+            validationMeta:
+                typeof row.validation_meta === 'string'
+                    ? JSON.parse(row.validation_meta)
+                    : (row.validation_meta as Record<string, unknown>) || {},
             lastComputedAt: row.last_computed_at
                 ? new Date(row.last_computed_at as string)
                 : new Date(),
@@ -888,10 +896,7 @@ export class NodeService {
 
             // Provide more specific error information
             if (error instanceof Error) {
-                if (
-                    error.message.includes('timeout') ||
-                    error.code === 'ERR_SOCKET_CONNECTION_TIMEOUT'
-                ) {
+                if (error.message.includes('timeout')) {
                     throw new Error(
                         'Database connection timeout - please try again'
                     );

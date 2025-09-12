@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json<APIResponse<QualificationLevel[]>>(
             {
                 status: 'success',
+                message: 'Qualification levels fetched successfully',
                 data: qualificationLevels,
             },
             { status: 200 }
