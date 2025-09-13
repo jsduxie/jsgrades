@@ -165,7 +165,6 @@ export async function POST(req: NextRequest) {
         ) => {
             for (let attempt = 0; attempt <= retries; attempt++) {
                 try {
-                    // @ts-expect-error pool.query typings are not inferred here
                     return await pool.query(text, params);
                 } catch (e) {
                     const msg = e instanceof Error ? e.message : String(e);
