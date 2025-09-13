@@ -30,6 +30,7 @@ const jestConfig = {
     globalTeardown: '<rootDir>/tests/jest.globalTeardown.ts',
     testTimeout: 30000,
     collectCoverage: false,
+    coverageProvider: 'v8',
     coverageDirectory: 'coverage',
     coverageReporters: ['text', 'lcov', 'html'],
     collectCoverageFrom: [
