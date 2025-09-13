@@ -3,13 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 import { useQualification } from '@/context/QualificationContext';
 import { AddQualificationNodeProps, QualificationNodeFormData } from '@/types';
 
@@ -133,7 +127,7 @@ export default function AddQualificationNode({
                                     value={formData.name}
                                     onChange={handleChange}
                                     required
-                                    placeholder='e.g., Mathematics A Level'
+                                    placeholder='e.g., COMP1101 Algorithms and Data Structures'
                                 />
                             </div>
 

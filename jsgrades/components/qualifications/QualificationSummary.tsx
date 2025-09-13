@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { useQualification } from '@/context/QualificationContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Calendar, CheckCircle, Clock, GraduationCap, Target, TrendingUp, } from 'lucide-react';
+import {
+    ArrowLeft,
+    BookOpen,
+    Calendar,
+    CheckCircle,
+    ChevronRight,
+    Clock,
+    GraduationCap,
+    Target,
+    TrendingUp,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 import EditQualification from '@/components/qualifications/EditQualification';
 import AddQualificationNode from '@/components/qualifications/AddQualificationNode';
@@ -259,11 +269,23 @@ export default function QualificationSummary({
                 {/* Course structure */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Course Structure</CardTitle>
-                        <CardDescription>
-                            Click on any module to view its details and
-                            sub-components
-                        </CardDescription>
+                        <div className='flex items-start justify-between gap-3'>
+                            <div>
+                                <CardTitle>Course Structure</CardTitle>
+                                <CardDescription>
+                                    Click on any module to view its details and
+                                    sub-components
+                                </CardDescription>
+                            </div>
+                            {!loadingNodes && rootNodes.length > 0 && (
+                                <Button
+                                    size='sm'
+                                    onClick={() => setShowAddNodeModal(true)}
+                                >
+                                    Add Subcomponent
+                                </Button>
+                            )}
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {loadingNodes ? (
@@ -276,36 +298,63 @@ export default function QualificationSummary({
                                 </div>
                             </div>
                         ) : rootNodes.length > 0 ? (
-                            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-                                {rootNodes.map((node) => (
-                                    <Card
-                                        key={node.id}
-                                        className='cursor-pointer transition-shadow hover:shadow-md'
-                                        onClick={() => navigateToNode(node.id)}
-                                    >
-                                        <CardHeader className='pb-3'>
-                                            <CardTitle className='text-lg'>
-                                                {node.name}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {node.type} • {node.credits}{' '}
-                                                credits
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            {node.currentGrade && (
-                                                <div className='text-sm'>
-                                                    <span className='font-medium'>
-                                                        Grade:{' '}
-                                                    </span>
-                                                    <span className='text-primary'>
-                                                        {node.currentGrade}%
-                                                    </span>
+                            <div className='rounded-md border'>
+                                <div
+                                    role='list'
+                                    className='divide-y divide-border'
+                                >
+                                    {rootNodes.map((node) => (
+                                        <button
+                                            type='button'
+                                            key={node.id}
+                                            onClick={() =>
+                                                navigateToNode(node.id)
+                                            }
+                                            className='flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                                        >
+                                            <div className='min-w-0'>
+                                                <div className='truncate font-medium'>
+                                                    {node.name}
                                                 </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                                <div className='truncate text-sm text-muted-foreground'>
+                                                    {node.type} •{' '}
+                                                    {node.credits !== null &&
+                                                    node.credits !== undefined
+                                                        ? node.credits
+                                                        : '-'}{' '}
+                                                    credits
+                                                </div>
+                                            </div>
+                                            <div className='ml-4 flex shrink-0 items-center gap-3'>
+                                                <span className='hidden text-xs text-muted-foreground sm:inline'>
+                                                    C/T/P
+                                                </span>
+                                                <span className='text-sm font-medium'>
+                                                    <span className='text-primary'>
+                                                        {(node.currentGrade ??
+                                                            null) !== null
+                                                            ? `${node.currentGrade}%`
+                                                            : '-'}
+                                                    </span>
+                                                    /
+                                                    {(node.targetGrade ??
+                                                        null) !== null
+                                                        ? `${node.targetGrade}%`
+                                                        : '-'}
+                                                    /
+                                                    {(node.predictedGrade ??
+                                                        null) !== null
+                                                        ? `${node.predictedGrade}%`
+                                                        : '-'}
+                                                </span>
+                                                <ChevronRight
+                                                    className='h-4 w-4 text-muted-foreground'
+                                                    aria-hidden='true'
+                                                />
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         ) : (
                             <div className='py-8 text-center'>
@@ -344,7 +393,7 @@ export default function QualificationSummary({
                         Math.min(100, Math.max(0, data.weight)) / 100;
 
                     await createNode({
-                        parentId: currentQualificationId, // API resolves to root node
+                        parentId: currentQualificationId,
                         qualificationId: currentQualificationId,
                         type: typeStr,
                         name: data.name,
