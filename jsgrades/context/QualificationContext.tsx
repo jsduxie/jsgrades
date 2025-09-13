@@ -15,6 +15,7 @@ import type {
     NodeSummary,
     Qualification,
     QualificationLevel,
+    QualificationNodeType,
     UpdateGradeInput,
     ValidationResult,
     WeightUpdateInput,
@@ -25,6 +26,7 @@ interface QualificationContextType {
     qualifications: Qualification[];
     currentQualificationId: string | null;
     qualificationLevels: QualificationLevel[];
+    qualificationNodeTypes: QualificationNodeType[];
 
     // Node navigation and progression
     currentNodeId: string | null;
@@ -92,6 +94,9 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     const [qualificationLevels, setQualificationLevels] = useState<
         QualificationLevel[]
     >([]);
+    const [qualificationNodeTypes, setQualificationNodeTypes] = useState<
+        QualificationNodeType[]
+    >([]);
     const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
     const [navigation, setNavigation] = useState<string[]>([]);
     const [nodeHierarchy, setNodeHierarchy] = useState<Node[]>([]);
@@ -147,6 +152,22 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             console.error('Failed to fetch qualification levels:', error);
+        }
+    }, [getAuthToken]);
+
+    const fetchQualificationNodeTypes = useCallback(async () => {
+        try {
+            const token = await getAuthToken();
+            const res = await fetch('/api/node-types', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const json: APIResponse<QualificationNodeType[]> = await res.json();
+
+            if (json.status === 'success' && json.data) {
+                setQualificationNodeTypes(json.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch qualification node types:', error);
         }
     }, [getAuthToken]);
 
@@ -259,69 +280,61 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     // CRUD operations for qualifications
     const addQualification = useCallback(
         async (qualification: Partial<Qualification>) => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch('/api/qualifications', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        ...qualification,
-                        userId: auth?.userDetails?.id,
-                    }),
-                });
-                const json: APIResponse<Qualification> = await res.json();
+            const token = await getAuthToken();
+            const res = await fetch('/api/qualifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    ...qualification,
+                    userId: auth?.userDetails?.id,
+                }),
+            });
+            const json: APIResponse<Qualification> = await res.json();
 
-                if (json.status === 'success' && json.data) {
-                    setQualifications((prev) => [...prev, json.data!]);
-                }
-            } catch (error) {
-                console.error('Failed to add qualification:', error);
-                throw error;
+            if (res.ok && json.status === 'success' && json.data) {
+                setQualifications((prev) => [...prev, json.data!]);
+                return;
             }
+            throw new Error(json.message || 'Failed to add qualification');
         },
         [auth?.userDetails?.id, getAuthToken]
     );
 
     const updateQualification = useCallback(
         async (updates: Partial<Qualification>, qualificationId?: string) => {
-            try {
-                const token = await getAuthToken();
-                const id = qualificationId || currentQualificationId;
+            const token = await getAuthToken();
+            const id = qualificationId || currentQualificationId;
 
-                if (!id) {
-                    throw new Error('No qualification ID provided');
-                }
+            if (!id) {
+                throw new Error('No qualification ID provided');
+            }
 
-                const res = await fetch(`/api/qualifications/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(updates),
-                });
+            const res = await fetch(`/api/qualifications/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updates),
+            });
 
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
 
-                const json: APIResponse<Qualification> = await res.json();
+            const json: APIResponse<Qualification> = await res.json();
 
-                if (json.status === 'success' && json.data) {
-                    setQualifications((prev) =>
-                        prev.map((q) => (q.id === id ? json.data! : q))
-                    );
-                } else {
-                    throw new Error(
-                        json.message || 'Failed to update qualification'
-                    );
-                }
-            } catch (error) {
-                console.error('Failed to update qualification:', error);
-                throw error;
+            if (json.status === 'success' && json.data) {
+                setQualifications((prev) =>
+                    prev.map((q) => (q.id === id ? json.data! : q))
+                );
+            } else {
+                throw new Error(
+                    json.message || 'Failed to update qualification'
+                );
             }
         },
         [getAuthToken, currentQualificationId]
@@ -329,27 +342,28 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
 
     const deleteQualification = useCallback(
         async (id: string) => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch(`/api/qualifications/${id}`, {
-                    method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+            const token = await getAuthToken();
+            const res = await fetch(`/api/qualifications/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-                if (res.ok) {
-                    setQualifications((prev) =>
-                        prev.filter((q) => q.id !== id)
-                    );
-                    if (currentQualificationId === id) {
-                        setCurrentQualificationId(null);
-                        setCurrentNodeId(null);
-                        setNavigation([]);
-                    }
+            if (res.ok) {
+                setQualifications((prev) => prev.filter((q) => q.id !== id));
+                if (currentQualificationId === id) {
+                    setCurrentQualificationId(null);
+                    setCurrentNodeId(null);
+                    setNavigation([]);
                 }
-            } catch (error) {
-                console.error('Failed to delete qualification:', error);
-                throw error;
+                return;
             }
+
+            let message = 'Failed to delete qualification';
+            try {
+                const json: APIResponse<null> = await res.json();
+                if (json?.message) message = json.message;
+            } catch {}
+            throw new Error(message);
         },
         [currentQualificationId, getAuthToken]
     );
@@ -357,53 +371,46 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     // CRUD operations for nodes
     const createNode = useCallback(
         async (nodeData: NewNode): Promise<Node | null> => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch('/api/nodes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(nodeData),
-                });
-                const json: APIResponse<Node> = await res.json();
+            const token = await getAuthToken();
+            const res = await fetch('/api/nodes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(nodeData),
+            });
+            const json: APIResponse<{ node: Node; aggregate: unknown }> =
+                await res.json();
 
-                if (json.status === 'success' && json.data) {
-                    setNodeHierarchy((prev) => [...prev, json.data!]);
-                    return json.data;
-                }
-                return null;
-            } catch (error) {
-                console.error('Failed to create node:', error);
-                throw error;
+            if (res.ok && json.status === 'success' && json.data?.node) {
+                const created = json.data.node;
+                setNodeHierarchy((prev) => [...prev, created]);
+                await refreshNodes();
+                return created;
             }
+            throw new Error(json.message || 'Failed to create node');
         },
-        [getAuthToken]
+        [getAuthToken, refreshNodes]
     );
 
     const updateNode = useCallback(
         async (nodeId: string, updates: Partial<Node>) => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch(`/api/nodes/${nodeId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(updates),
-                });
-                const json: APIResponse<Node> = await res.json();
+            const token = await getAuthToken();
+            const res = await fetch(`/api/nodes/${nodeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updates),
+            });
+            const json: APIResponse<Node> = await res.json();
 
-                if (json.status === 'success' && json.data) {
-                    setNodeHierarchy((prev) =>
-                        prev.map((n) => (n.id === nodeId ? json.data! : n))
-                    );
-                }
-            } catch (error) {
-                console.error('Failed to update node:', error);
-                throw error;
+            if (json.status === 'success' && json.data) {
+                setNodeHierarchy((prev) =>
+                    prev.map((n) => (n.id === nodeId ? json.data! : n))
+                );
             }
         },
         [getAuthToken]
@@ -411,24 +418,17 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
 
     const deleteNode = useCallback(
         async (nodeId: string) => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch(`/api/nodes/${nodeId}`, {
-                    method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+            const token = await getAuthToken();
+            const res = await fetch(`/api/nodes/${nodeId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-                if (res.ok) {
-                    setNodeHierarchy((prev) =>
-                        prev.filter((n) => n.id !== nodeId)
-                    );
-                    if (currentNodeId === nodeId) {
-                        navigateBack();
-                    }
+            if (res.ok) {
+                setNodeHierarchy((prev) => prev.filter((n) => n.id !== nodeId));
+                if (currentNodeId === nodeId) {
+                    navigateBack();
                 }
-            } catch (error) {
-                console.error('Failed to delete node:', error);
-                throw error;
             }
         },
         [currentNodeId, getAuthToken, navigateBack]
@@ -436,27 +436,22 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
 
     const updateGrade = useCallback(
         async (input: UpdateGradeInput) => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch(`/api/nodes/${input.nodeId}/grade`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(input),
-                });
+            const token = await getAuthToken();
+            const res = await fetch(`/api/nodes/${input.nodeId}/grade`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(input),
+            });
 
-                if (res.ok) {
-                    // Refresh nodes to get updated aggregates
-                    await refreshNodes();
-                    if (currentNodeId) {
-                        await fetchNodeSummary(currentNodeId);
-                    }
+            if (res.ok) {
+                // Refresh nodes to get updated aggregates
+                await refreshNodes();
+                if (currentNodeId) {
+                    await fetchNodeSummary(currentNodeId);
                 }
-            } catch (error) {
-                console.error('Failed to update grade:', error);
-                throw error;
             }
         },
         [currentNodeId, getAuthToken, refreshNodes, fetchNodeSummary]
@@ -464,23 +459,18 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
 
     const updateWeights = useCallback(
         async (parentId: string, input: WeightUpdateInput) => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch(`/api/nodes/${parentId}/weights`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(input),
-                });
+            const token = await getAuthToken();
+            const res = await fetch(`/api/nodes/${parentId}/weights`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(input),
+            });
 
-                if (res.ok) {
-                    await refreshNodes();
-                }
-            } catch (error) {
-                console.error('Failed to update weights:', error);
-                throw error;
+            if (res.ok) {
+                await refreshNodes();
             }
         },
         [getAuthToken, refreshNodes]
@@ -488,21 +478,16 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
 
     const validateNode = useCallback(
         async (nodeId: string): Promise<ValidationResult> => {
-            try {
-                const token = await getAuthToken();
-                const res = await fetch(`/api/nodes/${nodeId}/validate`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                const json: APIResponse<ValidationResult> = await res.json();
+            const token = await getAuthToken();
+            const res = await fetch(`/api/nodes/${nodeId}/validate`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const json: APIResponse<ValidationResult> = await res.json();
 
-                if (json.status === 'success' && json.data) {
-                    return json.data;
-                }
-                throw new Error('Failed to validate node');
-            } catch (error) {
-                console.error('Failed to validate node:', error);
-                throw error;
+            if (json.status === 'success' && json.data) {
+                return json.data;
             }
+            throw new Error('Failed to validate node');
         },
         [getAuthToken]
     );
@@ -512,6 +497,7 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         if (auth?.userDetails?.id && !auth.loading) {
             refreshQualifications();
             fetchQualificationLevels();
+            fetchQualificationNodeTypes();
         } else if (!auth?.userLoggedIn) {
             // Cleanup when user logs out
             setQualifications([]);
@@ -530,6 +516,7 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         auth?.userLoggedIn,
         refreshQualifications,
         fetchQualificationLevels,
+        fetchQualificationNodeTypes,
     ]);
 
     const value: QualificationContextType = {
@@ -537,6 +524,7 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         qualifications,
         currentQualificationId,
         qualificationLevels,
+        qualificationNodeTypes,
         currentNodeId,
         navigation,
         nodeHierarchy,

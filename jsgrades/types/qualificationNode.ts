@@ -93,6 +93,7 @@ export interface NewNode {
     type: string;
     name: string;
     credits?: number;
+    weight?: number;
     settings?: Partial<NodeSettings>;
     qualificationId: string;
 }

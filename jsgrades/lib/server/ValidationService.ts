@@ -201,6 +201,13 @@ export class ValidationService {
             }
         }
 
+        if (data.weight !== undefined && data.weight !== null) {
+            const w = Number(data.weight);
+            if (isNaN(w) || w < 0 || w > 1) {
+                errors.push('weight must be between 0 and 1');
+            }
+        }
+
         return {
             isValid: errors.length === 0,
             errors,

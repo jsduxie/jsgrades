@@ -258,6 +258,7 @@ export class NodeService {
         type: string;
         name: string;
         credits?: number | null;
+        weight?: number | null;
         settings?: Partial<NodeSettings>;
         qualificationId: string;
         userId: string;
@@ -272,6 +273,7 @@ export class NodeService {
                 qualificationId: data.qualificationId,
                 userId: data.userId,
                 credits: data.credits,
+                weight: data.weight,
             });
 
             const typeUuid = await this.resolveNodeType(data.type, client);
@@ -291,13 +293,13 @@ export class NodeService {
                     qualification_id, user_id, parent_id, name, type,
                     calculation_method, weighting_mode, rounding_mode, rounding_precision,
                     exclude_incomplete_from_predicted, inherit_settings, overrides,
-                    credit_enforcement, config_status, lock_config, credits
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                    credit_enforcement, config_status, lock_config, weight, credits
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
                 RETURNING *`,
                 [
                     data.qualificationId,
                     data.userId,
-                    data.parentId, // may be null
+                    data.parentId,
                     data.name,
                     typeUuid,
                     effectiveSettings.calculationMethod,
@@ -307,9 +309,10 @@ export class NodeService {
                     effectiveSettings.excludeIncompleteFromPredicted,
                     effectiveSettings.inheritSettings,
                     JSON.stringify(effectiveSettings.overrides),
-                    'none', // credit_enforcement - default
-                    'draft', // config_status - default
-                    false, // lock_config - default
+                    'none',
+                    'draft',
+                    false,
+                    data.weight !== undefined ? data.weight : null,
                     data.credits !== undefined ? data.credits : null,
                 ]
             );
@@ -523,7 +526,7 @@ export class NodeService {
         FROM qualification_nodes qn
         INNER JOIN node_edges ne ON qn.id = ne.child_id
         WHERE ne.parent_id = $1
-        ORDER BY ne.position ASC
+        ORDER BY ne.position
       `,
                 [nodeId]
             );
@@ -605,7 +608,7 @@ export class NodeService {
             INNER JOIN node_hierarchy nh ON qn.id = nh.parent_id
             WHERE nh.inherit_settings = true AND nh.level < 10
         )
-        SELECT * FROM node_hierarchy ORDER BY level ASC
+        SELECT * FROM node_hierarchy ORDER BY level
         `,
             [nodeId]
         );
@@ -848,7 +851,7 @@ export class NodeService {
             );
 
             const result = await client.query(
-                'SELECT * FROM qualification_nodes WHERE qualification_id = $1 ORDER BY created_at ASC',
+                'SELECT * FROM qualification_nodes WHERE qualification_id = $1 ORDER BY created_at',
                 [qualificationId]
             );
 
@@ -878,8 +881,6 @@ export class NodeService {
                         row.id,
                         nodeError
                     );
-                    // Skip this node and continue with others
-                    continue;
                 }
             }
 

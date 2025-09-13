@@ -26,6 +26,12 @@ export type QualificationLevel = {
     level: number;
 };
 
+export type QualificationNodeType = {
+    id: string;
+    name: string;
+    allowChildren: boolean;
+};
+
 export type NewQualification = {
     userId: string;
     level: string;
@@ -50,3 +56,25 @@ export interface QualificationFormData {
     predictedGrade: string;
     inProgress: boolean;
 }
+
+export interface QualificationNodeFormData {
+    qualificationId: string;
+    userId: string;
+    parentId: string;
+    name: string;
+    type: QualificationNodeType | undefined;
+    weight: number;
+    credits: number;
+    startDate: string;
+    endDate: string;
+    targetGrade: string;
+    currentGrade: string;
+    predictedGrade: string;
+    inProgress: boolean;
+}
+
+export type AddQualificationNodeProps = {
+    open: boolean;
+    onCloseAction: () => void;
+    onSaveAction: (data: QualificationNodeFormData) => void | Promise<void>;
+};

@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/server/auth';
 import { ValidationService } from '@/lib/server/ValidationService';
 import { NodeService } from '@/lib/server/NodeService';
-import type { APIResponse } from '@/types';
+import type { APIResponse, ClientUserDetails } from '@/types';
 import type { NewNode, Node, NodeAggregate } from '@/types/qualificationNode';
+import { getUser } from '@/lib/server/user';
 
 /* Fetches nodes for a qualification */
 export async function GET(req: NextRequest) {
@@ -140,12 +141,53 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Resolve DB user id from Firebase UID
+        const dbUser = (await getUser(user.id)) as Partial<ClientUserDetails>;
+        const dbUserId = dbUser.id;
+        if (!dbUserId) {
+            return NextResponse.json<APIResponse>(
+                {
+                    status: 'error',
+                    message: 'User not found',
+                },
+                { status: 404 }
+            );
+        }
+
         const pool = (await import('@/lib/server/db')).default;
+
+        // Simple retry helper for transient DB errors
+        const queryWithRetry = async (
+            text: string,
+            params: unknown[],
+            retries = 2,
+            delayMs = 200
+        ) => {
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    // @ts-expect-error pool.query typings are not inferred here
+                    return await pool.query(text, params);
+                } catch (e) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (
+                        attempt < retries &&
+                        (msg.includes('terminated') ||
+                            msg.includes('timeout') ||
+                            msg.includes('connection'))
+                    ) {
+                        await new Promise((r) => setTimeout(r, delayMs));
+                        continue;
+                    }
+                    throw e;
+                }
+            }
+            throw new Error('queryWithRetry exhausted retries');
+        };
 
         // 1. Qualification ownership check (authoritative)
         let qualificationRow;
         try {
-            const qres = await pool.query(
+            const qres = await queryWithRetry(
                 'SELECT id, user_id FROM qualifications WHERE id = $1',
                 [body.qualificationId]
             );
@@ -158,10 +200,10 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if (!qualificationRow || qualificationRow.user_id !== user.id) {
+        if (!qualificationRow || qualificationRow.user_id !== dbUserId) {
             console.log(
                 '[POST /api/nodes] Qualification ownership check failed',
-                { qualificationRow, expectedUser: user.id }
+                { qualificationRow, expectedUser: dbUserId }
             );
             return NextResponse.json<APIResponse>(
                 {
@@ -174,45 +216,21 @@ export async function POST(req: NextRequest) {
             console.log('[POST /api/nodes] Qualification ownership confirmed', {
                 qualificationId: qualificationRow.id,
                 owner: qualificationRow.user_id,
-                user: user.id,
+                user: dbUserId,
             });
         }
 
         // 2. Resolve parent
         let parentNodeId: string | null = null;
         if (body.parentId === body.qualificationId) {
-            // Using qualification root as parent
-            try {
-                const rootRes = await pool.query(
-                    'SELECT id FROM qualification_nodes WHERE qualification_id = $1 AND parent_id IS NULL AND user_id = $2',
-                    [body.qualificationId, user.id]
-                );
-                if (rootRes.rows.length === 0) {
-                    console.log('[POST /api/nodes] Root node missing -> 404');
-                    return NextResponse.json<APIResponse>(
-                        {
-                            status: 'error',
-                            message: 'Parent not found or access denied',
-                        },
-                        { status: 404 }
-                    );
-                }
-                parentNodeId = rootRes.rows[0].id;
-                console.log(
-                    '[POST /api/nodes] Using qualification root as parent',
-                    parentNodeId
-                );
-            } catch (e) {
-                console.error('[POST /api/nodes] Error fetching root node:', e);
-                return NextResponse.json<APIResponse>(
-                    { status: 'error', message: 'Internal server error' },
-                    { status: 500 }
-                );
-            }
+            // Create as a root-level node (no parent)
+            parentNodeId = null;
+            console.log(
+                '[POST /api/nodes] Creating root-level node (no parent)'
+            );
         } else {
-            // Parent should be a node owned by user
             try {
-                const pres = await pool.query(
+                const pres = await queryWithRetry(
                     'SELECT id, lock_config, user_id FROM qualification_nodes WHERE id = $1',
                     [body.parentId]
                 );
@@ -230,13 +248,13 @@ export async function POST(req: NextRequest) {
                     );
                 }
                 const prow = pres.rows[0];
-                if (prow.user_id !== user.id) {
+                if (prow.user_id !== dbUserId) {
                     console.log(
                         '[POST /api/nodes] Parent node owned by different user -> 404',
                         {
                             parentId: prow.id,
                             owner: prow.user_id,
-                            expected: user.id,
+                            expected: dbUserId,
                         }
                     );
                     return NextResponse.json<APIResponse>(
@@ -281,13 +299,14 @@ export async function POST(req: NextRequest) {
         let result: { node: Node; aggregate: NodeAggregate };
         try {
             result = await NodeService.createNode({
-                parentId: parentNodeId, // always a node id now
+                parentId: parentNodeId, // null for root-level node
                 type: body.type,
                 name: body.name,
                 credits: body.credits,
+                weight: body.weight,
                 settings: body.settings,
                 qualificationId: body.qualificationId,
-                userId: user.id,
+                userId: dbUserId,
             });
             console.log('[POST /api/nodes] Node created successfully:', {
                 nodeId: result.node.id,

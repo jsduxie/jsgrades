@@ -213,10 +213,7 @@ describe('Qualifications API Integration Tests', () => {
             };
             const createdQualification =
                 await addQualification(testQualification);
-            const deleted = await deleteQualification(
-                createdQualification.id,
-                testUserId
-            );
+            const deleted = await deleteQualification(createdQualification.id);
             expect(deleted).toBe(true);
             const qualifications = await getQualifications(testUserId);
             const found = qualifications.find(
