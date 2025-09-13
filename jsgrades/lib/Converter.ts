@@ -4,7 +4,7 @@ export default class Converter {
     }
 
     static snakeToCamel(str: string): string {
-        return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+        return str.replace(/_+([a-z])/g, (_, char) => char.toUpperCase());
     }
 
     static objectSnakeToCamel<T = Record<string, unknown>>(
