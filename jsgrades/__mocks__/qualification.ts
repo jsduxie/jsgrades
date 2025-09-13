@@ -1,6 +1,8 @@
 import type { Qualification, QualificationFormData } from '@/types';
 
-export function mockQualification(overrides: Partial<Qualification> = {}): Qualification {
+export function mockQualification(
+    overrides: Partial<Qualification> = {}
+): Qualification {
     const base: Qualification = {
         id: 'q1',
         userId: 'u1',
@@ -35,4 +37,3 @@ export function mockQualificationFormData(
     };
     return { ...base, ...overrides };
 }
-

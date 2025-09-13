@@ -1,4 +1,4 @@
-import { Qualification, QualificationFormData } from '@/types';
+import {Qualification, QualificationFormData} from '@/types';
 
 /**
  * Safely converts a date value to ISO string format for form inputs
@@ -47,46 +47,60 @@ export function detectQualificationChanges(
     original: Qualification,
     formData: QualificationFormData
 ): Partial<Qualification> {
-    const updates: Partial<Qualification> = {};
-
-    // Trimmed string fields
-    const trimmedStringFields = ['name', 'institution'] as const;
-    for (const key of trimmedStringFields) {
+    const trimmedKeys = ['name', 'institution'] as const;
+    type TrimmedKey = (typeof trimmedKeys)[number];
+    const trimmedUpdates: Partial<Record<TrimmedKey, string>> = {};
+    for (const key of trimmedKeys) {
         const nextVal = formData[key].trim();
         if (original[key] !== nextVal) {
-            updates[key] = nextVal as unknown as Qualification[typeof key];
+            trimmedUpdates[key] = nextVal;
         }
     }
 
-    // Exact string field (no trim)
+    // Level (exact comparison, no trim)
+    const baseUpdates: Partial<Pick<Qualification, 'level' | 'inProgress'>> =
+        {};
     if (original.level !== formData.level) {
-        updates.level = formData.level;
+        baseUpdates.level = formData.level;
     }
-
-    // Boolean field
     if (original.inProgress !== formData.inProgress) {
-        updates.inProgress = formData.inProgress;
+        baseUpdates.inProgress = formData.inProgress;
     }
 
-    // Date fields (compare normalized to YYYY-MM-DD, set Date or undefined)
-    const dateFields = ['startDate', 'endDate'] as const;
-    for (const key of dateFields) {
+    // Date fields (normalize to YYYY-MM-DD for comparison)
+    const dateKeys = ['startDate', 'endDate'] as const;
+    type DateKey = (typeof dateKeys)[number];
+    const dateUpdates: Partial<Record<DateKey, Date | undefined>> = {};
+    for (const key of dateKeys) {
         const originalDateStr = formatDateForInput(original[key]);
         const nextStr = formData[key];
         if (originalDateStr !== nextStr) {
-            updates[key] = nextStr ? (new Date(nextStr) as any) : (undefined as any);
+            dateUpdates[key] = nextStr ? new Date(nextStr) : undefined;
         }
     }
 
-    // Numeric grade fields (compare stringified, set number or undefined)
-    const gradeFields = ['currentGrade', 'targetGrade', 'predictedGrade'] as const;
-    for (const key of gradeFields) {
+    // Numeric grade fields
+    const gradeKeys = [
+        'currentGrade',
+        'targetGrade',
+        'predictedGrade',
+    ] as const;
+    type GradeKey = (typeof gradeKeys)[number];
+    const gradeUpdates: Partial<Record<GradeKey, number | undefined>> = {};
+    for (const key of gradeKeys) {
         const originalStr = original[key]?.toString() ?? '';
         const nextStr = formData[key];
         if (originalStr !== nextStr) {
-            updates[key] = nextStr ? (parseFloat(nextStr) as any) : (undefined as any);
+            gradeUpdates[key] = nextStr ? parseFloat(nextStr) : undefined;
         }
     }
 
-    return updates;
+    // Merge buckets into a single Partial<Qualification>
+    return Object.assign(
+        {},
+        trimmedUpdates,
+        baseUpdates,
+        dateUpdates,
+        gradeUpdates
+    ) as Partial<Qualification>;
 }
