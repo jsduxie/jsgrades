@@ -4,23 +4,7 @@ const nextConfig: NextConfig = {
     experimental: {
         optimizePackageImports: ['lucide-react'],
     },
-    webpack: (config: any, { isServer }: { isServer: boolean }) => {
-        if (!isServer) {
-            config.optimization = {
-                ...config.optimization,
-                splitChunks: {
-                    ...config.optimization.splitChunks,
-                    cacheGroups: {
-                        ...config.optimization.splitChunks?.cacheGroups,
-                        vendor: {
-                            test: /[\\/]node_modules[\\/]/,
-                            name: 'vendors',
-                            chunks: 'all',
-                        },
-                    },
-                },
-            };
-        }
+    webpack: (config: any) => {
         return config;
     },
     async headers() {
