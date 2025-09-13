@@ -1,24 +1,10 @@
 import React, { useState } from 'react';
 import { useQualification } from '@/context/QualificationContext';
 import { Button } from '@/components/ui/button';
-import {
-    ArrowLeft,
-    BookOpen,
-    Calendar,
-    CheckCircle,
-    Clock,
-    GraduationCap,
-    Target,
-    TrendingUp,
-} from 'lucide-react';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle, Clock, GraduationCap, Target, TrendingUp, } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 import EditQualification from '@/components/qualifications/EditQualification';
+import AddQualificationNode from '@/components/qualifications/AddQualificationNode';
 
 interface QualificationSummaryProps {
     onBackToOverview: () => void;
@@ -35,9 +21,11 @@ export default function QualificationSummary({
         nodeHierarchy,
         loadingNodes,
         navigateToNode,
+        createNode,
     } = useQualification();
 
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showAddNodeModal, setShowAddNodeModal] = useState(false);
 
     const currentQualification = qualifications.find(
         (q) => q.id === currentQualificationId
@@ -326,19 +314,15 @@ export default function QualificationSummary({
                                     No modules found
                                 </p>
                                 <p className='text-sm text-muted-foreground'>
-                                    Modules will appear here once they are added
-                                    to this qualification
+                                    Subcomponents will appear here once they are
+                                    added to this qualification
                                 </p>
                                 <Button
                                     variant='outline'
                                     className='mt-4'
-                                    onClick={() =>
-                                        console.log(
-                                            'Add module functionality to be implemented'
-                                        )
-                                    }
+                                    onClick={() => setShowAddNodeModal(true)}
                                 >
-                                    Add First Module
+                                    Add First Subcomponent
                                 </Button>
                             </div>
                         )}
@@ -349,6 +333,25 @@ export default function QualificationSummary({
                 open={showEditModal}
                 onCloseAction={() => setShowEditModal(false)}
                 onSaveAction={(updates) => updateQualification(updates)}
+            />
+            <AddQualificationNode
+                open={showAddNodeModal}
+                onCloseAction={() => setShowAddNodeModal(false)}
+                onSaveAction={async (data) => {
+                    if (!currentQualificationId) return;
+                    const typeStr = data.type?.id || data.type?.name || '';
+                    const weightFraction =
+                        Math.min(100, Math.max(0, data.weight)) / 100;
+
+                    await createNode({
+                        parentId: currentQualificationId, // API resolves to root node
+                        qualificationId: currentQualificationId,
+                        type: typeStr,
+                        name: data.name,
+                        credits: data.credits,
+                        weight: weightFraction,
+                    });
+                }}
             />
         </div>
     );

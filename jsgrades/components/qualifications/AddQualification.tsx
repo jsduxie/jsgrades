@@ -19,6 +19,8 @@ export default function AddQualification({
     onSaveAction,
 }: AddQualificationProps) {
     const [isLoadingLevels] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [formData, setFormData] = useState<QualificationFormData>({
         name: '',
         institution: '',
@@ -48,6 +50,8 @@ export default function AddQualification({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMsg(null);
+        setSubmitting(true);
         const payload = {
             ...formData,
             currentGrade: parseFloat(formData.currentGrade) || undefined,
@@ -59,19 +63,29 @@ export default function AddQualification({
             endDate: formData.endDate ? new Date(formData.endDate) : undefined,
         };
 
-        await onSaveAction(payload);
-        onCloseAction();
-        setFormData({
-            name: '',
-            institution: '',
-            level: '',
-            startDate: '',
-            endDate: '',
-            currentGrade: '',
-            targetGrade: '',
-            predictedGrade: '',
-            inProgress: true,
-        });
+        try {
+            await onSaveAction(payload);
+            onCloseAction();
+            setFormData({
+                name: '',
+                institution: '',
+                level: '',
+                startDate: '',
+                endDate: '',
+                currentGrade: '',
+                targetGrade: '',
+                predictedGrade: '',
+                inProgress: true,
+            });
+        } catch (err: unknown) {
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to save qualification. Please try again.';
+            setErrorMsg(message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (!open) return null;
@@ -86,6 +100,11 @@ export default function AddQualification({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    {errorMsg && (
+                        <div className='mb-3 rounded border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                            {errorMsg}
+                        </div>
+                    )}
                     {isLoadingLevels ? (
                         <div className='flex flex-col items-center justify-center space-y-4 py-8'>
                             <div className='h-8 w-8 animate-spin rounded-full border-b-2 border-primary'></div>
@@ -262,19 +281,21 @@ export default function AddQualification({
                                     type='button'
                                     variant='outline'
                                     onClick={onCloseAction}
+                                    disabled={submitting}
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     type='submit'
                                     disabled={
+                                        submitting ||
                                         isLoadingLevels ||
                                         !formData.name ||
                                         !formData.institution ||
                                         !formData.level
                                     }
                                 >
-                                    Save
+                                    {submitting ? 'Saving…' : 'Save'}
                                 </Button>
                             </div>
                         </form>

@@ -3,13 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 import { AddQualificationProps, QualificationFormData } from '@/types';
 import { useQualification } from '@/context/QualificationContext';
 import {
@@ -23,6 +17,8 @@ export default function EditQualification({
     onSaveAction,
 }: AddQualificationProps) {
     const [isLoadingLevels] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const qualContext = useQualification();
 
@@ -68,19 +64,31 @@ export default function EditQualification({
             return onCloseAction();
         }
 
+        setErrorMsg(null);
+        setSubmitting(true);
+
         const updates = detectQualificationChanges(
             currentQualification,
             formData
         );
 
         if (Object.keys(updates).length === 0) {
-            console.log('No changes detected, closing modal');
+            setSubmitting(false);
             return onCloseAction();
         }
 
-        console.log('Detected changes:', updates);
-        onSaveAction(updates);
-        onCloseAction();
+        try {
+            await onSaveAction(updates);
+            onCloseAction();
+        } catch (err: unknown) {
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to update qualification. Please try again.';
+            setErrorMsg(message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (!open) return null;
@@ -96,6 +104,11 @@ export default function EditQualification({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    {errorMsg && (
+                        <div className='mb-3 rounded border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                            {errorMsg}
+                        </div>
+                    )}
                     {isLoadingLevels ? (
                         <div className='flex flex-col items-center justify-center space-y-4 py-8'>
                             <div className='h-8 w-8 animate-spin rounded-full border-b-2 border-primary'></div>
@@ -272,19 +285,21 @@ export default function EditQualification({
                                     type='button'
                                     variant='outline'
                                     onClick={onCloseAction}
+                                    disabled={submitting}
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     type='submit'
                                     disabled={
+                                        submitting ||
                                         isLoadingLevels ||
                                         !formData.name ||
                                         !formData.institution ||
                                         !formData.level
                                     }
                                 >
-                                    Save Changes
+                                    {submitting ? 'Saving…' : 'Save Changes'}
                                 </Button>
                             </div>
                         </form>
