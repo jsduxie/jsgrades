@@ -1,4 +1,4 @@
-import {Qualification, QualificationFormData} from '@/types';
+import { Qualification, QualificationFormData } from '@/types';
 
 /**
  * Safely converts a date value to ISO string format for form inputs
