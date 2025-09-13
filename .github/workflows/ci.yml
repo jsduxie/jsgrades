@@ -39,7 +39,7 @@ jobs:
         working-directory: jsgrades
 
       - name: Run tests
-        run: npm test -- --json --outputFile=test-results.json
+        run: npm test -- --coverage --json --outputFile=test-results.json
         working-directory: jsgrades
         continue-on-error: true
         env:
@@ -85,11 +85,20 @@ jobs:
           name: test-summary
           path: jsgrades/test-summary.txt
 
+      - name: Upload coverage artifact (for debugging)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: jsgrades/coverage/**
+          if-no-files-found: ignore
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: jsduxie/jsgrades
+          files: jsgrades/coverage/lcov.info
 
   issue-update:
     name: Update Issue with CI Info
