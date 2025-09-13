@@ -49,55 +49,43 @@ export function detectQualificationChanges(
 ): Partial<Qualification> {
     const updates: Partial<Qualification> = {};
 
-    if (original.name !== formData.name.trim()) {
-        updates.name = formData.name.trim();
+    // Trimmed string fields
+    const trimmedStringFields = ['name', 'institution'] as const;
+    for (const key of trimmedStringFields) {
+        const nextVal = formData[key].trim();
+        if (original[key] !== nextVal) {
+            updates[key] = nextVal as unknown as Qualification[typeof key];
+        }
     }
 
-    if (original.institution !== formData.institution.trim()) {
-        updates.institution = formData.institution.trim();
-    }
-
+    // Exact string field (no trim)
     if (original.level !== formData.level) {
         updates.level = formData.level;
     }
 
+    // Boolean field
     if (original.inProgress !== formData.inProgress) {
         updates.inProgress = formData.inProgress;
     }
 
-    const originalStartDate = formatDateForInput(original.startDate);
-    if (originalStartDate !== formData.startDate) {
-        updates.startDate = formData.startDate
-            ? new Date(formData.startDate)
-            : undefined;
+    // Date fields (compare normalized to YYYY-MM-DD, set Date or undefined)
+    const dateFields = ['startDate', 'endDate'] as const;
+    for (const key of dateFields) {
+        const originalDateStr = formatDateForInput(original[key]);
+        const nextStr = formData[key];
+        if (originalDateStr !== nextStr) {
+            updates[key] = nextStr ? (new Date(nextStr) as any) : (undefined as any);
+        }
     }
 
-    const originalEndDate = formatDateForInput(original.endDate);
-    if (originalEndDate !== formData.endDate) {
-        updates.endDate = formData.endDate
-            ? new Date(formData.endDate)
-            : undefined;
-    }
-
-    const originalCurrentGrade = original.currentGrade?.toString() ?? '';
-    if (originalCurrentGrade !== formData.currentGrade) {
-        updates.currentGrade = formData.currentGrade
-            ? parseFloat(formData.currentGrade)
-            : undefined;
-    }
-
-    const originalTargetGrade = original.targetGrade?.toString() ?? '';
-    if (originalTargetGrade !== formData.targetGrade) {
-        updates.targetGrade = formData.targetGrade
-            ? parseFloat(formData.targetGrade)
-            : undefined;
-    }
-
-    const originalPredictedGrade = original.predictedGrade?.toString() ?? '';
-    if (originalPredictedGrade !== formData.predictedGrade) {
-        updates.predictedGrade = formData.predictedGrade
-            ? parseFloat(formData.predictedGrade)
-            : undefined;
+    // Numeric grade fields (compare stringified, set number or undefined)
+    const gradeFields = ['currentGrade', 'targetGrade', 'predictedGrade'] as const;
+    for (const key of gradeFields) {
+        const originalStr = original[key]?.toString() ?? '';
+        const nextStr = formData[key];
+        if (originalStr !== nextStr) {
+            updates[key] = nextStr ? (parseFloat(nextStr) as any) : (undefined as any);
+        }
     }
 
     return updates;
