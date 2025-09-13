@@ -37,8 +37,8 @@ export type NewQualification = {
     level: string;
     name: string;
     institution: string;
-    startDate?: Date | undefined;
-    endDate?: Date | undefined;
+    startDate?: Date | null | undefined;
+    endDate?: Date | null | undefined;
     currentGrade?: number | undefined;
     targetGrade?: number | undefined;
     predictedGrade?: number | undefined;
