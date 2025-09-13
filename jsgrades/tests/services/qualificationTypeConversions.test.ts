@@ -3,7 +3,10 @@ import {
     convertQualificationToFormData,
     detectQualificationChanges,
 } from '@/lib/client/qualifications/qualificationTypeConversions';
-import { mockQualification, mockQualificationFormData, } from '@/__mocks__/qualification';
+import {
+    mockQualification,
+    mockQualificationFormData,
+} from '@/__mocks__/qualification';
 
 describe('convertQualificationToFormData', () => {
     it('converts dates to YYYY-MM-DD and numbers to strings, preserving booleans', () => {
