@@ -12,7 +12,13 @@ import {
     Target,
     TrendingUp,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import EditQualification from '@/components/qualifications/EditQualification';
 import AddQualificationNode from '@/components/qualifications/AddQualificationNode';
 
