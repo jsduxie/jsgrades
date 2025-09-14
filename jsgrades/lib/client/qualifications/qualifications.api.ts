@@ -1,6 +1,10 @@
 import { request } from '@/lib/client/http/request';
 import type { APIResponse } from '@/types/api';
-import type { NewQualification, Qualification, QualificationLevel, } from '@/types/qualification';
+import type {
+    NewQualification,
+    Qualification,
+    QualificationLevel,
+} from '@/types/qualification';
 
 export interface WithAuth {
     token: string;
