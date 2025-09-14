@@ -10,7 +10,6 @@ import React, {
 import { useAuth } from '@/context/AuthContext';
 import type {
     NewNode,
-    NewQualification,
     Node,
     NodeSummary,
     Qualification,
@@ -20,25 +19,9 @@ import type {
     ValidationResult,
     WeightUpdateInput,
 } from '@/types';
-import {
-    createQualification as apiCreateQualification,
-    deleteQualification as apiDeleteQualification,
-    fetchQualificationLevels as apiFetchQualificationLevels,
-    fetchQualifications as apiFetchQualifications,
-    updateQualification as apiUpdateQualification,
-} from '@/lib/client/qualifications/qualifications.api';
-import {
-    fetchNodeTypes as apiFetchNodeTypes,
-    fetchNodes as apiFetchNodes,
-    fetchNodeSummary as apiFetchNodeSummary,
-    createNode as apiCreateNode,
-    updateNode as apiUpdateNode,
-    deleteNode as apiDeleteNode,
-    updateGrade as apiUpdateGrade,
-    updateWeights as apiUpdateWeights,
-    validateNode as apiValidateNode,
-} from '@/lib/client/qualifications/nodes.api';
 import { buildBreadcrumb } from '@/lib/client/qualifications/selectors';
+import { createQualificationActions } from '@/context/qualification/actions';
+import { navigateBack as navBack } from '@/context/qualification/navigation';
 
 interface QualificationContextType {
     // Qualifications
@@ -143,95 +126,67 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         [getAuthToken]
     );
 
-    // Fetch qualifications
+    // Build actions with dependencies
+    const actions = React.useMemo(
+        () =>
+            createQualificationActions({
+                getAuthOptions,
+                getUserId: () => auth?.userDetails?.id,
+                getCurrentIds: () => ({
+                    qualificationId: currentQualificationId,
+                    nodeId: currentNodeId,
+                }),
+                setLoading,
+                setLoadingNodes,
+                setQualifications: (updater) => setQualifications(updater),
+                setQualificationLevels,
+                setQualificationNodeTypes,
+                setNodeHierarchy: (nodesOrUpdater) =>
+                    setNodeHierarchy(
+                        typeof nodesOrUpdater === 'function'
+                            ? nodesOrUpdater
+                            : nodesOrUpdater
+                    ),
+                setCurrentNodeSummary,
+                setCurrentQualificationId,
+                setCurrentNodeId,
+                setNavigation,
+            }),
+        [
+            auth?.userDetails?.id,
+            currentQualificationId,
+            currentNodeId,
+            getAuthOptions,
+        ]
+    );
+
     const refreshQualifications = useCallback(async () => {
         if (!auth?.userDetails?.id) return;
+        await actions.refreshQualifications();
+    }, [auth?.userDetails?.id, actions]);
 
-        setLoading(true);
-        try {
-            const authOpts = await getAuthOptions();
-            const json = await apiFetchQualifications(
-                auth.userDetails.id,
-                authOpts
-            );
-            if (json.status === 'success' && json.data) {
-                setQualifications(json.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch qualifications:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [auth?.userDetails?.id, getAuthOptions]);
-
-    // Fetch qualification levels
     const fetchQualificationLevels = useCallback(async () => {
-        try {
-            const authOpts = await getAuthOptions();
-            const json = await apiFetchQualificationLevels(authOpts);
-            if (json.status === 'success' && json.data) {
-                setQualificationLevels(json.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch qualification levels:', error);
-        }
-    }, [getAuthOptions]);
+        await actions.fetchQualificationLevels();
+    }, [actions]);
 
     const fetchQualificationNodeTypes = useCallback(async () => {
-        try {
-            const authOpts = await getAuthOptions();
-            const json = await apiFetchNodeTypes(authOpts);
-            if (json.status === 'success' && json.data) {
-                setQualificationNodeTypes(json.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch qualification node types:', error);
-        }
-    }, [getAuthOptions]);
+        await actions.fetchQualificationNodeTypes();
+    }, [actions]);
 
-    // Fetch nodes for a qualification
     const refreshNodes = useCallback(
         async (qualificationId?: string) => {
-            const targetQualificationId =
-                qualificationId || currentQualificationId;
-            if (!targetQualificationId) return;
-
-            setLoadingNodes(true);
-            try {
-                const authOpts = await getAuthOptions();
-                const json = await apiFetchNodes(
-                    targetQualificationId,
-                    authOpts
-                );
-                if (json.status === 'success' && json.data) {
-                    setNodeHierarchy(json.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch nodes:', error);
-            } finally {
-                setLoadingNodes(false);
-            }
+            await actions.refreshNodes(qualificationId);
         },
-        [currentQualificationId, getAuthOptions]
+        [actions]
     );
 
-    // Fetch current node summary
     const fetchNodeSummary = useCallback(
         async (nodeId: string) => {
-            try {
-                const authOpts = await getAuthOptions();
-                const json = await apiFetchNodeSummary(nodeId, authOpts);
-                if (json.status === 'success' && json.data) {
-                    setCurrentNodeSummary(json.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch node summary:', error);
-            }
+            await actions.fetchNodeSummary(nodeId);
         },
-        [getAuthOptions]
+        [actions]
     );
 
-    // Set current qualification
     const setCurrentQualification = useCallback(
         (id: string) => {
             setCurrentQualificationId(id);
@@ -243,13 +198,11 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         [refreshNodes]
     );
 
-    // Set current node and update navigation
     const setCurrentNode = useCallback(
         (nodeId: string) => {
             setCurrentNodeId(nodeId);
             fetchNodeSummary(nodeId);
 
-            // Update navigation breadcrumb using selectors
             const pathNodes = buildBreadcrumb(nodeHierarchy, nodeId);
             if (pathNodes.length > 0) {
                 setNavigation(pathNodes.map((n) => n.id));
@@ -260,7 +213,6 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
         [nodeHierarchy, fetchNodeSummary]
     );
 
-    // Navigation helpers
     const navigateToNode = useCallback(
         (nodeId: string) => {
             setCurrentNode(nodeId);
@@ -269,175 +221,95 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     );
 
     const navigateBack = useCallback(() => {
-        if (navigation.length > 1) {
-            const parentNodeId = navigation[navigation.length - 2];
-            setCurrentNode(parentNodeId);
-        }
+        navBack(navigation, setCurrentNode);
     }, [navigation, setCurrentNode]);
 
     const getBreadcrumbPath = useCallback((): Node[] => {
         if (!currentNodeId) return [];
-        // Compute fresh breadcrumb using selectors for consistency
         return buildBreadcrumb(nodeHierarchy, currentNodeId);
     }, [currentNodeId, nodeHierarchy]);
 
-    // CRUD operations for qualifications
     const addQualification = useCallback(
         async (qualification: Partial<Qualification>) => {
-            const authOpts = await getAuthOptions();
-            const newQualification: NewQualification = {
-                userId: auth?.userDetails?.id ?? '',
-                level: String(qualification.level ?? ''),
-                name: String(qualification.name ?? ''),
-                institution: String(qualification.institution ?? ''),
-                startDate: qualification.startDate ?? undefined,
-                endDate: qualification.endDate ?? undefined,
-                currentGrade: qualification.currentGrade ?? undefined,
-                targetGrade: qualification.targetGrade ?? undefined,
-                predictedGrade: qualification.predictedGrade ?? undefined,
-                inProgress: qualification.inProgress ?? true,
-            };
-            const json = await apiCreateQualification(
-                newQualification,
-                authOpts
-            );
-            if (json.status === 'success' && json.data) {
-                setQualifications((prev) => [...prev, json.data!]);
-                return;
-            }
-            throw new Error(json.message || 'Failed to add qualification');
+            await actions.addQualification(qualification);
         },
-        [auth?.userDetails?.id, getAuthOptions]
+        [actions]
     );
 
     const updateQualification = useCallback(
         async (updates: Partial<Qualification>, qualificationId?: string) => {
-            const id = qualificationId || currentQualificationId;
-            if (!id) {
-                throw new Error('No qualification ID provided');
-            }
-            const authOpts = await getAuthOptions();
-            const json = await apiUpdateQualification(id, updates, authOpts);
-            if (json.status === 'success' && json.data) {
-                setQualifications((prev) =>
-                    prev.map((q) => (q.id === id ? json.data! : q))
-                );
-            } else {
-                throw new Error(
-                    json.message || 'Failed to update qualification'
-                );
-            }
+            await actions.updateQualification(updates, qualificationId);
         },
-        [getAuthOptions, currentQualificationId]
+        [actions]
     );
 
     const deleteQualification = useCallback(
         async (id: string) => {
-            const authOpts = await getAuthOptions();
-            const json = await apiDeleteQualification(id, authOpts);
-            if (json.status === 'success') {
-                setQualifications((prev) => prev.filter((q) => q.id !== id));
-                if (currentQualificationId === id) {
-                    setCurrentQualificationId(null);
-                    setCurrentNodeId(null);
-                    setNavigation([]);
-                }
-                return;
-            }
-            throw new Error(json.message || 'Failed to delete qualification');
+            await actions.deleteQualification(id);
         },
-        [currentQualificationId, getAuthOptions]
+        [actions]
     );
 
-    // CRUD operations for nodes
     const createNode = useCallback(
         async (nodeData: NewNode): Promise<Node | null> => {
-            const authOpts = await getAuthOptions();
-            const json = await apiCreateNode(nodeData, authOpts);
-            if (json.status === 'success' && json.data?.node) {
-                const created = json.data.node;
-                setNodeHierarchy((prev) => [...prev, created]);
-                await refreshNodes();
-                return created;
-            }
-            throw new Error(json.message || 'Failed to create node');
+            const created = await actions.createNode(nodeData);
+            // refresh to sync aggregates and hierarchy
+            await refreshNodes();
+            return created;
         },
-        [getAuthOptions, refreshNodes]
+        [actions, refreshNodes]
     );
 
     const updateNode = useCallback(
         async (nodeId: string, updates: Partial<Node>) => {
-            const authOpts = await getAuthOptions();
-            const json = await apiUpdateNode(nodeId, updates, authOpts);
-            if (json.status === 'success' && json.data) {
-                setNodeHierarchy((prev) =>
-                    prev.map((n) => (n.id === nodeId ? json.data! : n))
-                );
-            }
+            await actions.updateNode(nodeId, updates);
         },
-        [getAuthOptions]
+        [actions]
     );
 
     const deleteNode = useCallback(
         async (nodeId: string) => {
-            const authOpts = await getAuthOptions();
-            const json = await apiDeleteNode(nodeId, authOpts);
-            if (json.status === 'success') {
-                setNodeHierarchy((prev) => prev.filter((n) => n.id !== nodeId));
-                if (currentNodeId === nodeId) {
-                    navigateBack();
-                }
+            await actions.deleteNode(nodeId);
+            if (currentNodeId === nodeId) {
+                navigateBack();
             }
         },
-        [currentNodeId, getAuthOptions, navigateBack]
+        [actions, currentNodeId, navigateBack]
     );
 
     const updateGrade = useCallback(
         async (input: UpdateGradeInput) => {
-            const authOpts = await getAuthOptions();
-            const json = await apiUpdateGrade(input, authOpts);
-            if (json.status === 'success') {
-                // Refresh nodes to get updated aggregates
-                await refreshNodes();
-                if (currentNodeId) {
-                    await fetchNodeSummary(currentNodeId);
-                }
+            await actions.updateGrade(input);
+            // Refresh nodes to get updated aggregates
+            await refreshNodes();
+            if (currentNodeId) {
+                await fetchNodeSummary(currentNodeId);
             }
         },
-        [currentNodeId, getAuthOptions, refreshNodes, fetchNodeSummary]
+        [actions, currentNodeId, refreshNodes, fetchNodeSummary]
     );
 
     const updateWeights = useCallback(
         async (parentId: string, input: WeightUpdateInput) => {
-            const authOpts = await getAuthOptions();
-            const json = await apiUpdateWeights(parentId, input, authOpts);
-            if (json.status === 'success') {
-                await refreshNodes();
-            }
+            await actions.updateWeights(parentId, input);
+            await refreshNodes();
         },
-        [getAuthOptions, refreshNodes]
+        [actions, refreshNodes]
     );
 
     const validateNode = useCallback(
         async (nodeId: string): Promise<ValidationResult> => {
-            const authOpts = await getAuthOptions();
-            const json = await apiValidateNode(nodeId, authOpts);
-            if (json.status === 'success' && json.data) {
-                return json.data;
-            }
-            throw new Error(json.message || 'Failed to validate node');
+            return actions.validateNode(nodeId);
         },
-        [getAuthOptions]
+        [actions]
     );
 
-    // Load initial data when user is authenticated and cleanup on logout
     useEffect(() => {
         if (auth?.userDetails?.id && !auth.loading) {
             refreshQualifications();
             fetchQualificationLevels();
             fetchQualificationNodeTypes();
         } else if (!auth?.userLoggedIn) {
-            // Cleanup when user logs out
             setQualifications([]);
             setCurrentQualificationId(null);
             setQualificationLevels([]);
