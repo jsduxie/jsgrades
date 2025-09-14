@@ -28,16 +28,17 @@ import {
     updateQualification as apiUpdateQualification,
 } from '@/lib/client/qualifications/qualifications.api';
 import {
-    createNode as apiCreateNode,
-    deleteNode as apiDeleteNode,
+    fetchNodeTypes as apiFetchNodeTypes,
     fetchNodes as apiFetchNodes,
     fetchNodeSummary as apiFetchNodeSummary,
-    fetchNodeTypes as apiFetchNodeTypes,
-    updateGrade as apiUpdateGrade,
+    createNode as apiCreateNode,
     updateNode as apiUpdateNode,
+    deleteNode as apiDeleteNode,
+    updateGrade as apiUpdateGrade,
     updateWeights as apiUpdateWeights,
     validateNode as apiValidateNode,
 } from '@/lib/client/qualifications/nodes.api';
+import { buildBreadcrumb } from '@/lib/client/qualifications/selectors';
 
 interface QualificationContextType {
     // Qualifications
@@ -248,18 +249,12 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
             setCurrentNodeId(nodeId);
             fetchNodeSummary(nodeId);
 
-            // Update navigation breadcrumb
-            const node = nodeHierarchy.find((n) => n.id === nodeId);
-            if (node) {
-                const path: string[] = [];
-                let current: Node | null = node;
-                while (current) {
-                    path.unshift(current.id);
-                    current =
-                        nodeHierarchy.find((n) => n.id === current?.parentId) ||
-                        null;
-                }
-                setNavigation(path);
+            // Update navigation breadcrumb using selectors
+            const pathNodes = buildBreadcrumb(nodeHierarchy, nodeId);
+            if (pathNodes.length > 0) {
+                setNavigation(pathNodes.map((n) => n.id));
+            } else {
+                setNavigation([]);
             }
         },
         [nodeHierarchy, fetchNodeSummary]
@@ -281,10 +276,10 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     }, [navigation, setCurrentNode]);
 
     const getBreadcrumbPath = useCallback((): Node[] => {
-        return navigation
-            .map((nodeId) => nodeHierarchy.find((n) => n.id === nodeId))
-            .filter(Boolean) as Node[];
-    }, [navigation, nodeHierarchy]);
+        if (!currentNodeId) return [];
+        // Compute fresh breadcrumb using selectors for consistency
+        return buildBreadcrumb(nodeHierarchy, currentNodeId);
+    }, [currentNodeId, nodeHierarchy]);
 
     // CRUD operations for qualifications
     const addQualification = useCallback(
