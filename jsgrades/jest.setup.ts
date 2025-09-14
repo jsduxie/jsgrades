@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import path from 'path';
+import '@testing-library/jest-dom';
 
 config({ path: path.resolve(process.cwd(), '.env.local') });
 

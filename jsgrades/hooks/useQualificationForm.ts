@@ -1,4 +1,3 @@
-// filepath: /Users/jamesduxbury/dev/personal-projects/jsgrades/jsgrades/hooks/useQualificationForm.ts
 import { useCallback, useState } from 'react';
 import type { QualificationFormData } from '@/types';
 
@@ -43,14 +42,14 @@ export function useQualificationForm(
                 HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
             >
         ) => {
-            const { name, value, type } = e.target;
+            const { name, value, type } = e.target as HTMLInputElement;
             const checked = (e.target as HTMLInputElement).checked;
             setFormData((prev) => ({
                 ...prev,
                 [name]:
                     type === 'checkbox'
-                        ? (checked as unknown as string)
-                        : value,
+                        ? (checked as unknown as QualificationFormData[keyof QualificationFormData])
+                        : (value as unknown as QualificationFormData[keyof QualificationFormData]),
             }));
         },
         []

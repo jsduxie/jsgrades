@@ -77,7 +77,7 @@ describe('QualificationContext wrapper', () => {
         expect(ctx).toHaveProperty('loading');
         expect(ctx).toHaveProperty('loadingNodes');
 
-        [
+        const functionKeys: Array<keyof ReturnType<typeof useQualification>> = [
             'setCurrentQualification',
             'setCurrentNode',
             'addQualification',
@@ -94,7 +94,8 @@ describe('QualificationContext wrapper', () => {
             'getBreadcrumbPath',
             'refreshQualifications',
             'refreshNodes',
-        ].forEach((key) => expect(typeof ctx[key]).toBe('function'));
+        ];
+        functionKeys.forEach((key) => expect(typeof ctx[key]).toBe('function'));
     });
 
     it('delegates to actions for CRUD and refresh methods', async () => {
