@@ -15,7 +15,7 @@ import { useQualification } from '@/context/QualificationContext';
 import {
     convertQualificationToFormData,
     detectQualificationChanges,
-} from '@/lib/client/qualifications/qualificationTypeConversions';
+} from '@/lib/client/qualifications/conversions';
 
 export default function EditQualification({
     open,

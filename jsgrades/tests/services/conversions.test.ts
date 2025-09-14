@@ -2,12 +2,17 @@ import { describe, expect, it } from '@jest/globals';
 import {
     convertQualificationToFormData,
     detectQualificationChanges,
-} from '@/lib/client/qualifications/qualificationTypeConversions';
+    stringNumberOrBlankToNumber,
+    stringDateOrBlankToDate,
+    qualificationFormToCreatePayload,
+    nodeFormToCreatePayload,
+    detectNodeChanges,
+} from '@/lib/client/qualifications/conversions';
 import {
     mockQualification,
     mockQualificationFormData,
 } from '@/__mocks__/qualification';
-
+import type { Node } from '@/types';
 describe('convertQualificationToFormData', () => {
     it('converts dates to YYYY-MM-DD and numbers to strings, preserving booleans', () => {
         const q = mockQualification();
@@ -74,7 +79,6 @@ describe('detectQualificationChanges', () => {
             institution: '  School  ',
         });
         const updates = detectQualificationChanges(original, fd);
-        // name changed -> trimmed new value; institution same after trim -> no update
         expect(updates).toEqual({ name: 'Beta' });
     });
 
@@ -92,13 +96,12 @@ describe('detectQualificationChanges', () => {
         expect(updates).toEqual({ inProgress: false });
     });
 
-    it('updates startDate/endDate when changed, sets Date object; removes when blank', () => {
+    it('updates startDate/endDate correctly', () => {
         const original = mockQualification({
             startDate: new Date('2024-03-05'),
             endDate: new Date('2024-09-10'),
         });
 
-        // Change both dates
         const fd1 = mockQualificationFormData({
             startDate: '2024-04-01',
             endDate: '2024-10-01',
@@ -113,12 +116,10 @@ describe('detectQualificationChanges', () => {
             '2024-10-01'
         );
 
-        // Remove both dates
         const fd2 = mockQualificationFormData({ startDate: '', endDate: '' });
         const updates2 = detectQualificationChanges(original, fd2);
         expect(updates2).toEqual({ startDate: undefined, endDate: undefined });
 
-        // Unchanged (no update)
         const fd3 = mockQualificationFormData({
             startDate: '2024-03-05',
             endDate: '2024-09-10',
@@ -127,14 +128,13 @@ describe('detectQualificationChanges', () => {
         expect(updates3).toEqual({});
     });
 
-    it('updates numeric grades when changed, removes when blank, leaves untouched when equivalent', () => {
+    it('updates numeric grades correctly', () => {
         const original = mockQualification({
             currentGrade: 75,
             targetGrade: 90,
             predictedGrade: 88,
         });
 
-        // Change two values
         const fd1 = mockQualificationFormData({
             currentGrade: '80',
             predictedGrade: '87',
@@ -142,7 +142,6 @@ describe('detectQualificationChanges', () => {
         const updates1 = detectQualificationChanges(original, fd1);
         expect(updates1).toEqual({ currentGrade: 80, predictedGrade: 87 });
 
-        // Remove values (empty string -> undefined)
         const fd2 = mockQualificationFormData({
             currentGrade: '',
             targetGrade: '',
@@ -155,7 +154,6 @@ describe('detectQualificationChanges', () => {
             predictedGrade: undefined,
         });
 
-        // Equivalent string vs number -> no update
         const fd3 = mockQualificationFormData({
             currentGrade: '75',
             targetGrade: '90',
@@ -163,5 +161,160 @@ describe('detectQualificationChanges', () => {
         });
         const updates3 = detectQualificationChanges(original, fd3);
         expect(updates3).toEqual({});
+    });
+});
+
+// New helper tests
+describe('conversions helpers', () => {
+    it('stringNumberOrBlankToNumber parses numbers and blanks', () => {
+        expect(stringNumberOrBlankToNumber(' 42 ')).toBe(42);
+        expect(stringNumberOrBlankToNumber('')).toBeUndefined();
+        expect(stringNumberOrBlankToNumber('  ')).toBeUndefined();
+        expect(stringNumberOrBlankToNumber('abc')).toBeUndefined();
+    });
+
+    it('stringDateOrBlankToDate parses valid dates and blanks', () => {
+        const d = stringDateOrBlankToDate('2024-02-29');
+        expect(d).toBeInstanceOf(Date);
+        expect(d?.toISOString().slice(0, 10)).toBe('2024-02-29');
+        expect(stringDateOrBlankToDate('')).toBeUndefined();
+        expect(stringDateOrBlankToDate('not-a-date')).toBeUndefined();
+    });
+
+    it('qualificationFormToCreatePayload builds NewQualification', () => {
+        const fd = mockQualificationFormData({
+            name: '  Maths  ',
+            institution: '  School  ',
+            startDate: '2024-01-01',
+            endDate: '',
+            currentGrade: '75',
+            targetGrade: '90',
+            predictedGrade: '',
+        });
+        const payload = qualificationFormToCreatePayload(fd, 'user-1');
+        expect(payload).toEqual({
+            userId: 'user-1',
+            level: fd.level,
+            name: 'Maths',
+            institution: 'School',
+            startDate: new Date('2024-01-01'),
+            endDate: undefined,
+            currentGrade: 75,
+            targetGrade: 90,
+            predictedGrade: undefined,
+            inProgress: fd.inProgress,
+        });
+    });
+});
+
+// Node conversions
+describe('node conversions', () => {
+    function makeNode(overrides: Partial<Node> = {}): Node {
+        const base: Node = {
+            id: 'n1',
+            qualificationId: 'q1',
+            userId: 'u1',
+            parentId: null,
+            name: 'Root',
+            type: 'mod',
+            weight: null,
+            credits: 15,
+            calculationMethod: 'weighted_mean',
+            weightingMode: 'percent',
+            roundingMode: 'nearest',
+            roundingPrecision: 2,
+            excludeIncompleteFromPredicted: false,
+            inheritSettings: true,
+            overrides: {},
+            creditEnforcement: 'none',
+            configStatus: 'valid',
+            lockConfig: false,
+            currentGrade: 72,
+            targetGrade: 80,
+            predictedGrade: 75,
+            inProgress: true,
+            startDate: new Date('2024-01-01T00:00:00.000Z'),
+            endDate: new Date('2024-06-01T00:00:00.000Z'),
+            createdAt: new Date('2024-01-01T00:00:00.000Z'),
+            updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+        };
+        return { ...base, ...overrides };
+    }
+
+    it('nodeFormToCreatePayload builds newNode payload', () => {
+        const payload = nodeFormToCreatePayload({
+            qualificationId: 'q1',
+            userId: 'u1',
+            parentId: 'n1',
+            name: ' Exam ',
+            type: { id: 'ass', name: 'Assessment', allowChildren: false },
+            weight: 60,
+            credits: 0,
+            startDate: '',
+            endDate: '',
+            targetGrade: '',
+            currentGrade: '',
+            predictedGrade: '',
+            inProgress: true,
+        });
+        expect(payload).toEqual({
+            newNode: {
+                parentId: 'n1',
+                type: 'ass',
+                name: 'Exam',
+                credits: undefined,
+                weight: 60,
+                qualificationId: 'q1',
+            },
+        });
+    });
+
+    it('detectNodeChanges returns only changed fields', () => {
+        const original = makeNode();
+        const updates = detectNodeChanges(original, {
+            qualificationId: 'q1',
+            userId: 'u1',
+            parentId: '',
+            name: ' Root ',
+            type: { id: 'mod', name: 'Module', allowChildren: true },
+            weight: 15,
+            credits: 15,
+            startDate: '2024-01-01',
+            endDate: '2024-06-01',
+            targetGrade: '80',
+            currentGrade: '72',
+            predictedGrade: '75',
+            inProgress: true,
+        });
+        // Only weight changed from null->15
+        expect(updates).toEqual({ weight: 15 });
+
+        const updates2 = detectNodeChanges(original, {
+            qualificationId: 'q1',
+            userId: 'u1',
+            parentId: '',
+            name: ' Updated ',
+            type: { id: 'ass', name: 'Assessment', allowChildren: false },
+            weight: 0,
+            credits: 20,
+            startDate: '2024-02-01',
+            endDate: '',
+            targetGrade: '',
+            currentGrade: '80',
+            predictedGrade: '',
+            inProgress: false,
+        });
+        expect(updates2).toEqual({
+            name: 'Updated',
+            type: 'ass',
+            credits: 20,
+            weight: undefined,
+            startDate: new Date('2024-02-01'),
+            endDate: undefined,
+            currentGrade: 80,
+            targetGrade: undefined,
+            predictedGrade: undefined,
+            inProgress: false,
+        });
     });
 });
