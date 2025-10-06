@@ -221,7 +221,7 @@ export function QualificationProvider({ children }: { children: ReactNode }) {
     );
 
     const navigateBack = useCallback(() => {
-        navBack(navigation, setCurrentNode);
+        navBack(navigation, setCurrentNode, setCurrentNodeId, setNavigation, setCurrentNodeSummary);
     }, [navigation, setCurrentNode]);
 
     const getBreadcrumbPath = useCallback((): Node[] => {

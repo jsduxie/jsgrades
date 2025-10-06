@@ -11,6 +11,8 @@ import {
     GraduationCap,
     Target,
     TrendingUp,
+    Plus,
+    ArrowLeft as BackIcon,
 } from 'lucide-react';
 import {
     Card,
@@ -21,6 +23,10 @@ import {
 } from '@/components/ui/card';
 import EditQualification from '@/components/qualifications/EditQualification';
 import AddQualificationNode from '@/components/qualifications/AddQualificationNode';
+import {
+    filterNodeTypesByNames,
+    getAllowedChildTypeNames,
+} from '@/lib/client/qualifications/structure';
 
 interface QualificationSummaryProps {
     onBackToOverview: () => void;
@@ -38,6 +44,7 @@ export default function QualificationSummary({
         loadingNodes,
         navigateToNode,
         createNode,
+        qualificationNodeTypes,
     } = useQualification();
 
     const [showEditModal, setShowEditModal] = useState(false);
@@ -54,6 +61,16 @@ export default function QualificationSummary({
     const rootNodes = nodeHierarchy.filter(
         (node) =>
             !node.parentId && node.qualificationId === currentQualificationId
+    );
+
+    // Determine allowed top-level types for this qualification (root children)
+    const levelNumber = qualificationLevels.find(
+        (l) => l.id === currentQualification?.level
+    )?.level;
+    const allowedTopNames = getAllowedChildTypeNames(levelNumber ?? 0, null);
+    const allowedTopTypes = filterNodeTypesByNames(
+        qualificationNodeTypes,
+        allowedTopNames
     );
 
     const StatusBadge = ({ inProgress }: { inProgress: boolean }) => {
@@ -119,13 +136,23 @@ export default function QualificationSummary({
                             />
                         </p>
                     </div>
-                    <Button
-                        variant='outline'
-                        className='mt-4'
-                        onClick={() => setShowEditModal(true)}
-                    >
-                        Edit Qualification
-                    </Button>
+                    <div className='flex gap-2'>
+                        <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={onBackToOverview}
+                        >
+                            <BackIcon className='mr-2 h-4 w-4' /> Back
+                        </Button>
+                        <Button
+                            variant='outline'
+                            className='mt-0'
+                            onClick={() => setShowEditModal(true)}
+                            size='sm'
+                        >
+                            Edit Qualification
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Qualification details */}
@@ -288,7 +315,8 @@ export default function QualificationSummary({
                                     size='sm'
                                     onClick={() => setShowAddNodeModal(true)}
                                 >
-                                    Add Subcomponent
+                                    <Plus className='mr-2 h-4 w-4' /> Add
+                                    Subcomponent
                                 </Button>
                             )}
                         </div>
@@ -377,7 +405,8 @@ export default function QualificationSummary({
                                     className='mt-4'
                                     onClick={() => setShowAddNodeModal(true)}
                                 >
-                                    Add First Subcomponent
+                                    <Plus className='mr-2 h-4 w-4' /> Add First
+                                    Subcomponent
                                 </Button>
                             </div>
                         )}
@@ -407,6 +436,7 @@ export default function QualificationSummary({
                         weight: weightFraction,
                     });
                 }}
+                typesOverride={allowedTopTypes}
             />
         </div>
     );

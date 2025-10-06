@@ -13,12 +13,18 @@ import { AddQualificationNodeProps } from '@/types';
 import { formCardClass, formModalClass } from '@/styles/forms.style';
 import QualificationNodeForm from '@/components/qualifications/QualificationNodeForm';
 import { useQualificationNodeForm } from '@/hooks/useQualificationNodeForm';
+import type { QualificationNodeType } from '@/types';
+
+type Props = AddQualificationNodeProps & {
+    typesOverride?: QualificationNodeType[];
+};
 
 export default function AddQualificationNode({
     open,
     onCloseAction,
     onSaveAction,
-}: AddQualificationNodeProps) {
+    typesOverride,
+}: Props) {
     const [isLoadingNodes] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -29,6 +35,9 @@ export default function AddQualificationNode({
     const currentQualification = qualContext.qualifications.find(
         (q) => q.id === currentQualificationId
     );
+
+    const typesToUse =
+        typesOverride ?? qualContext.qualificationNodeTypes ?? [];
 
     const {
         formData,
@@ -53,7 +62,7 @@ export default function AddQualificationNode({
             predictedGrade: '',
             inProgress: true,
         },
-        types: qualContext.qualificationNodeTypes ?? [],
+        types: typesToUse,
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -92,7 +101,7 @@ export default function AddQualificationNode({
                 <CardContent>
                     <QualificationNodeForm
                         value={formData}
-                        types={qualContext.qualificationNodeTypes ?? []}
+                        types={typesToUse}
                         submitting={submitting}
                         isLoadingTypes={isLoadingNodes}
                         errorMsg={errorMsg}

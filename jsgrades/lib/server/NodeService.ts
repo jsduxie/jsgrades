@@ -419,7 +419,11 @@ export class NodeService {
                 throw new Error('Node not found');
             }
 
-            const node = this._mapNodeFromDb(nodeResult.rows[0]);
+            // Ensure returned node has type name, not UUID
+            const node = await this._mapNodeFromDbWithTypeName(
+                nodeResult.rows[0],
+                client
+            );
             const aggregate = await this._getNodeAggregate(client, nodeId);
             const effectiveSettings = await this._resolveEffectiveSettings(
                 client,
@@ -641,11 +645,23 @@ export class NodeService {
                     row.exclude_incomplete_from_predicted;
             if (row.inherit_settings !== null)
                 effectiveSettings.inheritSettings = row.inherit_settings;
-            if (row.overrides)
-                effectiveSettings.overrides = {
-                    ...effectiveSettings.overrides,
-                    ...JSON.parse(row.overrides),
-                };
+            if (row.overrides) {
+                try {
+                    if (typeof row.overrides === 'string') {
+                        effectiveSettings.overrides = {
+                            ...effectiveSettings.overrides,
+                            ...JSON.parse(row.overrides as string),
+                        };
+                    } else if (typeof row.overrides === 'object') {
+                        effectiveSettings.overrides = {
+                            ...effectiveSettings.overrides,
+                            ...(row.overrides as Record<string, unknown>),
+                        };
+                    }
+                } catch {
+                    // ignore malformed overrides at this level
+                }
+            }
         }
 
         return effectiveSettings;

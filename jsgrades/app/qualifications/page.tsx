@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import QualificationOverview from '@/components/qualifications/QualificationOverview';
 import QualificationSummary from '@/components/qualifications/QualificationSummary';
 import { useQualification } from '@/context/QualificationContext';
+import NodeSummary from '@/components/qualifications/NodeSummary';
 
 export default function QualificationsPage() {
     const auth = useAuth();
@@ -94,13 +95,7 @@ export default function QualificationsPage() {
             );
 
         case 'NODE_SUMMARY':
-            // TODO: Create NodeSummary component
-            return (
-                <div className='p-6'>
-                    <h1>Node Summary for {currentNodeId}</h1>
-                    <p>This will show node details and children</p>
-                </div>
-            );
+            return <NodeSummary />;
 
         default:
             return (
